@@ -1,13 +1,25 @@
 package com.kdt.project;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.kdt.project.buyer.entity.ProductEntity;
+import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.user.entity.UserEntity;
+
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class HomeController {
+
+    private final BuyerService buyerService;
+
+    public HomeController(BuyerService buyerService) {
+        this.buyerService = buyerService;
+    }
 
     @GetMapping("/")
     public String home(HttpSession session, Model model) {
@@ -18,6 +30,12 @@ public class HomeController {
         }
 
         model.addAttribute("userName", loginUser.getName());
-        return "main"; // home.jsp를 보여줌
+
+        // 상품 리스트 전달
+        List<ProductEntity> productList = buyerService.getAllProducts();
+        model.addAttribute("products", productList);
+
+        return "buyer/main"; // → buyer/main.jsp
     }
 }
+
