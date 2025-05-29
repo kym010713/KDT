@@ -27,6 +27,7 @@ public class UserService {
 		user.setPhoneNumber(dto.getPhoneNumber());
 		user.setRole("BUYER");
 		user.setAddress(dto.getAddress());
+		user.setCreatedAt(dto.getCreatedAt());
 		return userRepository.save(user);
 	}
 

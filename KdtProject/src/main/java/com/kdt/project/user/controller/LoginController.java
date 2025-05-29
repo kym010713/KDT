@@ -23,8 +23,8 @@ public class LoginController {
 	}
 
 	@PostMapping("/login")
-	public String loginForm(@RequestParam String id,
-							@RequestParam String passwd,
+	public String loginForm(@RequestParam("id") String id,
+							@RequestParam("passwd") String passwd,
 							HttpSession session,
 							Model model) {
 		String loginResult = userService.login(id,passwd,session);
@@ -34,6 +34,6 @@ public class LoginController {
 			return "user/login"; // 로그인 실패시 다시 로그인 페이지
 		}
 
-		return "/"; // 메인페이지 이동
+		return "redirect:/"; // 메인페이지 이동
 	}
 }

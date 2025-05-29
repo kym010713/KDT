@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class HomeController {
 
-	@GetMapping("/home")
+	@GetMapping("/")
 	public String home(HttpSession session, Model model) {
 	    UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
 	    if (loginUser == null) {

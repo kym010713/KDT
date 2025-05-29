@@ -22,7 +22,7 @@ public class JoinController {
 	@PostMapping("/join")
 	public String joinForm(UserDto dto) {
 		userService.join(dto);
-		return "redirect:/user/login";
+		return "redirect:/login";
 	}
 
 

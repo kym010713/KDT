@@ -23,6 +23,9 @@
 
     <label for="name">이름:</label><br>
     <input type="text" id="name" name="name" required /><br><br>
+    
+    <label for="email">이메일:</label><br>
+    <input type="email" id="email" name="email" required /><br><br>
 
     <label for="phoneNumber">전화번호:</label><br>
     <input type="text" id="phoneNumber" name="phoneNumber" required /><br><br>
