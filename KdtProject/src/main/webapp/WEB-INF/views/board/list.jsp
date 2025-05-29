@@ -9,6 +9,7 @@
 <br />
 <br />
 
+
 <table border="1" width="800">
 	<tr>
 		<th>글번호</th>
