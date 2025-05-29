@@ -23,7 +23,7 @@
 
     <button type="submit">로그인</button>
 </form>
-
+<p><a href="${pageContext.request.contextPath}/find-id">아이디 찾기</a></p>
 <p>계정이 없으신가요? <a href="${pageContext.request.contextPath}/join">회원가입</a></p>
 
 </body>
