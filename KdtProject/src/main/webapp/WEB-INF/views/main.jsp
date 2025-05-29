@@ -12,12 +12,6 @@
 
   <h1>쇼핑몰에 오신 것을 환영합니다!</h1>
 
-  <form action="${pageContext.request.contextPath}/mypage" method="get">
-    <label for="id">아이디를 입력하세요:</label>
-    <input type="text" name="id" id="id" required />
-    <button type="submit">마이페이지로 이동</button>
-  </form>
-
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const button = document.getElementById("user-menu-button");

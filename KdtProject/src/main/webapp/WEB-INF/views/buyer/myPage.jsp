@@ -7,8 +7,5 @@
 <p><strong>이메일:</strong> ${user.email}</p>
 <p><strong>ID:</strong> ${user.id}</p>
 <p><strong>주소:</strong> ${user.address}</p>
-
-
 </body>
 </html>
-
