@@ -3,8 +3,8 @@
 
 <h2>글 작성</h2>
 <form:form action="/board/writePro" method="post" modelAttribute="boardDTO" enctype="multipart/form-data">
-	작성자	<form:input type="text" path="boardWriter" required="required" /><br/>
-			<form:errors path="boardWriter" cssClass="error" />
+<%-- 	작성자	<form:input type="text" path="boardWriter" required="required" /><br/>
+			<form:errors path="boardWriter" cssClass="error" /> --%>
 	
 	제목		<form:input type="text" path="boardTitle" required="required" /><br/>
 			<form:errors path="boardTitle" cssClass="error" />

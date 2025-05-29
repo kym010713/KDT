@@ -1,11 +1,12 @@
-package com.kdt.project.entity;
+package com.kdt.project.board.entity;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.kdt.project.dto.BoardDTO;
+import com.kdt.project.board.dto.BoardDTO;
 
 import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
@@ -43,11 +44,10 @@ public class BoardEntity {
 	
 	@Column(name = "created_at", updatable = false)	
 	@CreationTimestamp			
-	private Date writeTime;
+	private LocalDateTime writeTime;
 	
 	@Column(name = "updated_at")
-	@UpdateTimestamp
-	private Date updatedAt;
+	private LocalDateTime updatedAt;
 	
 	public static BoardEntity toSaveEntity(BoardDTO dto) {
 		BoardEntity entity = new BoardEntity();
@@ -65,6 +65,7 @@ public class BoardEntity {
 		dto.setBoardContent(entity.getContent());
 		dto.setBoardCount(entity.getReadCount());
 		dto.setCreatedAt(entity.getWriteTime());
+		dto.setUpdatedAt(entity.getUpdatedAt());
 		return dto;
 	}
 	
