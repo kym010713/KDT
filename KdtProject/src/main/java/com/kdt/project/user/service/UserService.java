@@ -33,12 +33,16 @@ public class UserService {
 	        }
 	        
 	        if (userRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
-	            bindingResult.rejectValue("phoneNumber", "duplicate", "이미 존재하는 번입니다.");
+	            bindingResult.rejectValue("phoneNumber", "duplicate", "이미 존재하는 번호입니다.");
 	            hasError = true;
 	        }
 
 	        return hasError;
 	    }
+
+	 public boolean existsByEmail(String email) {
+		    return userRepository.existsByEmail(email);
+		}
 
 	public UserEntity join(UserDto dto) {	// 회원가입
 		UserEntity user = new UserEntity();

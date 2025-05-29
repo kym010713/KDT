@@ -14,6 +14,6 @@
 <c:if test="${not empty error}">
     <div style="color:red;">${error}</div>
 </c:if>
-
+<a href="${pageContext.request.contextPath}/login">로그인</a>	
 </body>
 </html>

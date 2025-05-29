@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.kdt.project.user.dto.UserDto;
 import com.kdt.project.user.service.UserService;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -23,8 +24,10 @@ public class JoinController {
 	private UserService userService;
 
 	@GetMapping("/join")
-	public String JoinForm() {
-		return "user/join";		// 회원가입폼으로 이동
+	public String JoinForm(HttpSession session, Model model) {
+		model.addAttribute("userDto", new UserDto());
+	    model.addAttribute("emailVerified", session.getAttribute("emailVerified"));
+	    return "user/join";
 	}
 
 
@@ -39,7 +42,16 @@ public class JoinController {
 	}
 	
 	@PostMapping("/join")
-	public String joinForm(@Valid UserDto userDto, BindingResult bindingResult, Model model) {
+	public String joinForm(@Valid UserDto userDto, BindingResult bindingResult, Model model, HttpSession session) {
+		
+	    // 이메일 인증 확인
+        String verifiedEmail = (String) session.getAttribute("emailVerified");
+        if (verifiedEmail == null || !verifiedEmail.equals(userDto.getEmail())) {
+            model.addAttribute("emailError", "이메일 인증을 완료해주세요.");
+            model.addAttribute("userDto", userDto);
+            return "user/join";
+        }
+		
 	    // 1. 기본 유효성 검사
 	    if (bindingResult.hasErrors()) {
 	    	// 에러가 있으면 에러 메시지 Map 생성해서 모델에 담음
@@ -58,9 +70,17 @@ public class JoinController {
 	        return "user/join";
 	    }
 
-	    // 4. 회원가입 진행
+	 // 4. 회원가입 진행
+	    System.out.println("회원가입 처리 시작");
 	    userService.join(userDto);
+	    System.out.println("회원가입 완료 후 리다이렉트");
+	    // 회원가입 후 세션에서 인증 정보 제거
+	    session.removeAttribute("emailVerified");
+	    
+		System.out.println("emailVerified after remove: " + session.getAttribute("emailVerified"));
+
 	    return "redirect:/login";
+	    
 	}
 
 	
