@@ -12,21 +12,21 @@ import lombok.Data;
 public class UserEntity {
 	@Id
 	private String id;
-	
+
 	@Column(name = "password")
 	private String passwd;
-	
+
 	private String email;
-	
+
 	private String name;
-	
+
 	@Column(name = "phone_number")
 	private String phoneNumber;
-	
+
 	private String role;
-	
+
 	private String address;
-	
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 }

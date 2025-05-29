@@ -13,17 +13,17 @@ public class JoinController {
 
 	@Autowired
 	private UserService userService;
-	
+
 	@GetMapping("/join")
 	public String JoinForm() {
-		return "user/join";		// 회원가입폼으로 이동 
+		return "user/join";		// 회원가입폼으로 이동
 	}
-	
+
 	@PostMapping("/join")
 	public String joinForm(UserDto dto) {
 		userService.join(dto);
 		return "redirect:/user/login";
 	}
-		
+
 
 }

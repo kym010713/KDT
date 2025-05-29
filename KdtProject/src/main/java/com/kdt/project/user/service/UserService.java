@@ -14,10 +14,10 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class UserService {
 
-	
+
 	@Autowired
 	private UserRepositoy userRepository;
-	
+
 	public UserEntity join(UserDto dto) {	// 회원가입
 		UserEntity user = new UserEntity();
 		user.setId(dto.getId());
@@ -29,7 +29,7 @@ public class UserService {
 		user.setAddress(dto.getAddress());
 		return userRepository.save(user);
 	}
-	
+
 	public String login(String id, String passwd, HttpSession session) {
 	    Optional<UserEntity> optionalUser = userRepository.findById(id);
 
@@ -45,5 +45,5 @@ public class UserService {
 	    // 로그인 성공 시 세션에 저장
 	    session.setAttribute("loginUser", user);
 	    return "로그인 성공";
-	}	
+	}
 }
