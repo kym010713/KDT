@@ -1,12 +1,20 @@
 package com.kdt.project.user.dto;
 
 import java.time.LocalDateTime;
-import lombok.Builder;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import java.util.Date;
 
+import com.kdt.project.buyer.entity.ProductEntity;
+import com.kdt.project.user.entity.UserEntity;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
 	@NotBlank(message = "아이디를 입력하세요.")
 	private String id;
@@ -22,6 +30,7 @@ public class UserDto {
 	private String role;
 	@NotBlank(message = "주소를 입력하세요.")
 	private String address;
-
+	private String grade;
+	
 	private LocalDateTime createdAt;
 }

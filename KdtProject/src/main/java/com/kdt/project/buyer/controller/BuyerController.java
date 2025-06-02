@@ -4,12 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import com.kdt.project.buyer.entity.CartEntity;
+import com.kdt.project.buyer.dto.CartDto;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.buyer.service.BuyerService;
@@ -53,31 +50,57 @@ public class BuyerController {
     }
 
     /**
-     * 장바구니에 상품 추가
+     * 🔽 장바구니에 상품 추가
      */
-//    @PostMapping("/cart/add")
-//    public String addToCart(@RequestParam("productId") String productId,
-//                            @RequestParam("sizeId") Long sizeId,
-//                            @RequestParam("count") int count,
-//                            HttpSession session) {
-//
-//        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-//        if (user == null) return "redirect:/login";
-//
-//        buyerService.addToCart(user.getId(), productId, sizeId, count);
-//        return "redirect:/mypage/cart";
-//    }
-//
-//    /**
-//     * 장바구니 조회
-//     */
-//    @GetMapping("/cart")
-//    public String viewCart(Model model, HttpSession session) {
-//        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-//        if (user == null) return "redirect:/login";
-//
-//        List<CartEntity> cartList = buyerService.getCartItems(user.getId());
-//        model.addAttribute("cartList", cartList);
-//        return "buyer/cart"; // cart.jsp
-//    }
+    @PostMapping("/cart/add")
+    public String addToCart(@RequestParam("productId") String productId,
+                            @RequestParam("productSize") String productSize,
+                            @RequestParam("count") int count,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.addToCart(user.getId(), productId, productSize, count);
+            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            // 기존 상세 페이지 URL 유지
+            return "redirect:/mypage/product/detail?id=" + productId;
+        }
+    }
+
+
+    /**
+     * 🔽 장바구니 목록 조회
+     */
+    @GetMapping("/cart")
+    public String viewCart(HttpSession session, Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        List<CartDto> cartList = buyerService.getCartList(user.getId());
+        model.addAttribute("cartList", cartList);
+        return "buyer/cartList";
+    }
+
+    /**
+     * 🔽 장바구니에서 항목 삭제
+     */
+    @PostMapping("/cart/delete")
+    public String deleteCartItem(@RequestParam("cartId") Long cartId,
+                                 HttpSession session) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        buyerService.removeFromCart(cartId);
+        return "redirect:/mypage/cart";
+    }
 }

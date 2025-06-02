@@ -2,7 +2,7 @@ package com.kdt.project.buyer.service;
 
 import java.util.List;
 
-import com.kdt.project.buyer.entity.CartEntity;
+import com.kdt.project.buyer.dto.CartDto;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.user.dto.UserDto;
@@ -17,7 +17,10 @@ public interface BuyerService {
 
     List<ProductOptionEntity> getProductOptionsByProductId(String productId);
 
-//    void addToCart(String userId, String productId, Long sizeId, int count);
-//
-//    List<CartEntity> getCartItems(String userId);
+    // 🔽 장바구니 관련 기능 추가
+    List<CartDto> getCartList(String userId);
+
+    void addToCart(String userId, String productId, String productSize, int count);
+
+    void removeFromCart(Long cartId);
 }

@@ -2,25 +2,11 @@ package com.kdt.project.buyer.entity;
 
 import java.util.Date;
 
+import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.user.entity.UserEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "CART", schema = "TEAM03")
@@ -43,12 +29,15 @@ public class CartEntity {
     @Column(name = "CART_DATE")
     private Date cartDate;
 
+    @Column(name = "PRODUCT_SIZE", length = 100)
+    private String productSize;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PRODUCT_NAME", referencedColumnName = "PRODUCT_NAME")
+    @JoinColumn(name = "PRODUCT_ID", referencedColumnName = "PRODUCT_ID")
     private ProductEntity product;
 
     @PrePersist

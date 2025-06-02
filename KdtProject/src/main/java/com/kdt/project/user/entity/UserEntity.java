@@ -28,7 +28,7 @@ public class UserEntity {
 	private String role;
 
 	private String address;
-
+	private String grade;
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 }

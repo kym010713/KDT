@@ -1,4 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <html>
@@ -32,15 +33,6 @@
           </div>
         </div>
       </c:forEach>
-    </div>
-
-    <!-- 장바구니 버튼 -->
-    <div class="mt-8 text-center">
-      <form action="${pageContext.request.contextPath}/mypage/cart" method="get">
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-          장바구니 보기
-        </button>
-      </form>
     </div>
   </div>
 
