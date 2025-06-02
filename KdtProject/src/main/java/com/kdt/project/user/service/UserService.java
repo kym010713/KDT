@@ -53,6 +53,7 @@ public class UserService {
 		user.setPhoneNumber(dto.getPhoneNumber());
 		user.setRole("BUYER");
 		user.setAddress(dto.getAddress());
+		user.setGrade(dto.getGrade());
 		user.setCreatedAt(dto.getCreatedAt());
 		return userRepository.save(user);
 	}
