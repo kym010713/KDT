@@ -19,7 +19,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
       <c:forEach var="product" items="${products}">
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <a href="/mypage/product/detail?id=${product.productId}">
+          <a href="${pageContext.request.contextPath}/mypage/product/detail?id=${product.productId}">
 	          <img 
 	            src="${pageContext.request.contextPath}/resources/upload/${product.productPhoto}" 
 	            alt="${product.productName}" 
@@ -27,14 +27,22 @@
 	          />
           </a>
           <div class="p-2 text-center">
-            <p class="text-sm text-gray-800">${product.productName}</p>
+            <p class="text-sm text-gray-800 font-medium">${product.productName}</p>
+            <p class="text-xs text-gray-500 mt-1">${product.productPrice}원</p>
           </div>
         </div>
       </c:forEach>
     </div>
+
+    <!-- 장바구니 버튼 -->
+    <div class="mt-8 text-center">
+      <form action="${pageContext.request.contextPath}/mypage/cart" method="get">
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+          장바구니 보기
+        </button>
+      </form>
+    </div>
   </div>
-
-
 
 </body>
 </html>
