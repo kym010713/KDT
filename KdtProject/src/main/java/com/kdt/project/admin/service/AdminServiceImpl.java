@@ -1,9 +1,11 @@
 package com.kdt.project.admin.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kdt.project.admin.entity.AdminEntity;
 import com.kdt.project.admin.repository.AdminRepository;
@@ -28,6 +30,18 @@ public class AdminServiceImpl implements AdminService{
 	public List<AdminEntity> findUsersByName(String keyword) {
 	    return adminRepository.findByNameContainingAndRoleNot(keyword, "ADMIN");
 	}
+	
+	@Override
+	public void updateGrade(String id, String grade) {
+	    Optional<AdminEntity> optional = adminRepository.findById(id);
+	    if (optional.isPresent()) {
+	        AdminEntity user = optional.get();
+	        user.setGrade(grade);
+	        adminRepository.save(user);
+	    }
+	}
+
+
 
 
 }

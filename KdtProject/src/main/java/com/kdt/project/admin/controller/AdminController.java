@@ -49,6 +49,16 @@ public class AdminController {
 	    model.addAttribute("userList", userList);
 	    return "admin/userList";
 	}
+	
+	@RequestMapping(value = "updateGrade", method = RequestMethod.POST)
+	public String updateGrade(@RequestParam("id") String id,
+	                          @RequestParam("grade") String grade,
+	                          HttpSession session) {
+	    adminService.updateGrade(id, grade);
+	    session.setAttribute("alertMsg", "등급 변경이 완료되었습니다.");
+	    return "redirect:/admin/userList";
+	}
+
 
 
 	@RequestMapping(value = "deleteUser", method = RequestMethod.POST)
