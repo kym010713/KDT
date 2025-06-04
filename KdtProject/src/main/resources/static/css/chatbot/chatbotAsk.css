@@ -1,0 +1,195 @@
+@charset "UTF-8";
+ * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .chat-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-header h2 {
+            color: #1a237e;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .clear-chat {
+            color: #f44336;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .clear-chat:hover {
+            color: #d32f2f;
+        }
+
+        .clear-chat svg {
+            width: 14px;
+            height: 14px;
+            margin-right: 4px;
+        }
+
+        .chat-window {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            border: 2px solid #e8eaf6;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #1a237e;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: #e8eaf6;
+            color: #1a237e;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e8eaf6;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3949ab;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #1a237e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #283593;
+        }
+
+        .clear-button {
+            background-color: #f44336;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            margin-left: auto;
+            display: block;
+        }
+
+        .clear-button:hover {
+            background-color: #d32f2f;
+        }
+
+        /* 스크롤바 스타일링 */
+        .chat-window::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-window::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background: #1a237e;
+            border-radius: 4px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover {
+            background: #283593;
+        }
+
+        .example-questions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8eaf6;
+            border-radius: 5px;
+        }
+
+        .example-questions h3 {
+            color: #1a237e;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .question-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .question-item {
+            background-color: white;
+            color: #1a237e;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #1a237e;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            background-color: #1a237e;
+            color: white;
+        }
