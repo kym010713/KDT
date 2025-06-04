@@ -2,11 +2,19 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
+<c:if test="${not empty sessionScope.alertMsg}">
+    <script>
+        alert("${sessionScope.alertMsg}");
+    </script>
+    <c:remove var="alertMsg" scope="session" />
+</c:if>
+
 <h2>회원 목록 (관리자 제외)</h2>
 
 <form action="/admin/userList" method="get">
-    <input type="text" name="keyword" placeholder="이름 검색" value="${param.keyword}" />
-    <button type="submit">검색</button>
+	<input type="text" name="keyword" placeholder="이름 검색"
+		value="${param.keyword}" />
+	<button type="submit">검색</button>
 </form>
 
 <table style="width: 100%; border-collapse: collapse;" border="1">
@@ -17,6 +25,7 @@
 		<th>역할</th>
 		<th>주소</th>
 		<th>가입 날짜</th>
+		<th>등급 변경</th>
 		<th>탈퇴 처리</th>
 	</tr>
 	<c:forEach var="user" items="${userList}">
@@ -28,6 +37,20 @@
 			<td style="text-align: center;">${user.address}</td>
 			<td style="text-align: center;">${user.formattedCreatedAt}</td>
 			<td style="text-align: center;">
+				<form action="/admin/updateGrade" method="post"
+					style="display: inline;">
+					<input type="hidden" name="id" value="${user.id}" /> <select
+						name="grade">
+						<option value="BRONZE" ${user.grade == 'BRONZE' ? 'selected' : ''}>BRONZE</option>
+						<option value="SILVER" ${user.grade == 'SILVER' ? 'selected' : ''}>SILVER</option>
+						<option value="GOLD" ${user.grade == 'GOLD' ? 'selected' : ''}>GOLD</option>
+						<option value="PLATINUM"
+							${user.grade == 'PLATINUM' ? 'selected' : ''}>PLATINUM</option>
+					</select> <input type="submit" value="변경" />
+				</form>
+			</td>
+
+			<td style="text-align: center;">
 				<form action="/admin/deleteUser" method="post"
 					style="display: inline;">
 					<input type="hidden" name="id" value="${user.id}" /> <input
@@ -35,7 +58,6 @@
 						onclick="return confirm('정말 탈퇴 처리하시겠습니까?');" />
 				</form>
 			</td>
-
 		</tr>
 	</c:forEach>
 </table>
