@@ -33,7 +33,7 @@ public class LoginController {
 			model.addAttribute("error", loginResult);
 			return "user/login"; // 로그인 실패시 다시 로그인 페이지
 		}
-
+		
 		return "redirect:/"; // 메인페이지 이동
 	}
 }

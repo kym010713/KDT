@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
 
 <html>
@@ -19,14 +20,14 @@
 
 		<table
 			class="min-w-full table-auto bg-white border border-gray-300 mb-6">
-		
+
 			<tbody>
 				<c:if test="${not empty options}">
 					<%-- 첫 번째 옵션만 사용해서 상품 정보 출력 --%>
 					<c:set var="firstOption" value="${options[0]}" />
 
 					<form action="${pageContext.request.contextPath}/mypage/cart/add"
-						method="post" class="text-center">
+						method="post" enctype="multipart/form-data" class="text-center">
 						<table
 							class="min-w-full table-auto bg-white border border-gray-300 mb-6">
 							<thead class="bg-gray-200">
@@ -78,28 +79,196 @@
 							</tbody>
 						</table>
 					</form>
-				</c:if>
+					<!-- 리뷰 목록 출력 -->
+					<div class="mt-8">
+						<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
 
+						<c:choose>
+							<c:when test="${not empty reviews}">
+								<table
+									class="min-w-full table-auto bg-white border border-gray-300">
+									<thead class="bg-gray-200">
+										<tr>
+											<th class="px-4 py-2 border">작성자</th>
+											<th class="px-4 py-2 border">평점</th>
+											<th class="px-4 py-2 border">내용</th>
+											<th class="px-4 py-2 border">이미지</th>
+											<th class="px-4 py-2 border">작성일</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<c:forEach var="review" items="${reviews}">
+											<tr class="text-center">
+												<td class="border px-4 py-2">${review.userId}</td>
+												<td class="border px-4 py-2"><c:forEach var="i"
+														begin="1" end="${review.score}">
+												        ★
+												    </c:forEach> <c:forEach var="i" begin="1" end="${5 - review.score}">
+												        ☆
+												    </c:forEach></td>
+												<td class="border px-4 py-2">${review.content}</td>
+												<td class="border px-4 py-2"><c:if
+														test="${not empty review.reviewImageUrl}">
+														<img
+															src="${pageContext.request.contextPath}/resources/upload/review/${review.reviewImageUrl}"
+															alt="리뷰 이미지" style="width: 200px;" />
+													</c:if> <%-- 삭제 버튼 (리뷰 작성자만 보임) --%> <c:if
+														test="${review.userId eq sessionScope.loginUser.id}">
+
+														<form
+															action="${pageContext.request.contextPath}/mypage/product/review/delete"
+															method="post" onsubmit="return confirm('리뷰를 삭제하시겠습니까?');">
+															<input type="hidden" name="reviewId"
+																value="${review.reviewId}" /> <input type="hidden"
+																name="productId" value="${product.productId}">
+															<button type="submit"
+																class="mt-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
+																삭제</button>
+														</form>
+														<!-- 리뷰 수정 버튼 -->
+														<button
+															onclick="showEditForm('${review.reviewId}', '${review.score}', 
+													        '${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
+															class="mt-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
+															수정</button>
+													</c:if></td>
+												<td class="border px-4 py-2"><fmt:formatDate
+														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+
+
+
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</c:when>
+							<c:otherwise>
+								<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
+							</c:otherwise>
+						</c:choose>
+					</div>
+					<!-- 리뷰 수정 폼 (처음에는 숨김) -->
+					<div id="editReviewForm" class="mt-8 hidden">
+						<h3 class="text-xl font-bold mb-4">리뷰 수정</h3>
+						<form
+							action="${pageContext.request.contextPath}/mypage/product/review/update"
+							method="post" enctype="multipart/form-data"
+							class="bg-white p-6 rounded shadow-md">
+
+							<input type="hidden" name="reviewId" id="editReviewId" /> <input
+								type="hidden" name="productId"
+								value="${firstOption.product.productId}" />
+
+							<div class="mb-4">
+								<label for="editScore" class="block font-semibold mb-2">평점</label>
+								<select name="score" id="editScore" required
+									class="border rounded px-3 py-2 w-full">
+									<option value="5">★★★★★</option>
+									<option value="4">★★★★☆</option>
+									<option value="3">★★★☆☆</option>
+									<option value="2">★★☆☆☆</option>
+									<option value="1">★☆☆☆☆</option>
+								</select>
+							</div>
+
+							<div class="mb-4">
+								<label for="editContent" class="block font-semibold mb-2">리뷰
+									내용</label>
+								<textarea name="content" id="editContent" rows="4" required
+									class="border rounded px-3 py-2 w-full"></textarea>
+							</div>
+
+							<div class="mb-4">
+								<label for="editImage" class="block font-semibold mb-2">이미지
+									변경 (선택)</label> <input type="file" name="reviewImage" id="editImage"
+									accept="image/*" class="border rounded px-3 py-2 w-full" />
+							</div>
+
+							<button type="submit"
+								class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+								리뷰 수정</button>
+						</form>
+					</div>
+
+
+
+					<c:set var="alreadyReviewed" value="false" />
+					<c:forEach var="review" items="${reviews}">
+						<c:if test="${review.userId eq sessionScope.loginUser.id}">
+							<c:set var="alreadyReviewed" value="true" />
+						</c:if>
+					</c:forEach>
+					<!-- 리뷰 작성 폼 출력 조건문 -->
+					<c:if test="${not alreadyReviewed}">
+						<div class="mt-8">
+							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
+							<form
+								action="${pageContext.request.contextPath}/mypage/product/review"
+								method="post" enctype="multipart/form-data"
+								class="bg-white p-6 rounded shadow-md">
+								<input type="hidden" name="productId"
+									value="${firstOption.product.productId}" />
+
+								<div class="mb-4">
+									<label for="score" class="block font-semibold mb-2">평점</label>
+									<select name="score" id="score" required
+										class="border rounded px-3 py-2 w-full">
+										<option value="">선택하세요</option>
+										<option value="5">★★★★★</option>
+										<option value="4">★★★★☆</option>
+										<option value="3">★★★☆☆</option>
+										<option value="2">★★☆☆☆</option>
+										<option value="1">★☆☆☆☆</option>
+									</select>
+								</div>
+
+								<div class="mb-4">
+									<label for="content" class="block font-semibold mb-2">리뷰
+										내용</label>
+									<textarea name="content" id="content" rows="4" required
+										class="border rounded px-3 py-2 w-full"></textarea>
+								</div>
+								<div class="mb-4">
+									<label for="reviewImage" class="block font-semibold mb-2">리뷰
+										이미지</label> <input type="file" name="reviewImage" id="reviewImage"
+										accept="image/*" class="border rounded px-3 py-2 w-full" />
+								</div>
+								<button type="submit"
+									class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+									리뷰 등록</button>
+							</form>
+						</div>
+					</c:if>
+				</c:if>
 			</tbody>
 		</table>
 
 	</div>
-
 	<script>
 	    const sizeSelect = document.getElementById("sizeSelect");
 	    const stockDisplay = document.getElementById("stockDisplay");
 	
 	    const stockMap = {
 	        <c:forEach var="opt" items="${options}">
-	            '${opt.size.sizeName}': '${opt.stock}',
+	            '${opt.size.sizeName}': '${opt.stock}'<c:if test="${!status.last}">,</c:if>
 	        </c:forEach>
 	    };
-	
+		
 	    sizeSelect.addEventListener("change", function () {
 	        const selectedSize = sizeSelect.value;
 	        stockDisplay.textContent = stockMap[selectedSize] || "0";
 	    });
-	    
+		
+	    function showEditForm(reviewId, score, content, imageUrl) {
+	        document.getElementById('editReviewId').value = reviewId;
+	        document.getElementById('editScore').value = score;
+	        document.getElementById('editContent').value = content;
+
+	        const form = document.getElementById('editReviewForm');
+	        form.classList.remove('hidden');
+	        form.scrollIntoView({ behavior: 'smooth' });
+	    }
 	</script>
 
 

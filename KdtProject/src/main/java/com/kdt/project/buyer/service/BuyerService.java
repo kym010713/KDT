@@ -2,7 +2,10 @@ package com.kdt.project.buyer.service;
 
 import java.util.List;
 
-import com.kdt.project.buyer.dto.CartDto;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.kdt.project.buyer.dto.CartDTO;
+import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.user.dto.UserDto;
@@ -18,9 +21,20 @@ public interface BuyerService {
     List<ProductOptionEntity> getProductOptionsByProductId(String productId);
 
     // 🔽 장바구니 관련 기능 추가
-    List<CartDto> getCartList(String userId);
+    List<CartDTO> getCartList(String userId);
 
     void addToCart(String userId, String productId, String productSize, int count);
 
     void removeFromCart(Long cartId);
+    
+ // 리뷰 조회 및 등록 관련 기능 추가
+    List<ReviewDTO> getReviewsByProductId(String productId);
+
+    void addReview(ReviewDTO reviewDto);
+    
+    void deleteReview(Long reviewId);
+    
+    void updateReview(ReviewDTO reviewDto, MultipartFile reviewImage);
+
+
 }
