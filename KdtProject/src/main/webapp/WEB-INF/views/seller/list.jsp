@@ -44,8 +44,26 @@
             color: #007bff;
         }
         .error { color: red; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: white; margin: 15% auto; padding: 20px; width: 50%; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        .modal-content { 
+            background-color: white; 
+            margin: 5% auto; 
+            padding: 20px; 
+            width: 50%; 
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
         .close { float: right; font-size: 28px; cursor: pointer; }
         .size-tag { 
             display: inline-block; 
@@ -58,6 +76,25 @@
         }
         .size-loading { color: #666; font-style: italic; }
         .size-error { color: red; font-size: 11px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
         
         table {
             border-collapse: collapse;
@@ -171,7 +208,7 @@
         </c:otherwise>
     </c:choose>
 
-    <!-- 모달들 -->
+    <!-- 상세보기 모달 -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('detailModal')">&times;</span>
@@ -180,17 +217,63 @@
         </div>
     </div>
     
+    <!-- 수정 모달 -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('editModal')">&times;</span>
             <h3>상품 수정</h3>
             <div id="alertContainer"></div>
-            <div id="editContent">수정 폼이 여기에 로드됩니다...</div>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editCategory">카테고리:</label>
+                    <select id="editCategory" name="category">
+                        <option value="">카테고리를 선택하세요</option>
+                        <c:forEach items="${categories}" var="category">
+                            <option value="${category.topName}">${category.topName}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editProductName">상품명:</label>
+                    <input type="text" id="editProductName" name="productName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCompanyName">제조사:</label>
+                    <input type="text" id="editCompanyName" name="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editProductDetail">상품 설명:</label>
+                    <textarea id="editProductDetail" name="productDetail" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editProductPrice">가격:</label>
+                    <input type="text" id="editProductPrice" name="productPrice" required>
+                </div>
+                
+                <!-- 사이즈별 재고 입력 영역 -->
+                <div class="form-group">
+                    <label>사이즈별 재고:</label>
+                    <div id="sizeStockContainer">
+                        <!-- JavaScript로 동적 생성 -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductPhoto">사진 URL:</label>
+                    <input type="text" id="editProductPhoto" name="productPhoto">
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="updateProduct()">수정 완료</button>
+                    <button type="button" onclick="closeModal('editModal')">취소</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- JavaScript 함수들 -->
     <script>
+        let currentEditProductId = null;
+        
         // 사이즈 정보 로드
         function loadSizeInfo(productId) {
             fetch('/seller/product/detail/' + productId)
@@ -253,8 +336,111 @@
         
         // 상품 수정
         function editProduct(productId) {
-            document.getElementById('editContent').innerHTML = '수정 기능을 준비 중입니다...';
-            document.getElementById('editModal').style.display = 'block';
+            currentEditProductId = productId;
+            clearAlert();
+            
+            fetch('/seller/product/edit/' + productId)
+                .then(response => response.json())
+                .then(responseData => {
+                    if (responseData.success && responseData.data) {
+                        const data = responseData.data;
+                        document.getElementById('editCategory').value = data.category || '';
+                        document.getElementById('editProductName').value = data.productName || '';
+                        document.getElementById('editCompanyName').value = data.companyName || '';
+                        document.getElementById('editProductDetail').value = data.productDetail || '';
+                        document.getElementById('editProductPrice').value = data.productPrice || '';
+                        document.getElementById('editProductPhoto').value = data.productPhoto || '';
+                        
+                        // 사이즈별 재고 입력 폼 생성
+                        generateSizeStockInputs(data.productOptions || []);
+                        
+                        document.getElementById('editModal').style.display = 'block';
+                    } else {
+                        alert('상품 정보를 불러올 수 없습니다: ' + (responseData.message || '알 수 없는 오류'));
+                    }
+                })
+                .catch(error => alert('오류가 발생했습니다: ' + error.message));
+        }
+        
+        // 사이즈별 재고 입력 폼 생성
+        function generateSizeStockInputs(productOptions) {
+            const container = document.getElementById('sizeStockContainer');
+            container.innerHTML = '';
+            
+            productOptions.forEach(option => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '5px';
+                div.innerHTML = 
+                    '<label style="display: inline-block; width: 80px;">' + option.sizeName + ':</label>' +
+                    '<input type="number" min="0" value="' + (option.stock || 0) + '" ' +
+                           'name="stock_' + option.sizeId + '" style="width: 80px;"> 개';
+                container.appendChild(div);
+            });
+        }
+        
+        // 상품 업데이트
+        function updateProduct() {
+            if (!currentEditProductId) return;
+            
+            // 사이즈별 재고 데이터 수집
+            const sizeStockInputs = document.querySelectorAll('#sizeStockContainer input[name^="stock_"]');
+            const productOptions = [];
+            
+            sizeStockInputs.forEach(input => {
+                const sizeId = input.name.split('_')[1];
+                const stock = parseInt(input.value) || 0;
+                if (stock > 0) {
+                    productOptions.push({
+                        sizeId: parseInt(sizeId),
+                        stock: stock
+                    });
+                }
+            });
+            
+            const formData = {
+                category: document.getElementById('editCategory').value,
+                productName: document.getElementById('editProductName').value,
+                companyName: document.getElementById('editCompanyName').value,
+                productDetail: document.getElementById('editProductDetail').value,
+                productPrice: document.getElementById('editProductPrice').value,
+                productPhoto: document.getElementById('editProductPhoto').value,
+                productOptions: productOptions
+            };
+            
+            fetch('/seller/product/update/' + currentEditProductId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', data.message);
+                    setTimeout(() => {
+                        closeModal('editModal');
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('error', '오류가 발생했습니다: ' + error.message);
+            });
+        }
+        
+        // 알림 표시
+        function showAlert(type, message) {
+            const alertContainer = document.getElementById('alertContainer');
+            const color = type === 'success' ? 'green' : 'red';
+            alertContainer.innerHTML = '<div style="color: ' + color + ';">' + message + '</div>';
+        }
+        
+        // 알림 지우기
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
         }
         
         // 상품 삭제
@@ -281,6 +467,10 @@
         // 모달 닫기
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'editModal') {
+                currentEditProductId = null;
+                clearAlert();
+            }
         }
         
         // 모달 외부 클릭시 닫기
