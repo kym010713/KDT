@@ -2,16 +2,20 @@ package com.kdt.project.buyer.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kdt.project.buyer.dto.CartDto;
+import com.kdt.project.buyer.dto.CartDTO;
+import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.CartEntity;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
+import com.kdt.project.buyer.entity.ReviewEntity;
 import com.kdt.project.buyer.repository.CartRepository;
 import com.kdt.project.buyer.repository.ProductOptionRepository;
 import com.kdt.project.buyer.repository.ProductRepository;
+import com.kdt.project.buyer.repository.ReviewRepository;
 import com.kdt.project.buyer.repository.SizeRepository;
 import com.kdt.project.user.dto.UserDto;
 import com.kdt.project.user.entity.UserEntity;
@@ -28,7 +32,9 @@ public class BuyerServiceImpl implements BuyerService {
     private final ProductRepository productRepository;
     private final ProductOptionRepository optionRepository;
     private final SizeRepository sizeRepository;
-
+    private final ReviewRepository ReviewRepository;
+    
+    
     @Override
     public UserDto getMyPage(String userId) {
         UserEntity user = userRepository.findById(userId)
@@ -60,14 +66,14 @@ public class BuyerServiceImpl implements BuyerService {
 
     // ✅ 장바구니 목록 조회
     @Override
-    public List<CartDto> getCartList(String userId) {
+    public List<CartDTO> getCartList(String userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         List<CartEntity> carts = cartRepository.findByUser(user);
 
         return carts.stream().map(cart -> {
-            CartDto dto = new CartDto();
+            CartDTO dto = new CartDTO();
             dto.setCartId(cart.getCartId());
             dto.setProductId(cart.getProduct().getProductId());
             dto.setProductName(cart.getProduct().getProductName());
@@ -115,4 +121,42 @@ public class BuyerServiceImpl implements BuyerService {
         }
         cartRepository.deleteById(cartId);
     }
+    
+ // 리뷰 목록 조회
+    @Override
+    public List<ReviewDTO> getReviewsByProductId(String productId) {
+        List<ReviewEntity> reviews = ReviewRepository.findByProduct_ProductId(productId);
+
+        return reviews.stream().map(review -> {
+            ReviewDTO dto = new ReviewDTO();
+            dto.setReviewId(review.getReviewId());
+            dto.setProductId(review.getProduct().getProductId());
+            dto.setUserId(review.getUser().getId());
+            dto.setContent(review.getReviewContent());
+            dto.setScore(review.getReviewScore());
+            dto.setReviewDate(review.getReviewDate());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    // 리뷰 등록
+    @Override
+    public void addReview(ReviewDTO reviewDto) {
+        ReviewEntity review = new ReviewEntity();
+        review.setReviewContent(reviewDto.getContent());
+        review.setReviewScore(reviewDto.getScore());
+        review.setReviewDate(new Date());
+
+        ProductEntity product = productRepository.findById(reviewDto.getProductId())
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+        UserEntity user = userRepository.findById(reviewDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        review.setProduct(product);
+        review.setUser(user);
+
+        ReviewRepository.save(review);
+    }
+    
+    
 }

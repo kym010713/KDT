@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
 
 <html>
@@ -19,7 +20,7 @@
 
 		<table
 			class="min-w-full table-auto bg-white border border-gray-300 mb-6">
-		
+
 			<tbody>
 				<c:if test="${not empty options}">
 					<%-- 첫 번째 옵션만 사용해서 상품 정보 출력 --%>
@@ -78,13 +79,49 @@
 							</tbody>
 						</table>
 					</form>
+					<!-- 리뷰 목록 출력 -->
+				<div class="mt-8">
+					<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
+
+					<c:choose>
+						<c:when test="${not empty reviews}">
+							<table
+								class="min-w-full table-auto bg-white border border-gray-300">
+								<thead class="bg-gray-200">
+									<tr>
+										<th class="px-4 py-2 border">작성자</th>
+										<th class="px-4 py-2 border">평점</th>
+										<th class="px-4 py-2 border">내용</th>
+										<th class="px-4 py-2 border">작성일</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:forEach var="review" items="${reviews}">
+										<tr class="text-center">
+											<td class="border px-4 py-2">${review.userId}</td>
+											<td class="border px-4 py-2">${review.score}</td>
+											<td class="border px-4 py-2">${review.content}</td>
+											<td class="border px-4 py-2"><fmt:formatDate
+													value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+										</tr>
+									</c:forEach>
+								</tbody>
+							</table>
+						</c:when>
+						<c:otherwise>
+							<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
+						</c:otherwise>
+					</c:choose>
+				</div>
+
+
 				</c:if>
+				
 
 			</tbody>
 		</table>
 
 	</div>
-
 	<script>
 	    const sizeSelect = document.getElementById("sizeSelect");
 	    const stockDisplay = document.getElementById("stockDisplay");
@@ -99,7 +136,7 @@
 	        const selectedSize = sizeSelect.value;
 	        stockDisplay.textContent = stockMap[selectedSize] || "0";
 	    });
-	    
+
 	</script>
 
 

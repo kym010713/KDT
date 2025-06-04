@@ -4,9 +4,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import com.kdt.project.buyer.dto.CartDto;
+import com.kdt.project.buyer.dto.CartDTO;
+import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.buyer.service.BuyerService;
@@ -41,12 +45,24 @@ public class BuyerController {
      */
     @GetMapping("/product/detail")
     public String productDetail(@RequestParam("id") String productId, Model model) {
-        ProductEntity product = buyerService.getProductById(productId);
-        List<ProductOptionEntity> options = buyerService.getProductOptionsByProductId(productId);
-
-        model.addAttribute("product", product);
-        model.addAttribute("options", options);
-        return "buyer/productDetail";
+        try {
+            ProductEntity product = buyerService.getProductById(productId);
+            List<ProductOptionEntity> options = buyerService.getProductOptionsByProductId(productId);
+            List<ReviewDTO> reviews = buyerService.getReviewsByProductId(productId);
+            
+            System.out.println("Product: " + product); // 디버깅
+            System.out.println("Options size: " + options.size()); // 디버깅
+            
+            model.addAttribute("product", product);
+            model.addAttribute("options", options);
+            model.addAttribute("reviews", reviews);
+            
+            return "buyer/productDetail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "상품을 찾을 수 없습니다.");
+            return "buyer/main"; // 
+        }
     }
 
     /**
@@ -84,7 +100,7 @@ public class BuyerController {
             return "redirect:/login";
         }
 
-        List<CartDto> cartList = buyerService.getCartList(user.getId());
+        List<CartDTO> cartList = buyerService.getCartList(user.getId());
         model.addAttribute("cartList", cartList);
         return "buyer/cartList";
     }
@@ -103,4 +119,32 @@ public class BuyerController {
         buyerService.removeFromCart(cartId);
         return "redirect:/mypage/cart";
     }
+    
+    @PostMapping("/product/review")
+    public String addReview(@RequestParam("productId") String productId,
+                            @RequestParam("score") int score,
+                            @RequestParam("content") String content,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        ReviewDTO review = new ReviewDTO();
+        review.setProductId(productId);
+        review.setUserId(user.getId());
+        review.setScore(score);
+        review.setContent(content);
+
+        buyerService.addReview(review);
+
+        return "redirect:/mypage/product/detail?id=" + productId;
+    }
+
+    
+    
+    
+    
+    
 }
