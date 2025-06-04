@@ -10,6 +10,6 @@ import java.util.List;
 public interface ProductSellerRepository extends JpaRepository<Product, String> {
     boolean existsByProductName(String productName);
     
-    // 카테고리별 상품 조회 메서드 추가
+    // 카테고리별 상품 조회 메서드 
     List<Product> findByCategory(String category);
 }

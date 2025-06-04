@@ -29,7 +29,7 @@ public class ProductRegistrationDto {
     @NotBlank(message = "상품 가격을 입력해주세요")
     private String productPrice;
     
-    // JSP 호환성을 위해 기존 필드들 유지
+    
     @NotBlank(message = "상품 사이즈를 입력해주세요")
     private String productSize;
     
@@ -39,7 +39,7 @@ public class ProductRegistrationDto {
     
     private String productPhoto;
     
-    // 사이즈별 재고 관리를 위한 리스트 (새로운 기능)
+    // 사이즈별 재고 관리를 위한 리스트 
     private List<ProductOptionDto> productOptions;
     
     @Data

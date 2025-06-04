@@ -46,7 +46,7 @@ public class ProductService {
         return productOptionsRepository.findByProductId(productId);
     }
     
-    // 상품 상세 정보 조회 (사이즈명 포함) - 새로 추가
+    // 상품 상세 정보 조회 
     public Map<String, Object> getProductDetailWithSizes(String productId) {
         Map<String, Object> result = new HashMap<>();
         
@@ -94,9 +94,9 @@ public class ProductService {
         
         productSellerRepository.save(product);
         
-        // 기존 방식과 새로운 방식 모두 지원
+     
         if (dto.getProductOptions() != null && !dto.getProductOptions().isEmpty()) {
-            // 새로운 방식: 사이즈별 재고
+            // 사이즈별 재고
             for (ProductRegistrationDto.ProductOptionDto optionDto : dto.getProductOptions()) {
                 if (optionDto.getStock() != null && optionDto.getStock() > 0) {
                     ProductOptions option = new ProductOptions();
@@ -107,7 +107,7 @@ public class ProductService {
                 }
             }
         } else if (dto.getProductSize() != null && dto.getProductCount() != null) {
-            // 기존 방식: 단일 사이즈 + 수량
+      
             Sizes size = sizesRepository.findBySizeName(dto.getProductSize())
                                        .orElseThrow(() -> new RuntimeException(
                                            "존재하지 않는 사이즈입니다: " + dto.getProductSize()
@@ -141,11 +141,11 @@ public class ProductService {
     
     @Transactional
     public void updateProduct(String productId, ProductRegistrationDto dto) {
-        // Product 업데이트
+     
         Product product = productSellerRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
         
-        // 상품명이 변경되었고, 이미 존재하는 상품명인지 체크
+        // 상품명 변경, 이미 존재하는 상품명인지 체크
         if (!product.getProductName().equals(dto.getProductName()) && 
             productSellerRepository.existsByProductName(dto.getProductName())) {
             throw new RuntimeException("이미 등록된 상품명입니다.");
@@ -160,7 +160,7 @@ public class ProductService {
         
         productSellerRepository.save(product);
         
-        // 기존 옵션 삭제 후 새로 저장 (중요!)
+        // 기존 옵션 삭제 후 새로 저장
         productOptionsRepository.deleteByProductId(productId);
         
         System.out.println("=== 상품 옵션 업데이트 시작 ===");
@@ -180,7 +180,7 @@ public class ProductService {
                 }
             }
         } else if (dto.getProductSize() != null && dto.getProductCount() != null) {
-            // 기존 방식 지원
+          
             Sizes size = sizesRepository.findBySizeName(dto.getProductSize())
                                        .orElseThrow(() -> new RuntimeException(
                                            "존재하지 않는 사이즈입니다: " + dto.getProductSize()

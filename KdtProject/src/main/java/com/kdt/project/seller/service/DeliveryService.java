@@ -49,7 +49,7 @@ public class DeliveryService {
         for (Orders order : orders) {
             SalesDto deliveryDto = createDeliveryDto(order);
             if (deliveryDto != null) {
-                // 배송 상태 필터링
+                
                 if ("ALL".equals(deliveryStatus) || 
                     (deliveryDto.getDeliveryState() != null && deliveryDto.getDeliveryState().equals(deliveryStatus)) ||
                     ("미등록".equals(deliveryStatus) && "미등록".equals(deliveryDto.getDeliveryState()))) {
@@ -93,7 +93,7 @@ public class DeliveryService {
                     newDelivery.setCompleteDate(new java.util.Date());
                 }
                 
-                // 새로운 DELIVERY_ID 생성
+            
                 newDelivery.setDeliveryId(System.currentTimeMillis());
                 
                 deliveryRepository.save(newDelivery);

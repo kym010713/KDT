@@ -19,7 +19,7 @@ public class Sizes {
     @Column(name = "SIZE_NAME", nullable = false)
     private String sizeName;
     
-    // Lombok이 안 될 경우를 위한 수동 getter/setter
+    
     public Long getSizeId() {
         return sizeId;
     }

@@ -24,7 +24,7 @@ public class ProductOptions {
     @Column(name = "PRODUCT_STOCK", nullable = false)
     private Integer productStock;
     
-    // Lombok이 안 될 경우를 위한 수동 getter/setter
+   
     public String getProductId() {
         return productId;
     }

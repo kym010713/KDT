@@ -10,7 +10,7 @@
 <body>
     <h2>판매 내역</h2>
     
-    <a href="/seller/list">상품 관리</a> |  
+    <a href="/seller/list">상품 목록</a> |  
     <a href="/seller/delivery">배송 관리</a>
     <br><br>
     

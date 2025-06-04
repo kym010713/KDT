@@ -1,5 +1,6 @@
 package com.kdt.project.seller.controller;
 
+
 import com.kdt.project.seller.dto.ProductRegistrationDto;
 import com.kdt.project.seller.service.ProductService;
 import com.kdt.project.seller.service.SalesService;
@@ -18,7 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.Optional;
+
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,7 @@ public class SellerController {
         return "seller/register";
     }
     
-    // 상품 목록 조회 페이지
+ // 상품 목록 조회 페이지 (사이즈별 표시)
     @GetMapping("/list")
     public String showProductList(@RequestParam(value = "category", required = false) String category,
                                 Model model) {
@@ -82,7 +84,7 @@ public class SellerController {
             List<ProductOptions> options = productService.getProductOptions(productId);
             List<Sizes> allSizes = productService.getAllSizes();
             
-            // DTO 생성
+          
             ProductRegistrationDto dto = new ProductRegistrationDto();
             dto.setCategory(product.getCategory());
             dto.setProductName(product.getProductName());
@@ -113,7 +115,7 @@ public class SellerController {
             
             dto.setProductOptions(optionDtos);
             
-            // 기존 방식 호환성을 위해 첫 번째 옵션의 정보를 설정
+      
             if (!options.isEmpty()) {
                 ProductOptions firstOption = options.get(0);
                 Optional<Sizes> sizeOpt = allSizes.stream()
@@ -140,21 +142,21 @@ public class SellerController {
         }
     }
 
- // 상품 상세 조회 (AJAX) - Product 정보 + 옵션 정보 포함
- // 1. 상품 상세 조회 메서드 수정
+ // 상품 상세 조회
+
     @GetMapping("/product/detail/{productId}")
     @ResponseBody
     public Map<String, Object> getProductDetail(@PathVariable("productId") String productId) {
         System.out.println("=== 상품 상세 조회 시작: " + productId + " ===");
         
-        // ProductService의 새로운 메서드 사용
+     
         Map<String, Object> response = productService.getProductDetailWithSizes(productId);
         
         System.out.println("Response: " + response);
         return response;
     }
     
-    // 상품 삭제 처리 (AJAX)
+    // 상품 삭제 처리
     @DeleteMapping("/product/delete/{productId}")
     @ResponseBody
     public Map<String, Object> deleteProduct(@PathVariable("productId") String productId) {
@@ -180,7 +182,7 @@ public class SellerController {
         return "seller/sales";
     }
     
-    // 배송 상태 변경 (AJAX)
+    // 배송 상태 변경 )
     @PostMapping("/delivery/update")
     @ResponseBody
     public Map<String, Object> updateDeliveryStatus(@RequestParam Long orderNumber, 
@@ -222,7 +224,7 @@ public class SellerController {
         return "seller/delivery";
     }
     
-    // 상품 수정 처리 (AJAX)
+ //  상품 수정 처리 메서드 로그 
     @PostMapping("/product/update/{productId}")
     @ResponseBody
     public Map<String, Object> updateProduct(@PathVariable("productId") String productId,
@@ -230,18 +232,25 @@ public class SellerController {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            System.out.println("=== 상품 수정 요청 ===");
+            System.out.println("Product ID: " + productId);
+            System.out.println("수정 데이터: " + productDto);
+            
             productService.updateProduct(productId, productDto);
             response.put("success", true);
             response.put("message", "상품이 성공적으로 수정되었습니다.");
+            
+            System.out.println("상품 수정 완료");
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", e.getMessage());
+            e.printStackTrace();
         }
         
         return response;
     }
     
-    @PostMapping("/register")  // "/product/register"에서 "/register"로 변경
+    @PostMapping("/register") 
     public String registerProduct(@Valid @ModelAttribute("productDto") ProductRegistrationDto productDto,
                                 BindingResult bindingResult,
                                 Model model,
@@ -256,12 +265,14 @@ public class SellerController {
         try {
             productService.registerProduct(productDto);
             redirectAttributes.addFlashAttribute("successMessage", "상품이 성공적으로 등록되었습니다.");
-            return "redirect:/seller/register";  // "/seller/product/register"에서 "/seller/register"로 변경
+            return "redirect:/seller/register";  
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("categories", productService.getAllCategories());
             model.addAttribute("sizes", productService.getAllSizes());
-            return "seller/register";  // "seller/product-register"에서 "seller/register"로 변경
+            return "seller/register";  
         }
     }
+    
+    
 }

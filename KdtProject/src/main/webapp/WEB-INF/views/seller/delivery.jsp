@@ -10,7 +10,7 @@
 <body>
     <h2>배송 관리</h2>
     
-    <a href="/seller/list">상품 관리</a> | 
+    <a href="/seller/list">상품 목록</a> | 
     <a href="/seller/sales">판매 내역</a> 
     <br><br>
     
@@ -168,7 +168,7 @@
                     alert('오류가 발생했습니다: ' + error.message);
                 });
             } else {
-                // 취소한 경우 select 초기화
+             
                 event.target.value = '';
             }
         }

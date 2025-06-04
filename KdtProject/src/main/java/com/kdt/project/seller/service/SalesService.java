@@ -118,7 +118,7 @@ public class SalesService {
                     newDelivery.setCompleteDate(new java.util.Date());
                 }
                 
-                // 새로운 DELIVERY_ID 생성 (간단하게 현재 시간 기반)
+                // 새로운 DELIVERY_ID 생성
                 newDelivery.setDeliveryId(System.currentTimeMillis());
                 
                 deliveryRepository.save(newDelivery);

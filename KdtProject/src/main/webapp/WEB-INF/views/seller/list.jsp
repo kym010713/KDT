@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,11 +11,24 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 15% auto; padding: 20px; width: 50%; }
         .close { float: right; font-size: 28px; cursor: pointer; }
+        .size-tag { 
+            display: inline-block; 
+            margin: 2px 5px 2px 0; 
+            padding: 2px 6px; 
+            background-color: #f0f0f0; 
+            border-radius: 3px; 
+            font-size: 12px; 
+            border: 1px solid #ddd;
+        }
+        .size-loading { color: #666; font-style: italic; }
+        .size-error { color: red; font-size: 11px; }
     </style>
 </head>
 <body>
     <h2>상품 목록</h2>
-    <a href="/seller/register">새 상품 등록</a>
+    <a href="/seller/register">새 상품 등록</a><br><br>
+    <a href="/seller/delivery">배송 관리</a> |
+    <a href="/seller/sales">판매 내역</a>
     <br><br>
     
     카테고리:
@@ -44,6 +58,8 @@
                     <th>카테고리</th>
                     <th>상품명</th>
                     <th>제조사</th>
+                    <th>가격</th>
+                    <th>사이즈별 재고</th>
                     <th>상품ID</th>
                     <th>액션</th>
                 </tr>
@@ -52,6 +68,10 @@
                         <td>${product.category}</td>
                         <td>${product.productName}</td>
                         <td>${product.companyName}</td>
+                        <td><fmt:formatNumber value="${product.productPrice}" pattern="#,###"/>원</td>
+                        <td>
+                            <div id="sizeInfo_${product.productId}" class="size-loading">로딩중...</div>
+                        </td>
                         <td>${product.productId}</td>
                         <td>
                             <button onclick="showProductDetail('${product.productId}')">상세보기</button>
@@ -61,6 +81,15 @@
                     </tr>
                 </c:forEach>
             </table>
+            
+            <!-- 페이지 로드 후 사이즈 정보 로드 -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    <c:forEach items="${products}" var="product">
+                        loadSizeInfo('${product.productId}');
+                    </c:forEach>
+                });
+            </script>
         </c:otherwise>
     </c:choose>
     
@@ -104,30 +133,15 @@
                     <label for="editProductPrice">가격:</label>
                     <input type="text" id="editProductPrice" name="productPrice" required>
                 </div>
+                
+                <!-- 사이즈별 재고 입력 영역 -->
                 <div class="form-group">
-                    <label for="editProductSize">사이즈:</label>
-                    <select id="editProductSize" name="productSize" required>
-                        <option value="">사이즈를 선택하세요</option>
-                        <option value="Free">Free</option>
-                        <option value="XS">XS</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                        <option value="220mm">220mm</option>
-                        <option value="230mm">230mm</option>
-                        <option value="240mm">240mm</option>
-                        <option value="250mm">250mm</option>
-                        <option value="260mm">260mm</option>
-                        <option value="270mm">270mm</option>
-                        <option value="280mm">280mm</option>
-                    </select>
+                    <label>사이즈별 재고:</label>
+                    <div id="sizeStockContainer">
+                        <!-- JavaScript로 동적 생성 -->
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="editProductCount">수량:</label>
-                    <input type="number" id="editProductCount" name="productCount" min="1" required>
-                </div>
+                
                 <div class="form-group">
                     <label for="editProductPhoto">사진 URL:</label>
                     <input type="text" id="editProductPhoto" name="productPhoto">
@@ -143,20 +157,59 @@
     <script>
         let currentEditProductId = null;
         
+        function loadSizeInfo(productId) {
+            fetch('/seller/product/detail/' + productId)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('sizeInfo_' + productId);
+                    if (data.success && data.optionDetails && data.optionDetails.length > 0) {
+                        let sizeHtml = '';
+                        data.optionDetails.forEach(option => {
+                            sizeHtml += '<span class="size-tag">' + 
+                                       option.sizeName + ': ' + option.stock + '개</span>';
+                        });
+                        container.innerHTML = sizeHtml;
+                    } else {
+                        container.innerHTML = '<span class="size-error">재고 정보 없음</span>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('sizeInfo_' + productId).innerHTML = 
+                        '<span class="size-error">로드 실패</span>';
+                });
+        }
+        
         function showProductDetail(productId) {
             fetch('/seller/product/detail/' + encodeURIComponent(productId))
                 .then(response => response.json())
                 .then(data => {
-                    if (data) {
+                    if (data.success && data.product) {
+                        const product = data.product;
+                        const optionDetails = data.optionDetails || [];
+                        
+                        let optionsHtml = '';
+                        if (optionDetails.length > 0) {
+                            optionsHtml = '<p><strong>사이즈별 재고:</strong></p><ul>';
+                            optionDetails.forEach(option => {
+                                optionsHtml += '<li>' + option.sizeName + ': ' + option.stock + '개</li>';
+                            });
+                            optionsHtml += '</ul>';
+                        } else {
+                            optionsHtml = '<p><strong>재고:</strong> 재고 정보 없음</p>';
+                        }
+                        
                         document.getElementById('detailContent').innerHTML = 
-                            '<p><strong>상품명:</strong> ' + (data.productName || '') + '</p>' +
-                            '<p><strong>설명:</strong> ' + (data.productDetail || '') + '</p>' +
-                            '<p><strong>가격:</strong> ' + (data.productPrice || '') + '원</p>' +
-                            '<p><strong>사이즈:</strong> ' + (data.productSize || '') + '</p>' +
-                            '<p><strong>재고:</strong> ' + (data.productCount || 0) + '개</p>';
+                            '<p><strong>상품명:</strong> ' + (product.productName || '') + '</p>' +
+                            '<p><strong>제조사:</strong> ' + (product.companyName || '') + '</p>' +
+                            '<p><strong>카테고리:</strong> ' + (product.category || '') + '</p>' +
+                            '<p><strong>설명:</strong> ' + (product.productDetail || '') + '</p>' +
+                            '<p><strong>가격:</strong> ' + (product.productPrice ? product.productPrice.toLocaleString() : '0') + '원</p>' +
+                            optionsHtml +
+                            (product.productPhoto ? '<p><strong>사진:</strong> ' + product.productPhoto + '</p>' : '');
+                            
                         document.getElementById('detailModal').style.display = 'block';
                     } else {
-                        alert('상품 정보를 불러올 수 없습니다.');
+                        alert('상품 정보를 불러올 수 없습니다: ' + (data.message || '알 수 없는 오류'));
                     }
                 })
                 .catch(error => alert('오류가 발생했습니다: ' + error.message));
@@ -176,9 +229,10 @@
                         document.getElementById('editCompanyName').value = data.companyName || '';
                         document.getElementById('editProductDetail').value = data.productDetail || '';
                         document.getElementById('editProductPrice').value = data.productPrice || '';
-                        document.getElementById('editProductSize').value = data.productSize || '';
-                        document.getElementById('editProductCount').value = data.productCount || '';
                         document.getElementById('editProductPhoto').value = data.productPhoto || '';
+                        
+                       
+                        generateSizeStockInputs(data.productOptions || []);
                         
                         document.getElementById('editModal').style.display = 'block';
                     } else {
@@ -188,8 +242,38 @@
                 .catch(error => alert('오류가 발생했습니다: ' + error.message));
         }
         
+        function generateSizeStockInputs(productOptions) {
+            const container = document.getElementById('sizeStockContainer');
+            container.innerHTML = '';
+            
+            productOptions.forEach(option => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '5px';
+                div.innerHTML = 
+                    '<label style="display: inline-block; width: 80px;">' + option.sizeName + ':</label>' +
+                    '<input type="number" min="0" value="' + (option.stock || 0) + '" ' +
+                           'name="stock_' + option.sizeId + '" style="width: 80px;"> 개';
+                container.appendChild(div);
+            });
+        }
+        
         function updateProduct() {
             if (!currentEditProductId) return;
+            
+            // 사이즈별 재고 데이터 수집
+            const sizeStockInputs = document.querySelectorAll('#sizeStockContainer input[name^="stock_"]');
+            const productOptions = [];
+            
+            sizeStockInputs.forEach(input => {
+                const sizeId = input.name.split('_')[1];
+                const stock = parseInt(input.value) || 0;
+                if (stock > 0) {
+                    productOptions.push({
+                        sizeId: parseInt(sizeId),
+                        stock: stock
+                    });
+                }
+            });
             
             const formData = {
                 category: document.getElementById('editCategory').value,
@@ -197,9 +281,8 @@
                 companyName: document.getElementById('editCompanyName').value,
                 productDetail: document.getElementById('editProductDetail').value,
                 productPrice: document.getElementById('editProductPrice').value,
-                productSize: document.getElementById('editProductSize').value,
-                productCount: parseInt(document.getElementById('editProductCount').value),
-                productPhoto: document.getElementById('editProductPhoto').value
+                productPhoto: document.getElementById('editProductPhoto').value,
+                productOptions: productOptions
             };
             
             fetch('/seller/product/update/' + currentEditProductId, {

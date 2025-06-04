@@ -22,7 +22,7 @@ public class Delivery {
     private Long orderNumber;
     
     @Column(name = "DELIVERY_STATE")
-    private String deliveryState; // 'REQUESTED', 'IN_PROGRESS', 'COMPLETED'
+    private String deliveryState; 
     
     @Column(name = "REQUEST_DATE")
     @Temporal(TemporalType.DATE)
