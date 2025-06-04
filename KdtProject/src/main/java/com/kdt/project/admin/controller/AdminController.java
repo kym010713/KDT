@@ -1,5 +1,6 @@
 package com.kdt.project.admin.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +9,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kdt.project.admin.entity.AdminEntity;
 import com.kdt.project.admin.service.AdminService;
+import com.kdt.project.seller.entity.SellerRoleEntity;
+import com.kdt.project.seller.service.SellerRoleService;
 import com.kdt.project.user.entity.UserEntity;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -21,6 +26,9 @@ public class AdminController {
 	
 	@Autowired
 	private AdminService adminService;
+	
+    @Autowired
+    private SellerRoleService sellerRoleService;
 
 	
 	
@@ -66,6 +74,30 @@ public class AdminController {
 	    adminService.deleteUserById(id);
 	    return "redirect:/admin/userList";
 	}
+	
+	
+	@RequestMapping("applyList")
+	public String viewApplyList(HttpSession session, Model model, HttpServletResponse response) throws IOException {
+	    UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
 
+
+	    if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
+	        response.setContentType("text/html;charset=UTF-8");
+	        response.getWriter().println("<script>alert('관리자만 접근 가능한 페이지입니다.'); location.href='/';</script>");
+	        return null;
+	    }
+
+	    List<SellerRoleEntity> applyList = sellerRoleService.getAllApplications();
+	    model.addAttribute("applyList", applyList);
+
+	    return "admin/applyList";
+	}
+
+	@RequestMapping(value = "approveSeller", method = RequestMethod.POST)
+	@ResponseBody
+	public String approveSeller(@RequestParam("sellerRoleId") Long sellerRoleId) {
+	    sellerRoleService.updateStatusToApproved(sellerRoleId);  // status = 'Y'
+	    return "OK";
+	}
 
 }
