@@ -28,7 +28,7 @@
         </div>
         <div class="col text-center">
             <h1 class="display-5 text-main fw-semibold mb-0">
-                <i class="fas fa-store-alt me-3"></i>입점 신청 관리
+                <i class="fas fa-store me-3"></i>입점 신청 관리
             </h1>
         </div>
     </div>
