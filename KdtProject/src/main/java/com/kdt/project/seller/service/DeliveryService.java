@@ -61,6 +61,26 @@ public class DeliveryService {
         return deliveryList;
     }
     
+    // 새로 추가: 특정 회사의 배송 상태별 주문들만 조회
+    public List<SalesDto> getDeliveriesByStatusAndCompany(String deliveryStatus, String companyName) {
+        List<Orders> orders = ordersRepository.findAllByOrderByOrderDateDesc();
+        List<SalesDto> deliveryList = new ArrayList<>();
+        
+        for (Orders order : orders) {
+            SalesDto deliveryDto = createDeliveryDto(order);
+            if (deliveryDto != null && companyName.equals(deliveryDto.getCompanyName())) {
+                
+                if ("ALL".equals(deliveryStatus) || 
+                    (deliveryDto.getDeliveryState() != null && deliveryDto.getDeliveryState().equals(deliveryStatus)) ||
+                    ("미등록".equals(deliveryStatus) && "미등록".equals(deliveryDto.getDeliveryState()))) {
+                    deliveryList.add(deliveryDto);
+                }
+            }
+        }
+        
+        return deliveryList;
+    }
+    
     // 배송 상태 변경
     public boolean updateDeliveryStatus(Long orderNumber, String newStatus) {
         try {
@@ -93,7 +113,6 @@ public class DeliveryService {
                     newDelivery.setCompleteDate(new java.util.Date());
                 }
                 
-            
                 newDelivery.setDeliveryId(System.currentTimeMillis());
                 
                 deliveryRepository.save(newDelivery);
