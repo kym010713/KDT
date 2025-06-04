@@ -33,6 +33,8 @@ public class AdminEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 	
+	private String grade;
+	
 	
     public String getFormattedCreatedAt() {
         if (createdAt == null) return "";
