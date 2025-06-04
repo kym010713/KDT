@@ -1,13 +1,17 @@
 package com.kdt.project.buyer.service;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -222,6 +226,104 @@ public class BuyerServiceImpl implements BuyerService {
         // 🔽 리뷰 엔티티 삭제
         reviewRepository.deleteById(reviewId);
     }
+    @Override
+    public void updateReview(ReviewDTO reviewDto, MultipartFile reviewImage) {
+        ReviewEntity review = reviewRepository.findById(reviewDto.getReviewId())
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+        
+        // 기존 이미지 삭제 처리
+        String oldImageUrl = review.getReviewImageUrl();
+        
+        // 새 이미지가 업로드되었거나, 기존 이미지를 삭제하려는 경우
+        if (reviewImage != null && !reviewImage.isEmpty()) {
+            // 기존 이미지 삭제
+            deleteOldImage(oldImageUrl);
+            
+            // 새 이미지 저장
+            try {
+                String newImageUrl = saveReviewImage(reviewImage);
+                review.setReviewImageUrl(newImageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장 중 오류가 발생했습니다.", e);
+            }
+        } else if (reviewDto.getReviewImageUrl() == null || reviewDto.getReviewImageUrl().isEmpty()) {
+            // 이미지를 삭제하려는 경우 (프론트에서 삭제 요청)
+            deleteOldImage(oldImageUrl);
+            review.setReviewImageUrl(null);
+        }
+        // 그 외의 경우는 기존 이미지 유지
+        
+        // 리뷰 내용 수정
+        review.setReviewScore(reviewDto.getScore());
+        review.setReviewContent(reviewDto.getContent());
+        review.setReviewDate(new Date()); // 수정일 갱신
+        
+        reviewRepository.save(review);
+    }
+ // 기존 이미지 삭제 메서드 (경로 통일)
+    private void deleteOldImage(String oldImageUrl) {
+        if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+            try {
+                // 절대 경로 설정 (기존 삭제 로직과 동일)
+                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
+                
+                // imageUrl에서 파일명만 추출
+                String fileName = oldImageUrl;
+                if (oldImageUrl.contains("/")) {
+                    fileName = oldImageUrl.substring(oldImageUrl.lastIndexOf("/") + 1);
+                }
+                if (oldImageUrl.contains("\\")) {
+                    fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+                }
+                
+                // 완전한 파일 경로 생성
+                Path imagePath = Paths.get(uploadDir + fileName);
+                
+                if (Files.exists(imagePath)) {
+                    Files.delete(imagePath);
+                    System.out.println("기존 이미지 파일 삭제 완료: " + imagePath);
+                } else {
+                    // 다른 가능한 경로들도 확인
+                    String[] possiblePaths = {
+                        uploadDir + oldImageUrl,
+                        uploadDir + oldImageUrl.replace("/", "\\"),
+                        uploadDir + oldImageUrl.replace("\\", "/"),
+                    };
+                    
+                    for (String possiblePath : possiblePaths) {
+                        Path altPath = Paths.get(possiblePath);
+                        if (Files.exists(altPath)) {
+                            Files.delete(altPath);
+                            System.out.println("대체 경로에서 이미지 파일 삭제 완료: " + altPath);
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("기존 이미지 삭제 실패: " + e.getMessage());
+            }
+        }
+    }
 
+    // 이미지 저장 메서드 (기존 리뷰 작성과 동일한 경로 사용)
+    private String saveReviewImage(MultipartFile image) throws IOException {
+        // 기존 리뷰 작성과 동일한 절대 경로 사용
+        String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
+        
+        String originalFilename = image.getOriginalFilename();
+        String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String savedFileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString() + ext;
+        
+        // 디렉토리 생성
+        Path uploadPath = Paths.get(uploadDir);
+        Files.createDirectories(uploadPath);
+        
+        // 파일 저장
+        Path filePath = Paths.get(uploadDir + savedFileName);
+        Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        // 파일명만 반환 (기존 로직과 일치)
+        return savedFileName;
+    }
     
 }

@@ -1,12 +1,18 @@
 package com.kdt.project.buyer.controller;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -187,6 +193,27 @@ public class BuyerController {
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
-
+    
+    
+ // ✅ 리뷰 수정 - 컨트롤러
+    @PostMapping("/product/review/update")
+    public String updateReview(@ModelAttribute ReviewDTO reviewDto,
+                              @RequestParam(value = "reviewImage", required = false) MultipartFile reviewImage,
+                              @RequestParam("productId") String productId,
+                              HttpSession session) {
+        
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        try {
+            // 서비스 메서드 호출 (이미지 처리는 서비스에서 담당)
+            buyerService.updateReview(reviewDto, reviewImage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:/mypage/product/detail?id=" + productId;
+    }
 
 }

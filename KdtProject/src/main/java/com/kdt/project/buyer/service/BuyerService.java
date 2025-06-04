@@ -2,6 +2,8 @@ package com.kdt.project.buyer.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
@@ -31,6 +33,8 @@ public interface BuyerService {
     void addReview(ReviewDTO reviewDto);
     
     void deleteReview(Long reviewId);
+    
+    void updateReview(ReviewDTO reviewDto, MultipartFile reviewImage);
 
 
 }

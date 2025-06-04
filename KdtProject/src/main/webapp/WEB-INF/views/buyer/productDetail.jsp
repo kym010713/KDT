@@ -115,22 +115,28 @@
 															alt="리뷰 이미지" style="width: 200px;" />
 													</c:if> <%-- 삭제 버튼 (리뷰 작성자만 보임) --%> <c:if
 														test="${review.userId eq sessionScope.loginUser.id}">
-														
+
 														<form
 															action="${pageContext.request.contextPath}/mypage/product/review/delete"
 															method="post" onsubmit="return confirm('리뷰를 삭제하시겠습니까?');">
 															<input type="hidden" name="reviewId"
-																value="${review.reviewId}" />
-															<input type="hidden" name="productId" value="${product.productId}">
+																value="${review.reviewId}" /> <input type="hidden"
+																name="productId" value="${product.productId}">
 															<button type="submit"
 																class="mt-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
 																삭제</button>
 														</form>
+														<!-- 리뷰 수정 버튼 -->
+														<button
+															onclick="showEditForm('${review.reviewId}', '${review.score}', 
+													        '${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
+															class="mt-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
+															수정</button>
 													</c:if></td>
 												<td class="border px-4 py-2"><fmt:formatDate
 														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
 
-												
+
 
 											</tr>
 										</c:forEach>
@@ -141,6 +147,48 @@
 								<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
 							</c:otherwise>
 						</c:choose>
+					</div>
+					<!-- 리뷰 수정 폼 (처음에는 숨김) -->
+					<div id="editReviewForm" class="mt-8 hidden">
+						<h3 class="text-xl font-bold mb-4">리뷰 수정</h3>
+						<form
+							action="${pageContext.request.contextPath}/mypage/product/review/update"
+							method="post" enctype="multipart/form-data"
+							class="bg-white p-6 rounded shadow-md">
+
+							<input type="hidden" name="reviewId" id="editReviewId" /> <input
+								type="hidden" name="productId"
+								value="${firstOption.product.productId}" />
+
+							<div class="mb-4">
+								<label for="editScore" class="block font-semibold mb-2">평점</label>
+								<select name="score" id="editScore" required
+									class="border rounded px-3 py-2 w-full">
+									<option value="5">★★★★★</option>
+									<option value="4">★★★★☆</option>
+									<option value="3">★★★☆☆</option>
+									<option value="2">★★☆☆☆</option>
+									<option value="1">★☆☆☆☆</option>
+								</select>
+							</div>
+
+							<div class="mb-4">
+								<label for="editContent" class="block font-semibold mb-2">리뷰
+									내용</label>
+								<textarea name="content" id="editContent" rows="4" required
+									class="border rounded px-3 py-2 w-full"></textarea>
+							</div>
+
+							<div class="mb-4">
+								<label for="editImage" class="block font-semibold mb-2">이미지
+									변경 (선택)</label> <input type="file" name="reviewImage" id="editImage"
+									accept="image/*" class="border rounded px-3 py-2 w-full" />
+							</div>
+
+							<button type="submit"
+								class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+								리뷰 수정</button>
+						</form>
 					</div>
 
 
@@ -211,7 +259,16 @@
 	        const selectedSize = sizeSelect.value;
 	        stockDisplay.textContent = stockMap[selectedSize] || "0";
 	    });
+		
+	    function showEditForm(reviewId, score, content, imageUrl) {
+	        document.getElementById('editReviewId').value = reviewId;
+	        document.getElementById('editScore').value = score;
+	        document.getElementById('editContent').value = content;
 
+	        const form = document.getElementById('editReviewForm');
+	        form.classList.remove('hidden');
+	        form.scrollIntoView({ behavior: 'smooth' });
+	    }
 	</script>
 
 
