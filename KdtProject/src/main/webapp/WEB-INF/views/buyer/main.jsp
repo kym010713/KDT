@@ -32,6 +32,7 @@
             <p class="text-xs text-gray-500 mt-1">${product.productPrice}원</p>
           </div>
         </div>
+        
       </c:forEach>
     </div>
   </div>

@@ -119,15 +119,15 @@
 						</c:choose>
 					</div>
 
-					<c:set var="alreadyReviewed" value="false" />
+					<%-- <c:set var="alreadyReviewed" value="false" />
 					<c:forEach var="review" items="${reviews}">
-						<c:if test="${review.userId eq sessionScope.user.id}">
+						<c:if test="${review.userId eq sessionScope.loginUser.id}">
 							<c:set var="alreadyReviewed" value="true" />
 						</c:if>
-					</c:forEach>
+					</c:forEach> --%>
 
 					<!-- 리뷰 작성 폼 출력 조건문 -->
-					<c:if test="${not alreadyReviewed}">
+					<%-- <c:if test="${not alreadyReviewed}"> --%>
 						<div class="mt-8">
 							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
 							<form
@@ -165,7 +165,7 @@
 
 
 
-				</c:if>
+				<%-- </c:if> --%>
 
 
 			</tbody>

@@ -32,7 +32,7 @@ public class BuyerServiceImpl implements BuyerService {
     private final ProductRepository productRepository;
     private final ProductOptionRepository optionRepository;
     private final SizeRepository sizeRepository;
-    private final ReviewRepository ReviewRepository;
+    private final ReviewRepository reviewRepository;
     
     
     @Override
@@ -125,7 +125,7 @@ public class BuyerServiceImpl implements BuyerService {
  // 리뷰 목록 조회
     @Override
     public List<ReviewDTO> getReviewsByProductId(String productId) {
-        List<ReviewEntity> reviews = ReviewRepository.findByProduct_ProductId(productId);
+        List<ReviewEntity> reviews = reviewRepository.findByProduct_ProductId(productId);
 
         return reviews.stream().map(review -> {
             ReviewDTO dto = new ReviewDTO();
@@ -155,7 +155,7 @@ public class BuyerServiceImpl implements BuyerService {
         review.setProduct(product);
         review.setUser(user);
 
-        ReviewRepository.save(review);
+        reviewRepository.save(review);
     }
     
     
