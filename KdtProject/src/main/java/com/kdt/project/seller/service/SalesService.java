@@ -5,7 +5,7 @@ import com.kdt.project.seller.entity.Orders;
 import com.kdt.project.seller.entity.Product;
 import com.kdt.project.seller.entity.Delivery;
 import com.kdt.project.seller.repository.OrdersRepository;
-import com.kdt.project.seller.repository.ProductRepository;
+import com.kdt.project.seller.repository.ProductSellerRepository;
 import com.kdt.project.seller.repository.DeliveryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,45 @@ public class SalesService {
     private OrdersRepository ordersRepository;
     
     @Autowired
-    private ProductRepository productRepository;
+    private ProductSellerRepository productSellerRepository;
+    
+    private SalesDto createSalesDto(Orders order) {
+        try {
+            // Product 정보 조회
+            Optional<Product> productOpt = productSellerRepository.findById(order.getProductId());  // 이름 변경
+            if (productOpt.isEmpty()) {
+                return null;
+            }
+            Product product = productOpt.get();
+            
+            // Delivery 정보 조회
+            Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(order.getOrderNumber());
+            
+            SalesDto salesDto = new SalesDto();
+            salesDto.setOrderNumber(order.getOrderNumber());
+            salesDto.setUserId(order.getUserId());
+            salesDto.setProductName(product.getProductName());
+            salesDto.setCompanyName(product.getCompanyName());
+            salesDto.setProductPrice(String.valueOf(product.getProductPrice())); // Long을 String으로 변환
+            salesDto.setOrderDate(order.getOrderDate());
+            salesDto.setOrderAddress(order.getOrderAddress());
+            
+            if (deliveryOpt.isPresent()) {
+                Delivery delivery = deliveryOpt.get();
+                salesDto.setDeliveryState(delivery.getDeliveryState());
+                salesDto.setRequestDate(delivery.getRequestDate());
+                salesDto.setCompleteDate(delivery.getCompleteDate());
+            } else {
+                salesDto.setDeliveryState("미등록");
+            }
+            
+            return salesDto;
+            
+        } catch (Exception e) {
+            System.out.println("Error creating SalesDto for order: " + order.getOrderNumber() + " - " + e.getMessage());
+            return null;
+        }
+    }
     
     @Autowired
     private DeliveryRepository deliveryRepository;
@@ -92,41 +130,5 @@ public class SalesService {
         }
     }
     
-    private SalesDto createSalesDto(Orders order) {
-        try {
-            // Product 정보 조회
-            Optional<Product> productOpt = productRepository.findById(order.getProductId());
-            if (productOpt.isEmpty()) {
-                return null;
-            }
-            Product product = productOpt.get();
-            
-            // Delivery 정보 조회
-            Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(order.getOrderNumber());
-            
-            SalesDto salesDto = new SalesDto();
-            salesDto.setOrderNumber(order.getOrderNumber());
-            salesDto.setUserId(order.getUserId());
-            salesDto.setProductName(product.getProductName());
-            salesDto.setCompanyName(product.getCompanyName());
-            salesDto.setProductPrice(String.valueOf(product.getProductPrice())); // Long을 String으로 변환
-            salesDto.setOrderDate(order.getOrderDate());
-            salesDto.setOrderAddress(order.getOrderAddress());
-            
-            if (deliveryOpt.isPresent()) {
-                Delivery delivery = deliveryOpt.get();
-                salesDto.setDeliveryState(delivery.getDeliveryState());
-                salesDto.setRequestDate(delivery.getRequestDate());
-                salesDto.setCompleteDate(delivery.getCompleteDate());
-            } else {
-                salesDto.setDeliveryState("미등록");
-            }
-            
-            return salesDto;
-            
-        } catch (Exception e) {
-            System.out.println("Error creating SalesDto for order: " + order.getOrderNumber() + " - " + e.getMessage());
-            return null;
-        }
-    }
+   
 }

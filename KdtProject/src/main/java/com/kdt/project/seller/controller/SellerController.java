@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -60,28 +61,7 @@ public class SellerController {
         return "seller/list";
     }
     
- // 상품 상세 조회 메서드 수정
-    @GetMapping("/product/detail/{productId}")
-    @ResponseBody
-    public Map<String, Object> getProductDetail(@PathVariable("productId") String productId) {
-        Map<String, Object> response = new HashMap<>();
-        
-        Product product = productService.getProductById(productId);
-        if (product == null) {
-            response.put("success", false);
-            response.put("message", "상품을 찾을 수 없습니다.");
-            return response;
-        }
-        
-        List<ProductOptions> options = productService.getProductOptions(productId);
-        
-        response.put("success", true);
-        response.put("product", product);
-        response.put("options", options);
-        response.put("productPrice", product.getProductPrice());
-        response.put("productDetail", product.getProductDetail());
-        return response;
-    }
+
     
  // 상품 수정 폼 데이터 조회 (AJAX) - 수정된 부분
     @GetMapping("/product/edit/{productId}")
@@ -142,6 +122,40 @@ public class SellerController {
         }
     }
 
+ // 상품 상세 조회 (AJAX) - Product 정보 + 옵션 정보 포함
+    @GetMapping("/product/detail/{productId}")
+    @ResponseBody
+    public Map<String, Object> getProductDetail(@PathVariable("productId") String productId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        Product product = productService.getProductById(productId);
+        if (product == null) {
+            response.put("success", false);
+            response.put("message", "상품을 찾을 수 없습니다.");
+            return response;
+        }
+        
+        List<ProductOptions> options = productService.getProductOptions(productId);
+        
+        // 사이즈 정보와 함께 옵션 데이터 구성
+        List<Map<String, Object>> optionDetails = new ArrayList<>();
+        for (ProductOptions option : options) {
+            Sizes size = sizesRepository.findById(option.getSizeId()).orElse(null);
+            if (size != null) {
+                Map<String, Object> optionDetail = new HashMap<>();
+                optionDetail.put("sizeId", option.getSizeId());
+                optionDetail.put("sizeName", size.getSizeName());
+                optionDetail.put("stock", option.getProductStock());
+                optionDetails.add(optionDetail);
+            }
+        }
+        
+        response.put("success", true);
+        response.put("product", product);
+        response.put("options", options);
+        response.put("optionDetails", optionDetails);  // 사이즈명 포함된 상세 정보
+        return response;
+    }
     
     // 상품 삭제 처리 (AJAX)
     @DeleteMapping("/product/delete/{productId}")
@@ -230,8 +244,7 @@ public class SellerController {
         return response;
     }
     
-    // 상품 등록 처리
-    @PostMapping("/product/register")
+    @PostMapping("/register")  // "/product/register"에서 "/register"로 변경
     public String registerProduct(@Valid @ModelAttribute("productDto") ProductRegistrationDto productDto,
                                 BindingResult bindingResult,
                                 Model model,
@@ -239,17 +252,19 @@ public class SellerController {
         
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
             return "seller/register";
         }
         
         try {
             productService.registerProduct(productDto);
             redirectAttributes.addFlashAttribute("successMessage", "상품이 성공적으로 등록되었습니다.");
-            return "redirect:/seller/product/register";
+            return "redirect:/seller/register";  // "/seller/product/register"에서 "/seller/register"로 변경
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("categories", productService.getAllCategories());
-            return "seller/product-register";
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";  // "seller/product-register"에서 "seller/register"로 변경
         }
     }
 }

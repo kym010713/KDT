@@ -5,7 +5,7 @@ import com.kdt.project.seller.entity.Orders;
 import com.kdt.project.seller.entity.Product;
 import com.kdt.project.seller.entity.Delivery;
 import com.kdt.project.seller.repository.OrdersRepository;
-import com.kdt.project.seller.repository.ProductRepository;
+import com.kdt.project.seller.repository.ProductSellerRepository;
 import com.kdt.project.seller.repository.DeliveryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class DeliveryService {
     private OrdersRepository ordersRepository;
     
     @Autowired
-    private ProductRepository productRepository;
+    private ProductSellerRepository productSellerRepository;
     
     @Autowired
     private DeliveryRepository deliveryRepository;
@@ -103,7 +103,7 @@ public class DeliveryService {
     private SalesDto createDeliveryDto(Orders order) {
         try {
             // Product 정보 조회
-            Optional<Product> productOpt = productRepository.findById(order.getProductId());
+            Optional<Product> productOpt = productSellerRepository.findById(order.getProductId());
             if (productOpt.isEmpty()) {
                 return null;
             }

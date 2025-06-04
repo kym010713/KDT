@@ -29,9 +29,17 @@ public class ProductRegistrationDto {
     @NotBlank(message = "상품 가격을 입력해주세요")
     private String productPrice;
     
+    // JSP 호환성을 위해 기존 필드들 유지
+    @NotBlank(message = "상품 사이즈를 입력해주세요")
+    private String productSize;
+    
+    @NotNull(message = "상품 수량을 입력해주세요")
+    @Min(value = 1, message = "상품 수량은 1개 이상이어야 합니다")
+    private Integer productCount;
+    
     private String productPhoto;
     
-    // 사이즈별 재고 관리를 위한 리스트
+    // 사이즈별 재고 관리를 위한 리스트 (새로운 기능)
     private List<ProductOptionDto> productOptions;
     
     @Data

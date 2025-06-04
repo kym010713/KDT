@@ -14,6 +14,7 @@
 </head>
 <body>
     <h2>상품 등록</h2>
+    <a href="/seller/list">상품 목록으로 돌아가기</a><br><br>
     
     <!-- 성공 메시지 -->
     <c:if test="${not empty successMessage}">
