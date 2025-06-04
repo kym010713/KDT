@@ -80,6 +80,7 @@ public class BuyerServiceImpl implements BuyerService {
             dto.setProductPhoto(cart.getProduct().getProductPhoto());
             dto.setCartCount(cart.getCartCount());
             dto.setProductSize(cart.getProductSize());
+           
             return dto;
         }).toList();
     }
@@ -107,7 +108,7 @@ public class BuyerServiceImpl implements BuyerService {
             cart.setProductSize(productSize);
             cart.setCartCount(count);
             cart.setCartDate(new Date());
-
+            
             cartRepository.save(cart);
         }
     }
@@ -135,6 +136,7 @@ public class BuyerServiceImpl implements BuyerService {
             dto.setContent(review.getReviewContent());
             dto.setScore(review.getReviewScore());
             dto.setReviewDate(review.getReviewDate());
+            dto.setReviewImageUrl(review.getReviewImageUrl());
             return dto;
         }).collect(Collectors.toList());
     }
@@ -146,7 +148,8 @@ public class BuyerServiceImpl implements BuyerService {
         review.setReviewContent(reviewDto.getContent());
         review.setReviewScore(reviewDto.getScore());
         review.setReviewDate(new Date());
-
+        review.setReviewImageUrl(reviewDto.getReviewImageUrl());
+        
         ProductEntity product = productRepository.findById(reviewDto.getProductId())
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
         UserEntity user = userRepository.findById(reviewDto.getUserId())

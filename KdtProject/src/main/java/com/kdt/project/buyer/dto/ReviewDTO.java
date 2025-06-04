@@ -16,4 +16,5 @@ public class ReviewDTO {
     private int score;
     private String content;
     private Date reviewDate;
+    private String reviewImageUrl;
 }

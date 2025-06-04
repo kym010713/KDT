@@ -1,6 +1,8 @@
 package com.kdt.project.buyer.controller;
 
+import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -120,10 +123,12 @@ public class BuyerController {
         return "redirect:/mypage/cart";
     }
     
+    //리뷰 작성
     @PostMapping("/product/review")
     public String addReview(@RequestParam("productId") String productId,
                             @RequestParam("score") int score,
                             @RequestParam("content") String content,
+                            @RequestParam(value = "reviewImage", required = false) MultipartFile reviewImage,
                             HttpSession session,
                             Model model) {
         UserEntity user = (UserEntity) session.getAttribute("loginUser");
@@ -131,20 +136,40 @@ public class BuyerController {
             return "redirect:/login";
         }
 
+        // 1. 파일 저장
+        String reviewImageUrl = null;
+        if (reviewImage != null && !reviewImage.isEmpty()) {
+            try {
+                String originalFilename = reviewImage.getOriginalFilename();
+                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review"; // ex: "C:/upload/review/"
+                String savedPath = uploadDir + originalFilename;
+
+                reviewImage.transferTo(new java.io.File(savedPath));
+
+                reviewImageUrl = originalFilename; // 또는 경로 포함 저장
+            } catch (Exception e) {
+                e.printStackTrace();
+                model.addAttribute("error", "이미지 업로드 실패");
+                return "redirect:/mypage/product/detail?id=" + productId;
+            }
+        }
+
+
+        
+        // 2. DTO 세팅
         ReviewDTO review = new ReviewDTO();
         review.setProductId(productId);
         review.setUserId(user.getId());
         review.setScore(score);
         review.setContent(content);
+        review.setReviewImageUrl(reviewImageUrl);
 
         buyerService.addReview(review);
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
+    
 
-    
-    
-    
     
     
 }

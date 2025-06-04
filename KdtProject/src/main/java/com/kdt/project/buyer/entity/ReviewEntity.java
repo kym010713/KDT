@@ -58,4 +58,7 @@ public class ReviewEntity {
     @Column(name = "REVIEW_DATE")
     @Temporal(TemporalType.TIMESTAMP)
     private Date reviewDate;
+    
+    @Column(name = "REVIEW_IMAGE_URL") 
+    private String reviewImageUrl;
 }

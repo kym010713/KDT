@@ -27,7 +27,7 @@
 					<c:set var="firstOption" value="${options[0]}" />
 
 					<form action="${pageContext.request.contextPath}/mypage/cart/add"
-						method="post" class="text-center">
+						method="post" enctype="multipart/form-data" class="text-center">
 						<table
 							class="min-w-full table-auto bg-white border border-gray-300 mb-6">
 							<thead class="bg-gray-200">
@@ -92,7 +92,9 @@
 											<th class="px-4 py-2 border">작성자</th>
 											<th class="px-4 py-2 border">평점</th>
 											<th class="px-4 py-2 border">내용</th>
+											<th class="px-4 py-2 border">이미지</th>
 											<th class="px-4 py-2 border">작성일</th>
+
 										</tr>
 									</thead>
 									<tbody>
@@ -106,6 +108,9 @@
 												        ☆
 												    </c:forEach></td>
 												<td class="border px-4 py-2">${review.content}</td>
+												<td class="border px-4 py-2"><img
+													src="${pageContext.request.contextPath}/resources/upload/review/${review.reviewImageUrl}"
+													alt="리뷰 이미지" style="width: 200px;" /></td>
 												<td class="border px-4 py-2"><fmt:formatDate
 														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
 											</tr>
@@ -119,20 +124,22 @@
 						</c:choose>
 					</div>
 
-					<%-- <c:set var="alreadyReviewed" value="false" />
+
+
+					<c:set var="alreadyReviewed" value="false" />
 					<c:forEach var="review" items="${reviews}">
 						<c:if test="${review.userId eq sessionScope.loginUser.id}">
 							<c:set var="alreadyReviewed" value="true" />
 						</c:if>
-					</c:forEach> --%>
-
+					</c:forEach>
 					<!-- 리뷰 작성 폼 출력 조건문 -->
-					<%-- <c:if test="${not alreadyReviewed}"> --%>
+					<c:if test="${not alreadyReviewed}">
 						<div class="mt-8">
 							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
 							<form
 								action="${pageContext.request.contextPath}/mypage/product/review"
-								method="post" class="bg-white p-6 rounded shadow-md">
+								method="post" enctype="multipart/form-data"
+								class="bg-white p-6 rounded shadow-md">
 								<input type="hidden" name="productId"
 									value="${firstOption.product.productId}" />
 
@@ -155,19 +162,18 @@
 									<textarea name="content" id="content" rows="4" required
 										class="border rounded px-3 py-2 w-full"></textarea>
 								</div>
-
+								<div class="mb-4">
+									<label for="reviewImage" class="block font-semibold mb-2">리뷰
+										이미지</label> <input type="file" name="reviewImage" id="reviewImage"
+										accept="image/*" class="border rounded px-3 py-2 w-full" />
+								</div>
 								<button type="submit"
 									class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
 									리뷰 등록</button>
 							</form>
 						</div>
 					</c:if>
-
-
-
-				<%-- </c:if> --%>
-
-
+				</c:if>
 			</tbody>
 		</table>
 
