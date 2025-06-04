@@ -15,5 +15,5 @@ public class AdminDTO {
 	private String role;
 	private String address;
 	private LocalDateTime createdAt;
-
+	private String grade;
 }
