@@ -94,7 +94,6 @@ public class ProductService {
         
         productSellerRepository.save(product);
         
-     
         if (dto.getProductOptions() != null && !dto.getProductOptions().isEmpty()) {
             // 사이즈별 재고
             for (ProductRegistrationDto.ProductOptionDto optionDto : dto.getProductOptions()) {
@@ -107,7 +106,6 @@ public class ProductService {
                 }
             }
         } else if (dto.getProductSize() != null && dto.getProductCount() != null) {
-      
             Sizes size = sizesRepository.findBySizeName(dto.getProductSize())
                                        .orElseThrow(() -> new RuntimeException(
                                            "존재하지 않는 사이즈입니다: " + dto.getProductSize()
@@ -129,6 +127,16 @@ public class ProductService {
         return productSellerRepository.findByCategory(category);
     }
     
+    // 새로 추가: 회사별 상품 조회
+    public List<Product> getProductsByCompany(String companyName) {
+        return productSellerRepository.findByCompanyName(companyName);
+    }
+    
+    // 새로 추가: 카테고리와 회사별 상품 조회
+    public List<Product> getProductsByCategoryAndCompany(String category, String companyName) {
+        return productSellerRepository.findByCategoryAndCompanyName(category, companyName);
+    }
+    
     public Product getProductById(String productId) {
         return productSellerRepository.findById(productId).orElse(null);
     }
@@ -141,7 +149,6 @@ public class ProductService {
     
     @Transactional
     public void updateProduct(String productId, ProductRegistrationDto dto) {
-     
         Product product = productSellerRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
         
@@ -180,7 +187,6 @@ public class ProductService {
                 }
             }
         } else if (dto.getProductSize() != null && dto.getProductCount() != null) {
-          
             Sizes size = sizesRepository.findBySizeName(dto.getProductSize())
                                        .orElseThrow(() -> new RuntimeException(
                                            "존재하지 않는 사이즈입니다: " + dto.getProductSize()
