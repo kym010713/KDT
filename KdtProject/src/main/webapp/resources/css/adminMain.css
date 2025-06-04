@@ -1,0 +1,77 @@
+* {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+:root {
+    --main-color: #1f2937;
+}
+body {
+    background-color: #f8f9fa;
+}
+.admin-card {
+    transition: all 0.3s ease;
+    border: none;
+    height: 100%;
+}
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+}
+.text-main {
+    color: var(--main-color) !important;
+}
+.btn-main {
+    background-color: var(--main-color);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    letter-spacing: -0.3px;
+    min-width: 180px;
+}
+.btn-main i.fa-arrow-right {
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.btn-main:hover {
+    background-color: #374151;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+.btn-main:hover i.fa-arrow-right {
+    transform: translateX(4px);
+}
+.btn-main:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+.card i { /* 기존 .card i 스타일 유지 */
+    color: var(--main-color);
+}
+.card-icon { /* 카드 아이콘 전용 클래스 추가 */
+    font-size: 2.5rem;
+    margin-bottom: 1rem; /* 기존 mb-3 클래스와 유사하게 마진 추가 */
+    color: var(--main-color); /* 아이콘 색상도 여기서 관리 */
+}
+.card-title {
+    font-weight: 600;
+    margin-top: 1rem;
+}
+.card-text {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+} 
