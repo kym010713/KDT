@@ -12,7 +12,7 @@
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/adminMain.css">
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin/adminMain.css" />
 </head>
 <body class="bg-light">
     <div class="container py-5">

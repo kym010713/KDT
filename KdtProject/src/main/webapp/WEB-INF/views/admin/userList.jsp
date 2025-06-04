@@ -14,19 +14,9 @@
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <!-- Custom CSS (adminMain.css) -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/adminMain.css">
-    <style>
-        /* userList.jsp specific styles if any, or can be moved to adminMain.css */
-        .table th, .table td {
-            vertical-align: middle;
-        }
-        .form-select-sm {
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
-            padding-left: 0.5rem;
-            font-size: .875rem;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin/adminMain.css" />
+    <!-- Custom CSS (userList.css) -->
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin/userList.css" />
 </head>
 <body class="bg-light">
 
@@ -38,10 +28,15 @@
 </c:if>
 
 <div class="container py-5">
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center position-relative">
+        <div class="col-auto" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 1;">
+            <a href="${pageContext.request.contextPath}/admin/main" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>메인으로
+            </a>
+        </div>
         <div class="col text-center">
-            <h1 class="display-5 text-main fw-semibold">
-                <i class="fas fa-users-cog me-3"></i>회원 관리
+            <h1 class="display-5 text-main fw-semibold mb-0">
+                <i class="fas fa-users me-3"></i>회원 관리
             </h1>
         </div>
     </div>
@@ -50,7 +45,7 @@
     <div class="row mb-4">
         <div class="col-md-6 offset-md-3">
             <form action="${pageContext.request.contextPath}/admin/userList" method="get" class="d-flex">
-                <input type="text" name="keyword" class="form-control me-2" placeholder="이름 또는 아이디로 검색" value="${param.keyword}" />
+                <input type="text" name="keyword" class="form-control me-2" placeholder="이름 검색" value="${param.keyword}" />
                 <button type="submit" class="btn btn-main"><i class="fas fa-search"></i> 검색</button>
             </form>
         </div>
