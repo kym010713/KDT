@@ -4,7 +4,7 @@
 <html>
 <head><title>FAQ 목록</title></head>
 <body>
-<<h2>FAQ 목록</h2>
+<h2>FAQ 목록</h2>
 
 <table border="1">
     <tr>

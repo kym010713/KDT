@@ -32,7 +32,7 @@ public class FaqAdminController {
 
     // 수정
     @PostMapping("/edit/{id}")
-    public String edit(@PathVariable Long id, @ModelAttribute FaqEntry faq) {
+    public String edit(@PathVariable("id")Long id, @ModelAttribute FaqEntry faq) {
         FaqEntry existing = faqRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("FAQ not found"));
         existing.setKeyword(faq.getKeyword());
@@ -43,7 +43,7 @@ public class FaqAdminController {
 
     // 삭제
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable("id") Long id) {
         faqRepository.deleteById(id);
         return "redirect:/admin/faq/list";
     }
