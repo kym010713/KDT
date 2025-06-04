@@ -3,48 +3,56 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
-    <title>FAQ 목록</title>
-     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/chatbotList.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FAQ 관리</title>
+   <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/chatbot/chatbotList.css" />
 </head>
 <body>
+    <div class="container">
+        <h2>FAQ 목록</h2>
 
-<h2>FAQ 목록</h2>
+        <table>
+            <tr>
+                <th>키워드</th>
+                <th>답변</th>
+                <th>관리</th>
+            </tr>
 
-<table>
-    <tr>
-        <th>키워드</th>
-        <th>답변</th>
-        <th>수정</th>
-        <th>삭제</th>
-    </tr>
+            <c:forEach var="faq" items="${faqList}">
+                <tr>
+                    <form action="${pageContext.request.contextPath}/admin/faq/edit/${faq.id}" method="post">
+                        <td hidden>${faq.id}</td>
+                        <td><input type="text" name="keyword" value="${faq.keyword}" required/></td>
+                        <td><input type="text" name="answer" value="${faq.answer}" required/></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="submit">수정</button>
+                                <button type="button" class="delete-button" onclick="if(confirm('삭제할까요?')) document.getElementById('delete-form-${faq.id}').submit();">삭제</button>
+                            </div>
+                            <form id="delete-form-${faq.id}" action="${pageContext.request.contextPath}/admin/faq/delete/${faq.id}" method="post" style="display: none;"></form>
+                        </td>
+                    </form>
+                </tr>
+            </c:forEach>
+        </table>
 
-    <c:forEach var="faq" items="${faqList}">
-        <tr>
-            <form action="${pageContext.request.contextPath}/admin/faq/edit/${faq.id}" method="post">
-                <td hidden>${faq.id}</td>
-                <td><input type="text" name="keyword" value="${faq.keyword}" required/></td>
-                <td><input type="text" name="answer" value="${faq.answer}" required/></td>
-                <td><button type="submit">수정</button></td>
-            </form>
-            <td>
-                <form action="${pageContext.request.contextPath}/admin/faq/delete/${faq.id}" method="post" onsubmit="return confirm('삭제할까요?');">
-                    <button type="submit">삭제</button>
-                </form>
-            </td>
-        </tr>
-    </c:forEach>
-</table>
+        <hr/>
 
-<hr/>
-
-<h2>FAQ 추가</h2>
-<form action="${pageContext.request.contextPath}/admin/faq/add" method="post">
-    키워드: 
-    <input type="text" name="keyword" required /><br>
-    답변: <br>
-    <input type="text" name="answer" required />
-    <button type="submit">등록</button>
-</form>
-
+        <h2>FAQ 추가</h2>
+        <form action="${pageContext.request.contextPath}/admin/faq/add" method="post" class="add-form">
+            <div class="form-group">
+                <label for="keyword">키워드</label>
+                <input type="text" id="keyword" name="keyword" required />
+            </div>
+            
+            <div class="form-group">
+                <label for="answer">답변</label>
+                <input type="text" id="answer" name="answer" required />
+            </div>
+            
+            <button type="submit">등록</button>
+        </form>
+    </div>
 </body>
 </html>
