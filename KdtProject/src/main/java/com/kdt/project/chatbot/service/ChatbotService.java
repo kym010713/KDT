@@ -13,12 +13,19 @@ public class ChatbotService {
 	
 	@Autowired
 	FaqRepository faqRepository;
+	
+	public boolean containsIgnoreWhitespace(String source, String target) {
+	    if (source == null || target == null) return false;
+	    String sourceNoSpace = source.replaceAll("\\s+", "");
+	    String targetNoSpace = target.replaceAll("\\s+", "");
+	    return sourceNoSpace.contains(targetNoSpace);
+	}
 
     public String getAnswer(String userInput) {
         List<FaqEntry> faqList = faqRepository.findAll();
-
+        int no = 1;
         for (FaqEntry entry : faqList) {
-            if (userInput.contains(entry.getKeyword())) {
+        	if (containsIgnoreWhitespace(userInput, entry.getKeyword())) {
                 return entry.getAnswer();
             }
         }
