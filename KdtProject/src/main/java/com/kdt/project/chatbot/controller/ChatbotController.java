@@ -19,7 +19,7 @@ public class ChatbotController {
     // 챗봇 메인 페이지 (JSP로 질문 입력폼)
     @GetMapping("/faq")
     public String index() {
-        return "chatbot/index";
+        return "chatbot/chatbot";
     }
 
     // 질문 받는 POST 요청
@@ -28,6 +28,6 @@ public class ChatbotController {
         String answer = chatbotService.getAnswer(question);
         model.addAttribute("question", question);
         model.addAttribute("answer", answer);
-        return "chatbot/index";
+        return "chatbot/chatbot";
     }
 }
