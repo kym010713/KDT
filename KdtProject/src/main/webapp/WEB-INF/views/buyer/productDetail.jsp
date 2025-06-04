@@ -108,15 +108,30 @@
 												        ☆
 												    </c:forEach></td>
 												<td class="border px-4 py-2">${review.content}</td>
-												<td class="border px-4 py-2">
-												<c:if test="${not empty review.reviewImageUrl}">
-												<img
-													src="${pageContext.request.contextPath}/resources/upload/review/${review.reviewImageUrl}"
-													alt="리뷰 이미지" style="width: 200px;" />
-												</c:if>	
-													</td>
+												<td class="border px-4 py-2"><c:if
+														test="${not empty review.reviewImageUrl}">
+														<img
+															src="${pageContext.request.contextPath}/resources/upload/review/${review.reviewImageUrl}"
+															alt="리뷰 이미지" style="width: 200px;" />
+													</c:if> <%-- 삭제 버튼 (리뷰 작성자만 보임) --%> <c:if
+														test="${review.userId eq sessionScope.loginUser.id}">
+														
+														<form
+															action="${pageContext.request.contextPath}/mypage/product/review/delete"
+															method="post" onsubmit="return confirm('리뷰를 삭제하시겠습니까?');">
+															<input type="hidden" name="reviewId"
+																value="${review.reviewId}" />
+															<input type="hidden" name="productId" value="${product.productId}">
+															<button type="submit"
+																class="mt-2 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
+																삭제</button>
+														</form>
+													</c:if></td>
 												<td class="border px-4 py-2"><fmt:formatDate
 														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+
+												
+
 											</tr>
 										</c:forEach>
 									</tbody>

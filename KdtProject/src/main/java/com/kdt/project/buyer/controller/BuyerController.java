@@ -167,5 +167,26 @@ public class BuyerController {
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
+    //리뷰 삭제
+    @PostMapping("/product/review/delete")
+    public String deleteReview(@RequestParam("reviewId") Long reviewId,
+                               @RequestParam("productId") String productId,
+                               HttpSession session) {
+
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.deleteReview(reviewId);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            // 삭제 실패 시에도 상품 상세 페이지로 이동
+        }
+
+        return "redirect:/mypage/product/detail?id=" + productId;
+    }
+
 
 }

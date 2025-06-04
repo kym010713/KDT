@@ -1,5 +1,8 @@
 package com.kdt.project.buyer.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -160,6 +163,65 @@ public class BuyerServiceImpl implements BuyerService {
 
         reviewRepository.save(review);
     }
-    
+ // 리뷰 삭제
+    @Override
+    public void deleteReview(Long reviewId) {
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+
+        // 🔽 리뷰 이미지 삭제 처리
+        String imageUrl = review.getReviewImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            try {
+                // 절대 경로 설정
+                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
+                
+                // imageUrl에서 파일명만 추출 (경로가 포함되어 있을 경우를 대비)
+                String fileName = imageUrl;
+                if (imageUrl.contains("/")) {
+                    fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+                }
+                if (imageUrl.contains("\\")) {
+                    fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+                }
+                
+                // 완전한 파일 경로 생성
+                Path imagePath = Paths.get(uploadDir + fileName);
+                
+                System.out.println("삭제할 파일 경로: " + imagePath.toString());
+                System.out.println("파일 존재 여부: " + Files.exists(imagePath));
+                
+                if (Files.exists(imagePath)) {
+                    Files.delete(imagePath);
+                    System.out.println("이미지 파일 삭제 완료: " + imagePath);
+                } else {
+                    System.out.println("삭제할 파일이 존재하지 않습니다: " + imagePath);
+                    
+                    // 다른 가능한 경로들도 확인해보기
+                    String[] possiblePaths = {
+                        uploadDir + imageUrl,  // 원본 imageUrl 그대로
+                        uploadDir + imageUrl.replace("/", "\\"),  // 슬래시를 백슬래시로
+                        uploadDir + imageUrl.replace("\\", "/"),  // 백슬래시를 슬래시로
+                    };
+                    
+                    for (String possiblePath : possiblePaths) {
+                        Path altPath = Paths.get(possiblePath);
+                        if (Files.exists(altPath)) {
+                            Files.delete(altPath);
+                            System.out.println("대체 경로에서 이미지 파일 삭제 완료: " + altPath);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("이미지 파일 삭제 실패: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // 🔽 리뷰 엔티티 삭제
+        reviewRepository.deleteById(reviewId);
+    }
+
     
 }

@@ -29,5 +29,8 @@ public interface BuyerService {
     List<ReviewDTO> getReviewsByProductId(String productId);
 
     void addReview(ReviewDTO reviewDto);
+    
+    void deleteReview(Long reviewId);
+
 
 }
