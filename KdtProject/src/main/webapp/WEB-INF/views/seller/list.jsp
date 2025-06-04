@@ -1,12 +1,48 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>상품 목록 - 판매자</title>
     <style>
+        .header-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .company-badge {
+            background-color: #007bff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navigation {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .nav-link {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #495057;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            color: #007bff;
+        }
         .error { color: red; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 15% auto; padding: 20px; width: 50%; }
@@ -22,32 +58,72 @@
         }
         .size-loading { color: #666; font-style: italic; }
         .size-error { color: red; font-size: 11px; }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
+    
+
+    <!-- 사용자 정보 헤더 -->
+    <div class="header-info">
+        <div class="user-info">
+            <div>
+                <strong>판매자:</strong> ${sessionScope.loginUser.name} (${sessionScope.loginUser.id})
+                <span class="company-badge">${currentCompany}</span>
+            </div>
+            <div>
+                <a href="/logout" style="color: #dc3545; text-decoration: none;">로그아웃</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="navigation">
+        <a href="/seller/list" class="nav-link"> 상품 목록</a>
+        <a href="/seller/register" class="nav-link"> 새 상품 등록</a>
+        <a href="/seller/sales" class="nav-link"> 판매 내역</a>
+        <a href="/seller/delivery" class="nav-link"> 배송 관리</a>
+    </div>
+
     <h2>상품 목록</h2>
-    <a href="/seller/register">새 상품 등록</a><br><br>
-    <a href="/seller/delivery">배송 관리</a> |
-    <a href="/seller/sales">판매 내역</a>
-    <br><br>
+    <p><strong>현재 표시 중:</strong> <span class="company-badge">${currentCompany}</span> 회사의 상품만 표시됩니다.</p>
     
-    카테고리:
-    <form method="get" action="/seller/list">
-        <select name="category" onchange="this.form.submit()">
-            <option value="">전체</option>
-            <c:forEach items="${categories}" var="category">
-                <option value="${category.topName}" 
-                        <c:if test="${selectedCategory eq category.topName}">selected</c:if>>
-                    ${category.topName}
-                </option>
-            </c:forEach>
-        </select>
-        <c:if test="${not empty selectedCategory}">
-            <a href="/seller/list">초기화</a>
-        </c:if>
-    </form>
-    <br>
+    <!-- 카테고리 필터 -->
+    <div style="margin-bottom: 20px;">
+        <strong>카테고리 필터:</strong>
+        <form method="get" action="/seller/list" style="display: inline;">
+            <select name="category" onchange="this.form.submit()">
+                <option value="">전체 카테고리</option>
+                <c:forEach items="${categories}" var="category">
+                    <option value="${category.topName}" 
+                            <c:if test="${selectedCategory eq category.topName}">selected</c:if>>
+                        ${category.topName}
+                    </option>
+                </c:forEach>
+            </select>
+            <c:if test="${not empty selectedCategory}">
+                <a href="/seller/list">초기화</a>
+            </c:if>
+        </form>
+    </div>
     
+    <!-- 상품 목록 테이블 -->
     <c:choose>
         <c:when test="${empty products}">
             <p>등록된 상품이 없습니다.</p>
@@ -82,6 +158,8 @@
                 </c:forEach>
             </table>
             
+            <p><strong>총 상품 수:</strong> ${products.size()}개</p>
+            
             <!-- 페이지 로드 후 사이즈 정보 로드 -->
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -92,7 +170,8 @@
             </script>
         </c:otherwise>
     </c:choose>
-    
+
+    <!-- 모달들 -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('detailModal')">&times;</span>
@@ -101,62 +180,18 @@
         </div>
     </div>
     
-    <!-- 수정 모달 -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('editModal')">&times;</span>
             <h3>상품 수정</h3>
             <div id="alertContainer"></div>
-            <form id="editForm">
-                <div class="form-group">
-                    <label for="editCategory">카테고리:</label>
-                    <select id="editCategory" name="category">
-                        <option value="">카테고리를 선택하세요</option>
-                        <c:forEach items="${categories}" var="category">
-                            <option value="${category.topName}">${category.topName}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editProductName">상품명:</label>
-                    <input type="text" id="editProductName" name="productName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editCompanyName">제조사:</label>
-                    <input type="text" id="editCompanyName" name="companyName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editProductDetail">상품 설명:</label>
-                    <textarea id="editProductDetail" name="productDetail" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="editProductPrice">가격:</label>
-                    <input type="text" id="editProductPrice" name="productPrice" required>
-                </div>
-                
-                <!-- 사이즈별 재고 입력 영역 -->
-                <div class="form-group">
-                    <label>사이즈별 재고:</label>
-                    <div id="sizeStockContainer">
-                        <!-- JavaScript로 동적 생성 -->
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="editProductPhoto">사진 URL:</label>
-                    <input type="text" id="editProductPhoto" name="productPhoto">
-                </div>
-                <div class="form-group">
-                    <button type="button" onclick="updateProduct()">수정 완료</button>
-                    <button type="button" onclick="closeModal('editModal')">취소</button>
-                </div>
-            </form>
+            <div id="editContent">수정 폼이 여기에 로드됩니다...</div>
         </div>
     </div>
-    
+
+    <!-- JavaScript 함수들 -->
     <script>
-        let currentEditProductId = null;
-        
+        // 사이즈 정보 로드
         function loadSizeInfo(productId) {
             fetch('/seller/product/detail/' + productId)
                 .then(response => response.json())
@@ -179,6 +214,7 @@
                 });
         }
         
+        // 상품 상세보기
         function showProductDetail(productId) {
             fetch('/seller/product/detail/' + encodeURIComponent(productId))
                 .then(response => response.json())
@@ -215,118 +251,13 @@
                 .catch(error => alert('오류가 발생했습니다: ' + error.message));
         }
         
+        // 상품 수정
         function editProduct(productId) {
-            currentEditProductId = productId;
-            clearAlert();
-            
-            fetch('/seller/product/edit/' + productId)
-                .then(response => response.json())
-                .then(responseData => {
-                    if (responseData.success && responseData.data) {
-                        const data = responseData.data;
-                        document.getElementById('editCategory').value = data.category || '';
-                        document.getElementById('editProductName').value = data.productName || '';
-                        document.getElementById('editCompanyName').value = data.companyName || '';
-                        document.getElementById('editProductDetail').value = data.productDetail || '';
-                        document.getElementById('editProductPrice').value = data.productPrice || '';
-                        document.getElementById('editProductPhoto').value = data.productPhoto || '';
-                        
-                       
-                        generateSizeStockInputs(data.productOptions || []);
-                        
-                        document.getElementById('editModal').style.display = 'block';
-                    } else {
-                        alert('상품 정보를 불러올 수 없습니다: ' + (responseData.message || '알 수 없는 오류'));
-                    }
-                })
-                .catch(error => alert('오류가 발생했습니다: ' + error.message));
+            document.getElementById('editContent').innerHTML = '수정 기능을 준비 중입니다...';
+            document.getElementById('editModal').style.display = 'block';
         }
         
-        function generateSizeStockInputs(productOptions) {
-            const container = document.getElementById('sizeStockContainer');
-            container.innerHTML = '';
-            
-            productOptions.forEach(option => {
-                const div = document.createElement('div');
-                div.style.marginBottom = '5px';
-                div.innerHTML = 
-                    '<label style="display: inline-block; width: 80px;">' + option.sizeName + ':</label>' +
-                    '<input type="number" min="0" value="' + (option.stock || 0) + '" ' +
-                           'name="stock_' + option.sizeId + '" style="width: 80px;"> 개';
-                container.appendChild(div);
-            });
-        }
-        
-        function updateProduct() {
-            if (!currentEditProductId) return;
-            
-            // 사이즈별 재고 데이터 수집
-            const sizeStockInputs = document.querySelectorAll('#sizeStockContainer input[name^="stock_"]');
-            const productOptions = [];
-            
-            sizeStockInputs.forEach(input => {
-                const sizeId = input.name.split('_')[1];
-                const stock = parseInt(input.value) || 0;
-                if (stock > 0) {
-                    productOptions.push({
-                        sizeId: parseInt(sizeId),
-                        stock: stock
-                    });
-                }
-            });
-            
-            const formData = {
-                category: document.getElementById('editCategory').value,
-                productName: document.getElementById('editProductName').value,
-                companyName: document.getElementById('editCompanyName').value,
-                productDetail: document.getElementById('editProductDetail').value,
-                productPrice: document.getElementById('editProductPrice').value,
-                productPhoto: document.getElementById('editProductPhoto').value,
-                productOptions: productOptions
-            };
-            
-            fetch('/seller/product/update/' + currentEditProductId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('success', data.message);
-                    setTimeout(() => {
-                        closeModal('editModal');
-                        location.reload();
-                    }, 1500);
-                } else {
-                    showAlert('error', data.message);
-                }
-            })
-            .catch(error => {
-                showAlert('error', '오류가 발생했습니다: ' + error.message);
-            });
-        }
-        
-        function showAlert(type, message) {
-            const alertContainer = document.getElementById('alertContainer');
-            const color = type === 'success' ? 'green' : 'red';
-            alertContainer.innerHTML = '<div style="color: ' + color + ';">' + message + '</div>';
-        }
-        
-        function clearAlert() {
-            document.getElementById('alertContainer').innerHTML = '';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            if (modalId === 'editModal') {
-                currentEditProductId = null;
-                clearAlert();
-            }
-        }
-        
+        // 상품 삭제
         function deleteProduct(productId) {
             if (confirm('정말로 이 상품을 삭제하시겠습니까? 삭제된 상품은 복구할 수 없습니다.')) {
                 fetch('/seller/product/delete/' + productId, {
@@ -347,6 +278,12 @@
             }
         }
         
+        // 모달 닫기
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 모달 외부 클릭시 닫기
         window.onclick = function(event) {
             const detailModal = document.getElementById('detailModal');
             const editModal = document.getElementById('editModal');
@@ -358,5 +295,6 @@
             }
         }
     </script>
+
 </body>
 </html>
