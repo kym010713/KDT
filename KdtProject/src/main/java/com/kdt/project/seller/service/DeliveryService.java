@@ -64,10 +64,14 @@ public class DeliveryService {
     // 배송 상태 변경
     public boolean updateDeliveryStatus(Long orderNumber, String newStatus) {
         try {
+            System.out.println("=== 배송 상태 변경 시작 ===");
+            System.out.println("주문번호: " + orderNumber + ", 새 상태: " + newStatus);
+            
             Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(orderNumber);
             
             if (deliveryOpt.isPresent()) {
                 Delivery delivery = deliveryOpt.get();
+                String oldStatus = delivery.getDeliveryState();
                 delivery.setDeliveryState(newStatus);
                 
                 // 배송 완료시 완료일 설정
@@ -76,6 +80,7 @@ public class DeliveryService {
                 }
                 
                 deliveryRepository.save(delivery);
+                System.out.println("배송 상태 업데이트: " + oldStatus + " → " + newStatus);
                 return true;
             } else {
                 // 배송 정보가 없으면 새로 생성
@@ -92,10 +97,12 @@ public class DeliveryService {
                 newDelivery.setDeliveryId(System.currentTimeMillis());
                 
                 deliveryRepository.save(newDelivery);
+                System.out.println("새 배송 정보 생성: " + newStatus);
                 return true;
             }
         } catch (Exception e) {
             System.out.println("Error updating delivery status: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -105,6 +112,7 @@ public class DeliveryService {
             // Product 정보 조회
             Optional<Product> productOpt = productSellerRepository.findById(order.getProductId());
             if (productOpt.isEmpty()) {
+                System.out.println("상품을 찾을 수 없음: " + order.getProductId());
                 return null;
             }
             Product product = productOpt.get();
@@ -117,7 +125,7 @@ public class DeliveryService {
             deliveryDto.setUserId(order.getUserId());
             deliveryDto.setProductName(product.getProductName());
             deliveryDto.setCompanyName(product.getCompanyName());
-            deliveryDto.setProductPrice(String.valueOf(product.getProductPrice())); // Long을 String으로 변환
+            deliveryDto.setProductPrice(String.valueOf(product.getProductPrice()));
             deliveryDto.setOrderDate(order.getOrderDate());
             deliveryDto.setOrderAddress(order.getOrderAddress());
             
@@ -134,6 +142,7 @@ public class DeliveryService {
             
         } catch (Exception e) {
             System.out.println("Error creating DeliveryDto for order: " + order.getOrderNumber() + " - " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

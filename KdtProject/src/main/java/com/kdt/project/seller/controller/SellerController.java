@@ -63,13 +63,15 @@ public class SellerController {
     
 
     
- // 상품 수정 폼 데이터 조회 (AJAX) - 수정된 부분
+ // 상품 수정 폼 데이터 조회 
     @GetMapping("/product/edit/{productId}")
     @ResponseBody
     public Map<String, Object> getProductForEdit(@PathVariable("productId") String productId) {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            System.out.println("=== 상품 수정 폼 데이터 조회: " + productId + " ===");
+            
             Product product = productService.getProductById(productId);
             if (product == null) {
                 response.put("success", false);
@@ -111,49 +113,44 @@ public class SellerController {
             
             dto.setProductOptions(optionDtos);
             
+            // 기존 방식 호환성을 위해 첫 번째 옵션의 정보를 설정
+            if (!options.isEmpty()) {
+                ProductOptions firstOption = options.get(0);
+                Optional<Sizes> sizeOpt = allSizes.stream()
+                    .filter(size -> size.getSizeId().equals(firstOption.getSizeId()))
+                    .findFirst();
+                
+                if (sizeOpt.isPresent()) {
+                    dto.setProductSize(sizeOpt.get().getSizeName());
+                    dto.setProductCount(firstOption.getProductStock());
+                }
+            }
+            
             response.put("success", true);
             response.put("data", dto);
+            
+            System.out.println("수정 폼 데이터: " + dto);
             return response;
             
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "오류가 발생했습니다: " + e.getMessage());
+            e.printStackTrace();
             return response;
         }
     }
 
  // 상품 상세 조회 (AJAX) - Product 정보 + 옵션 정보 포함
+ // 1. 상품 상세 조회 메서드 수정
     @GetMapping("/product/detail/{productId}")
     @ResponseBody
     public Map<String, Object> getProductDetail(@PathVariable("productId") String productId) {
-        Map<String, Object> response = new HashMap<>();
+        System.out.println("=== 상품 상세 조회 시작: " + productId + " ===");
         
-        Product product = productService.getProductById(productId);
-        if (product == null) {
-            response.put("success", false);
-            response.put("message", "상품을 찾을 수 없습니다.");
-            return response;
-        }
+        // ProductService의 새로운 메서드 사용
+        Map<String, Object> response = productService.getProductDetailWithSizes(productId);
         
-        List<ProductOptions> options = productService.getProductOptions(productId);
-        
-        // 사이즈 정보와 함께 옵션 데이터 구성
-        List<Map<String, Object>> optionDetails = new ArrayList<>();
-        for (ProductOptions option : options) {
-            Sizes size = sizesRepository.findById(option.getSizeId()).orElse(null);
-            if (size != null) {
-                Map<String, Object> optionDetail = new HashMap<>();
-                optionDetail.put("sizeId", option.getSizeId());
-                optionDetail.put("sizeName", size.getSizeName());
-                optionDetail.put("stock", option.getProductStock());
-                optionDetails.add(optionDetail);
-            }
-        }
-        
-        response.put("success", true);
-        response.put("product", product);
-        response.put("options", options);
-        response.put("optionDetails", optionDetails);  // 사이즈명 포함된 상세 정보
+        System.out.println("Response: " + response);
         return response;
     }
     

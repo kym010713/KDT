@@ -9,5 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface SizesRepository extends JpaRepository<Sizes, Long> {
+    
+    // 사이즈 이름으로 조회하는 메서드 추가
     Optional<Sizes> findBySizeName(String sizeName);
 }
