@@ -131,22 +131,24 @@ public class BuyerController {
                             @RequestParam(value = "reviewImage", required = false) MultipartFile reviewImage,
                             HttpSession session,
                             Model model) {
+
         UserEntity user = (UserEntity) session.getAttribute("loginUser");
         if (user == null) {
             return "redirect:/login";
         }
 
-        // 1. 파일 저장
         String reviewImageUrl = null;
         if (reviewImage != null && !reviewImage.isEmpty()) {
+            // 서버에 저장 (예: /resources/upload/review/)
+            String uploadDir = session.getServletContext().getRealPath("/resources/upload/review/");
+            String originalFilename = reviewImage.getOriginalFilename();
+            String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String savedFileName = UUID.randomUUID().toString() + ext;
+
+            File dest = new File(uploadDir, savedFileName);
             try {
-                String originalFilename = reviewImage.getOriginalFilename();
-                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review"; // ex: "C:/upload/review/"
-                String savedPath = uploadDir + originalFilename;
-
-                reviewImage.transferTo(new java.io.File(savedPath));
-
-                reviewImageUrl = originalFilename; // 또는 경로 포함 저장
+                reviewImage.transferTo(dest);
+                reviewImageUrl = savedFileName;
             } catch (Exception e) {
                 e.printStackTrace();
                 model.addAttribute("error", "이미지 업로드 실패");
@@ -154,22 +156,16 @@ public class BuyerController {
             }
         }
 
+        ReviewDTO reviewDto = new ReviewDTO();
+        reviewDto.setProductId(productId);
+        reviewDto.setUserId(user.getId());
+        reviewDto.setScore(score);
+        reviewDto.setContent(content);
+        reviewDto.setReviewImageUrl(reviewImageUrl);
 
-        
-        // 2. DTO 세팅
-        ReviewDTO review = new ReviewDTO();
-        review.setProductId(productId);
-        review.setUserId(user.getId());
-        review.setScore(score);
-        review.setContent(content);
-        review.setReviewImageUrl(reviewImageUrl);
-
-        buyerService.addReview(review);
+        buyerService.addReview(reviewDto);
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
-    
 
-    
-    
 }

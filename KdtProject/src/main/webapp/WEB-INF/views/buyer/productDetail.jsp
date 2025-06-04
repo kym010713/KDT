@@ -108,9 +108,13 @@
 												        ☆
 												    </c:forEach></td>
 												<td class="border px-4 py-2">${review.content}</td>
-												<td class="border px-4 py-2"><img
+												<td class="border px-4 py-2">
+												<c:if test="${not empty review.reviewImageUrl}">
+												<img
 													src="${pageContext.request.contextPath}/resources/upload/review/${review.reviewImageUrl}"
-													alt="리뷰 이미지" style="width: 200px;" /></td>
+													alt="리뷰 이미지" style="width: 200px;" />
+												</c:if>	
+													</td>
 												<td class="border px-4 py-2"><fmt:formatDate
 														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
 											</tr>
@@ -184,10 +188,10 @@
 	
 	    const stockMap = {
 	        <c:forEach var="opt" items="${options}">
-	            '${opt.size.sizeName}': '${opt.stock}',
+	            '${opt.size.sizeName}': '${opt.stock}'<c:if test="${!status.last}">,</c:if>
 	        </c:forEach>
 	    };
-	
+		
 	    sizeSelect.addEventListener("change", function () {
 	        const selectedSize = sizeSelect.value;
 	        stockDisplay.textContent = stockMap[selectedSize] || "0";
