@@ -80,43 +80,93 @@
 						</table>
 					</form>
 					<!-- 리뷰 목록 출력 -->
-				<div class="mt-8">
-					<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
+					<div class="mt-8">
+						<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
 
-					<c:choose>
-						<c:when test="${not empty reviews}">
-							<table
-								class="min-w-full table-auto bg-white border border-gray-300">
-								<thead class="bg-gray-200">
-									<tr>
-										<th class="px-4 py-2 border">작성자</th>
-										<th class="px-4 py-2 border">평점</th>
-										<th class="px-4 py-2 border">내용</th>
-										<th class="px-4 py-2 border">작성일</th>
-									</tr>
-								</thead>
-								<tbody>
-									<c:forEach var="review" items="${reviews}">
-										<tr class="text-center">
-											<td class="border px-4 py-2">${review.userId}</td>
-											<td class="border px-4 py-2">${review.score}</td>
-											<td class="border px-4 py-2">${review.content}</td>
-											<td class="border px-4 py-2"><fmt:formatDate
-													value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+						<c:choose>
+							<c:when test="${not empty reviews}">
+								<table
+									class="min-w-full table-auto bg-white border border-gray-300">
+									<thead class="bg-gray-200">
+										<tr>
+											<th class="px-4 py-2 border">작성자</th>
+											<th class="px-4 py-2 border">평점</th>
+											<th class="px-4 py-2 border">내용</th>
+											<th class="px-4 py-2 border">작성일</th>
 										</tr>
-									</c:forEach>
-								</tbody>
-							</table>
-						</c:when>
-						<c:otherwise>
-							<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
-						</c:otherwise>
-					</c:choose>
-				</div>
+									</thead>
+									<tbody>
+										<c:forEach var="review" items="${reviews}">
+											<tr class="text-center">
+												<td class="border px-4 py-2">${review.userId}</td>
+												<td class="border px-4 py-2"><c:forEach var="i"
+														begin="1" end="${review.score}">
+												        ★
+												    </c:forEach> <c:forEach var="i" begin="1" end="${5 - review.score}">
+												        ☆
+												    </c:forEach></td>
+												<td class="border px-4 py-2">${review.content}</td>
+												<td class="border px-4 py-2"><fmt:formatDate
+														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</c:when>
+							<c:otherwise>
+								<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
+							</c:otherwise>
+						</c:choose>
+					</div>
+
+					<c:set var="alreadyReviewed" value="false" />
+					<c:forEach var="review" items="${reviews}">
+						<c:if test="${review.userId eq sessionScope.user.id}">
+							<c:set var="alreadyReviewed" value="true" />
+						</c:if>
+					</c:forEach>
+
+					<!-- 리뷰 작성 폼 출력 조건문 -->
+					<c:if test="${not alreadyReviewed}">
+						<div class="mt-8">
+							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
+							<form
+								action="${pageContext.request.contextPath}/mypage/product/review"
+								method="post" class="bg-white p-6 rounded shadow-md">
+								<input type="hidden" name="productId"
+									value="${firstOption.product.productId}" />
+
+								<div class="mb-4">
+									<label for="score" class="block font-semibold mb-2">평점</label>
+									<select name="score" id="score" required
+										class="border rounded px-3 py-2 w-full">
+										<option value="">선택하세요</option>
+										<option value="5">★★★★★</option>
+										<option value="4">★★★★☆</option>
+										<option value="3">★★★☆☆</option>
+										<option value="2">★★☆☆☆</option>
+										<option value="1">★☆☆☆☆</option>
+									</select>
+								</div>
+
+								<div class="mb-4">
+									<label for="content" class="block font-semibold mb-2">리뷰
+										내용</label>
+									<textarea name="content" id="content" rows="4" required
+										class="border rounded px-3 py-2 w-full"></textarea>
+								</div>
+
+								<button type="submit"
+									class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+									리뷰 등록</button>
+							</form>
+						</div>
+					</c:if>
+
 
 
 				</c:if>
-				
+
 
 			</tbody>
 		</table>

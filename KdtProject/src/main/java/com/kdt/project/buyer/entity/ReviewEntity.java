@@ -7,9 +7,12 @@ import com.kdt.project.user.entity.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -28,7 +31,13 @@ import lombok.Setter;
 @Builder
 public class ReviewEntity {
 
-    @Id
+	@Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "review_seq_generator")
+    @SequenceGenerator(
+        name = "review_seq_generator",
+        sequenceName = "PRODUCT_REVIEW_SEQ",  // 실제 DB 시퀀스 이름
+        allocationSize = 1                    // INCREMENT BY 와 맞춤 (보통 1)
+    )
     @Column(name = "REVIEW_ID")
     private Long reviewId;
 
