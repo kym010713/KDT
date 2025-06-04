@@ -7,15 +7,9 @@
     <meta charset="UTF-8">
     <title>상품 등록 - 판매자</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select, textarea, button { padding: 8px; margin-bottom: 5px; }
-        input[type="text"], input[type="number"], select, textarea { width: 300px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .error { color: red; font-size: 14px; }
-        .success { color: green; background-color: #d4edda; padding: 10px; margin-bottom: 10px; }
-        .error-message { color: red; background-color: #f8d7da; padding: 10px; margin-bottom: 10px; }
+        .error { color: red; }
+        .success { color: green; }
+        .error-message { color: red; }
     </style>
 </head>
 <body>
@@ -76,7 +70,23 @@
             <!-- 상품 사이즈 -->
             <div class="form-group">
                 <label for="productSize">상품 사이즈 *</label>
-                <form:input path="productSize" id="productSize" placeholder="예: S, M, L, XL 또는 Free" />
+                <form:select path="productSize" id="productSize">
+                    <form:option value="">사이즈를 선택하세요</form:option>
+                    <form:option value="Free">Free</form:option>
+                    <form:option value="XS">XS</form:option>
+                    <form:option value="S">S</form:option>
+                    <form:option value="M">M</form:option>
+                    <form:option value="L">L</form:option>
+                    <form:option value="XL">XL</form:option>
+                    <form:option value="XXL">XXL</form:option>        
+                    <form:option value="220mm">220mm</form:option>
+                    <form:option value="230mm">230mm</form:option>
+                    <form:option value="240mm">240mm</form:option>
+                    <form:option value="250mm">250mm</form:option>
+                    <form:option value="260mm">260mm</form:option>
+                    <form:option value="270mm">270mm</form:option>
+                    <form:option value="280mm">280mm</form:option>
+                </form:select>
                 <form:errors path="productSize" cssClass="error" />
             </div>
             

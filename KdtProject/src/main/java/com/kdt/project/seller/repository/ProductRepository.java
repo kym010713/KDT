@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String> {
     boolean existsByProductName(String productName);
-    List<Product> findByCategory(String category);  
+    
+    // 카테고리별 상품 조회 메서드 추가
+    List<Product> findByCategory(String category);
 }

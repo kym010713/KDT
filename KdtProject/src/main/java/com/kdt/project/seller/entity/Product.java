@@ -27,4 +27,12 @@ public class Product {
     
     @Column(name = "PRODUCT_PHOTO")
     private String productPhoto;
+    
+    // DB 스키마에 맞게 추가
+    @Column(name = "PRODUCT_PRICE", nullable = false)
+    private Long productPrice;
+    
+    @Column(name = "PRODUCT_DETAIL")
+    @Lob
+    private String productDetail;
 }
