@@ -39,6 +39,8 @@
 					<div class="flex space-x-4 mt-12">
 						<a href="${pageContext.request.contextPath}/board/main"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">공지사항</a>
+						<a href="${pageContext.request.contextPath}/chatbot/faq"
+							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">챗봇상담</a>	
 						<a href="#"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Projects</a>
 						<a href="#"
