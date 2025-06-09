@@ -3,7 +3,7 @@
 
 <c:if test="${result > 0}">
 	<script>
-		location.href="/board/main";
+		location.href="/board/list";
 	</script>
 </c:if>
 
