@@ -29,6 +29,7 @@
             background-color: var(--background-color);
             color: var(--primary-color);
             padding: 2rem;
+            padding-top: 5rem;
         }
 
         .container {
@@ -49,25 +50,7 @@
             color: var(--accent-color);
             margin-bottom: 1.5rem;
             font-weight: 600;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .nav-link {
-            color: var(--secondary-color);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            background-color: var(--hover-color);
-            color: var(--accent-color);
+            font-size: 2rem;
         }
 
         .filter-section {
@@ -303,17 +286,10 @@
     </style>
 </head>
 <body>
+    <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
+    
     <div class="container">
         <h2 class="page-title">배송 관리</h2>
-        
-        <div class="nav-links">
-            <a href="/seller/list" class="nav-link">
-                <i class="fas fa-box me-1"></i>상품 목록
-            </a>
-            <a href="/seller/sales" class="nav-link">
-                <i class="fas fa-chart-line me-1"></i>판매 내역
-            </a>
-        </div>
         
         <!-- 배송 상태 필터 -->
         <div class="filter-section">
@@ -351,7 +327,7 @@
                                     <th>현재 배송 상태</th>
                                     <th>배송 요청일</th>
                                     <th>배송 완료일</th>
-                                    <th>배송 액션</th>
+                                    <th>배송 상태</th>
                                 </tr>
                             </thead>
                             <tbody>

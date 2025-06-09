@@ -30,6 +30,7 @@
             background-color: var(--background-color);
             color: var(--primary-color);
             padding: 2rem;
+            padding-top: 5rem;
         }
 
         .container {
@@ -50,6 +51,7 @@
             color: var(--accent-color);
             margin-bottom: 1.5rem;
             font-weight: 600;
+            font-size: 2rem;
         }
 
         .header-info {
@@ -384,41 +386,17 @@
     </style>
 </head>
 <body>
+    <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
+    
     <div class="container">
-        <!-- 사용자 정보 헤더 -->
-        <div class="header-info">
-            <div class="user-info">
-                <div>
-                    <strong>판매자:</strong> ${sessionScope.loginUser.name} (${sessionScope.loginUser.id})
-                    <span class="company-badge">${currentCompany}</span>
-                </div>
-                <div>
-                    <a href="/logout" class="logout-link">
-                        <i class="fas fa-sign-out-alt me-1"></i>로그아웃
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="page-title">상품 목록</h2>
-
-        <!-- 네비게이션 -->
-        <div class="nav-links">
-            <a href="/seller/list" class="nav-link">
-                <i class="fas fa-box"></i>상품 목록
-            </a>
-            <a href="/seller/register" class="nav-link">
-                <i class="fas fa-plus"></i>새 상품 등록
-            </a>
-            <a href="/seller/sales" class="nav-link">
-                <i class="fas fa-chart-line"></i>판매 내역
-            </a>
-            <a href="/seller/delivery" class="nav-link">
-                <i class="fas fa-truck"></i>배송 관리
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 class="page-title" style="margin-bottom: 0;">상품 목록</h2>
+            <a href="/seller/register" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>새 상품 등록
             </a>
         </div>
 
-        <p><strong>현재 표시 중:</strong> <span class="company-badge">${currentCompany}</span> 회사의 상품만 표시됩니다.</p>
+        
         
         <!-- 카테고리 필터 -->
         <div class="filter-section">
@@ -463,7 +441,7 @@
                                     <th>가격</th>
                                     <th>사이즈별 재고</th>
                                     <th>상품ID</th>
-                                    <th>액션</th>
+                                    <th>상세/수정/삭제</th>
                                 </tr>
                             </thead>
                             <tbody>

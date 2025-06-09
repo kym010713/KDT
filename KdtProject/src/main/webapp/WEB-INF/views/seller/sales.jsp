@@ -29,6 +29,7 @@
             background-color: var(--background-color);
             color: var(--primary-color);
             padding: 2rem;
+            padding-top: 5rem;
         }
 
         .container {
@@ -49,25 +50,7 @@
             color: var(--accent-color);
             margin-bottom: 1.5rem;
             font-weight: 600;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .nav-link {
-            color: var(--secondary-color);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            background-color: var(--hover-color);
-            color: var(--accent-color);
+            font-size: 2rem;
         }
 
         .table {
@@ -225,17 +208,10 @@
     </style>
 </head>
 <body>
+    <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
+    
     <div class="container">
         <h2 class="page-title">판매 내역</h2>
-        
-        <div class="nav-links">
-            <a href="/seller/list" class="nav-link">
-                <i class="fas fa-box me-1"></i>상품 목록
-            </a>
-            <a href="/seller/delivery" class="nav-link">
-                <i class="fas fa-truck me-1"></i>배송 관리
-            </a>
-        </div>
         
         <div class="card">
             <c:choose>
