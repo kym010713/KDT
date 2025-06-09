@@ -37,7 +37,7 @@
 				</div>
 				<div class="hidden sm:ml-6 sm:block ml-8">
 					<div class="flex space-x-4 mt-12">
-						<a href="${pageContext.request.contextPath}/board/main"
+						<a href="${pageContext.request.contextPath}/board/list"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">공지사항</a>
 						<a href="${pageContext.request.contextPath}/chatbot/faq"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">챗봇상담</a>	
@@ -102,7 +102,9 @@
 						<a href="${pageContext.request.contextPath}/mypage"
 							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Your
 							Profile</a> <a href="#" class="block px-4 py-2 text-sm text-gray-700"
-							role="menuitem">Settings</a> <a
+							role="menuitem">Settings</a>
+							<a href="../seller/list" class="block px-4 py-2 text-sm text-gray-700"
+							role="menuitem">Seller page</a> <a
 							href="${pageContext.request.contextPath}/logout"
 							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Sign
 							out</a>
