@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -33,7 +34,6 @@ import com.kdt.project.user.repository.UserRepository;
 import jakarta.servlet.ServletContext;
 import lombok.RequiredArgsConstructor;
 
-	
 	@Service
 	@RequiredArgsConstructor
 	public class BuyerServiceImpl implements BuyerService {

@@ -8,14 +8,21 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kdt.project.buyer.dto.CartDTO;
@@ -24,6 +31,7 @@ import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.user.entity.UserEntity;
+import com.kdt.project.user.repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -32,6 +40,9 @@ import jakarta.servlet.http.HttpSession;
 public class BuyerController {
 
     private final BuyerService buyerService;
+    
+    @Autowired
+    UserRepository userRepository;
 
     public BuyerController(BuyerService buyerService) {
         this.buyerService = buyerService;
@@ -118,14 +129,8 @@ public class BuyerController {
      * 🔽 장바구니에서 항목 삭제
      */
     @PostMapping("/cart/delete")
-    public String deleteCartItem(@RequestParam("cartId") Long cartId,
-                                 HttpSession session) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        buyerService.removeFromCart(cartId);
+    public String deleteCartItem(@RequestParam("cartId") Long cartId) {
+        buyerService.deleteCartItem(cartId);
         return "redirect:/mypage/cart";
     }
     
@@ -215,5 +220,77 @@ public class BuyerController {
         }
         return "redirect:/mypage/product/detail?id=" + productId;
     }
+
+    @PostMapping("/cart/update")
+    @ResponseBody
+    public Map<String, Object> updateCart(@RequestBody CartDTO cartDto) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            buyerService.updateCartQuantity(cartDto.getCartId(), cartDto.getCartCount());
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+    
+    
+    @GetMapping("/order/form")
+    public String orderForm(HttpSession session, Model model) {
+
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+
+        List<CartDTO> cartList = buyerService.getCartList(user.getId());
+
+        model.addAttribute("cartList", cartList);
+
+        int grandTotal = cartList.stream()
+                .mapToInt(c -> c.getCartCount() * c.getProductPrice())
+                .sum();
+        model.addAttribute("grandTotal", grandTotal);
+
+        return "buyer/orderForm";
+    }
+
+    
+    @GetMapping("/address/form")
+    public String addressForm(HttpSession session, Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+
+        model.addAttribute("user", user);  
+        return "buyer/addressForm";        
+    }
+    
+    
+    @PostMapping("/address/update")
+    public String updateAddress(
+            @RequestParam("name")        String name,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("address")     String address,
+            @RequestParam(value = "postalCode", required = false) String postalCode,
+            HttpSession session) {
+
+        UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/login";
+
+        // 엔티티 값 갱신
+        loginUser.setName(name);
+        loginUser.setPhoneNumber(phoneNumber);
+        loginUser.setAddress(address);
+        // loginUser.setPostalCode(postalCode);
+
+        userRepository.save(loginUser);
+        session.setAttribute("loginUser", loginUser);
+
+        return "redirect:/mypage/order/form";
+    }
+    
+
+
+
+
 
 }
