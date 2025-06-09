@@ -1,0 +1,11 @@
+/* userList.jsp specific styles */
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.form-select-sm {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-left: 0.5rem;
+    font-size: .875rem;
+} 
