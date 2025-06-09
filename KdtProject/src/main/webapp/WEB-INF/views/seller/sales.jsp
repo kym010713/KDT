@@ -5,77 +5,341 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>판매 내역 - 판매자</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --primary-color: #333;
+            --secondary-color: #666;
+            --accent-color: #000;
+            --background-color: #f5f5f5;
+            --card-background: #fff;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            color: var(--accent-color);
+        }
+
+        .table {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .table th {
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 1rem 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .table tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* 테이블 컬럼 너비 설정 */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 8%; }   /* 주문번호 */
+        .table th:nth-child(2), .table td:nth-child(2) { width: 8%; }   /* 구매자 */
+        .table th:nth-child(3), .table td:nth-child(3) { width: 15%; }  /* 상품명 */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 10%; }  /* 제조사 */
+        .table th:nth-child(5), .table td:nth-child(5) { width: 8%; }   /* 가격 */
+        .table th:nth-child(6), .table td:nth-child(6) { width: 8%; }   /* 주문일 */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 18%; }  /* 배송 주소 */
+        .table th:nth-child(8), .table td:nth-child(8) { width: 10%; }  /* 배송 상태 */
+        .table th:nth-child(9), .table td:nth-child(9) { width: 8%; }   /* 배송 요청일 */
+        .table th:nth-child(10), .table td:nth-child(10) { width: 8%; } /* 배송 완료일 */
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .status-requested {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .status-in-progress {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .summary-box {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
+        }
+
+        .address-cell {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        .product-name {
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        .company-name {
+            max-width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        .price-cell {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.75rem 0.25rem;
+                font-size: 0.8rem;
+            }
+            
+            .status-badge {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2>판매 내역</h2>
-    
-    <a href="/seller/list">상품 목록</a> |  
-    <a href="/seller/delivery">배송 관리</a>
-    <br><br>
-    
-    <c:choose>
-        <c:when test="${empty salesList}">
-            <p>판매 내역이 없습니다.</p>
-        </c:when>
-        <c:otherwise>
-            <table border="1" width="100%">
-                <tr>
-                    <th>주문번호</th>
-                    <th>구매자</th>
-                    <th>상품명</th>
-                    <th>제조사</th>
-                    <th>가격</th>
-                    <th>주문일</th>
-                    <th>배송 주소</th>
-                    <th>배송 상태</th>
-                    <th>배송 요청일</th>
-                    <th>배송 완료일</th>
-                </tr>
-                <c:forEach items="${salesList}" var="sales">
-                    <tr>
-                        <td>${sales.orderNumber}</td>
-                        <td>${sales.userId}</td>
-                        <td>${sales.productName}</td>
-                        <td>${sales.companyName}</td>
-                        <td><fmt:formatNumber value="${sales.productPrice}" pattern="#,###"/>원</td>
-                        <td><fmt:formatDate value="${sales.orderDate}" pattern="yyyy-MM-dd"/></td>
-                        <td>${sales.orderAddress}</td>
-                        <td>
-                            <c:choose>
-                                <c:when test="${sales.deliveryState == 'REQUESTED'}">배송 요청</c:when>
-                                <c:when test="${sales.deliveryState == 'IN_PROGRESS'}">배송 중</c:when>
-                                <c:when test="${sales.deliveryState == 'COMPLETED'}">배송 완료</c:when>
-                                <c:otherwise>${sales.deliveryState}</c:otherwise>
-                            </c:choose>
-                        </td>
-                        <td>
-                            <c:if test="${not empty sales.requestDate}">
-                                <fmt:formatDate value="${sales.requestDate}" pattern="yyyy-MM-dd"/>
-                            </c:if>
-                        </td>
-                        <td>
-                            <c:if test="${not empty sales.completeDate}">
-                                <fmt:formatDate value="${sales.completeDate}" pattern="yyyy-MM-dd"/>
-                            </c:if>
-                        </td>
+    <div class="container">
+        <h2 class="page-title">판매 내역</h2>
+        
+        <div class="nav-links">
+            <a href="/seller/list" class="nav-link">
+                <i class="fas fa-box me-1"></i>상품 목록
+            </a>
+            <a href="/seller/delivery" class="nav-link">
+                <i class="fas fa-truck me-1"></i>배송 관리
+            </a>
+        </div>
+        
+        <div class="card">
+            <c:choose>
+                <c:when test="${empty salesList}">
+                    <div class="empty-state">
+                        <i class="fas fa-box-open fa-3x mb-3"></i>
+                        <p>판매 내역이 없습니다.</p>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>주문번호</th>
+                                    <th>구매자</th>
+                                    <th>상품명</th>
+                                    <th>제조사</th>
+                                    <th>가격</th>
+                                    <th>주문일</th>
+                                    <th>배송 주소</th>
+                                    <th>배송 상태</th>
+                                    <th>배송 요청일</th>
+                                    <th>배송 완료일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach items="${salesList}" var="sales">
+                                <tr>
+                                    <td>${sales.orderNumber}</td>
+                                    <td>${sales.userId}</td>
+                                    <td>
+                                        <div class="product-name" title="${sales.productName}">
+                                            ${sales.productName}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="company-name" title="${sales.companyName}">
+                                            ${sales.companyName}
+                                        </div>
+                                    </td>
+                                    <td class="price-cell">
+                                        <fmt:formatNumber value="${sales.productPrice}" pattern="#,###"/>원
+                                    </td>
+                                    <td><fmt:formatDate value="${sales.orderDate}" pattern="yyyy-MM-dd"/></td>
+                                    <td>
+                                        <div class="address-cell" title="${sales.orderAddress}">
+                                            ${sales.orderAddress}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${sales.deliveryState == 'REQUESTED'}">
+                                                <span class="status-badge status-requested">배송 요청</span>
+                                            </c:when>
+                                            <c:when test="${sales.deliveryState == 'IN_PROGRESS'}">
+                                                <span class="status-badge status-in-progress">배송 중</span>
+                                            </c:when>
+                                            <c:when test="${sales.deliveryState == 'COMPLETED'}">
+                                                <span class="status-badge status-completed">배송 완료</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="status-badge">${sales.deliveryState}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <c:if test="${not empty sales.requestDate}">
+                                            <fmt:formatDate value="${sales.requestDate}" pattern="yyyy-MM-dd"/>
+                                        </c:if>
+                                    </td>
+                                    <td>
+                                        <c:if test="${not empty sales.completeDate}">
+                                            <fmt:formatDate value="${sales.completeDate}" pattern="yyyy-MM-dd"/>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <div class="summary-item">
+                            <span class="summary-label">총 판매 건수</span>
+                            <span class="summary-value">${salesList.size()}건</span>
+                        </div>
                         
-                    </tr>
-                </c:forEach>
-            </table>
-            
-            <br>
-            <p><strong>총 판매 건수:</strong> ${salesList.size()}건</p>
-            
-            <!-- 매출 합계 계산 -->
-            <c:set var="totalSales" value="0" />
-            <c:forEach items="${salesList}" var="sales">
-                <c:set var="totalSales" value="${totalSales + sales.productPrice}" />
-            </c:forEach>
-            <p><strong>총 매출:</strong> <fmt:formatNumber value="${totalSales}" pattern="#,###"/>원</p>
-        </c:otherwise>
-    </c:choose>
-    
-    
+                        <!-- 매출 합계 계산 -->
+                        <c:set var="totalSales" value="0" />
+                        <c:forEach items="${salesList}" var="sales">
+                            <c:set var="totalSales" value="${totalSales + sales.productPrice}" />
+                        </c:forEach>
+                        <div class="summary-item">
+                            <span class="summary-label">총 매출</span>
+                            <span class="summary-value"><fmt:formatNumber value="${totalSales}" pattern="#,###"/>원</span>
+                        </div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

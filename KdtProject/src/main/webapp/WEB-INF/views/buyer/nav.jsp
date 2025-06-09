@@ -102,7 +102,11 @@
 						<a href="${pageContext.request.contextPath}/mypage"
 							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Your
 							Profile</a> <a href="#" class="block px-4 py-2 text-sm text-gray-700"
-							role="menuitem">Settings</a> <a
+							role="menuitem">Settings</a>
+							<a
+							href="${pageContext.request.contextPath}/../seller/list"
+							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Seller page
+							</a> <a
 							href="${pageContext.request.contextPath}/logout"
 							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Sign
 							out</a>

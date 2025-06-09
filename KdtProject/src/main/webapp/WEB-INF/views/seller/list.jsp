@@ -6,44 +6,236 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>상품 목록 - 판매자</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
+        :root {
+            --primary-color: #333;
+            --secondary-color: #666;
+            --accent-color: #000;
+            --background-color: #f5f5f5;
+            --card-background: #fff;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
         .header-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
+
         .company-badge {
-            background-color: #007bff;
+            background-color: var(--accent-color);
             color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
+
         .user-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .navigation {
-            background-color: #e9ecef;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
+
         .nav-link {
-            margin-right: 15px;
+            color: var(--secondary-color);
             text-decoration: none;
-            color: #495057;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            color: var(--accent-color);
+        }
+
+        .logout-link {
+            color: #dc3545;
+            text-decoration: none;
             font-weight: 500;
         }
-        .nav-link:hover {
-            color: #007bff;
+
+        .logout-link:hover {
+            color: #b02a37;
         }
-        .error { color: red; }
+
+        .filter-section {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-label {
+            color: var(--secondary-color);
+            font-weight: 500;
+            margin-right: 1rem;
+        }
+
+        .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.1);
+        }
+
+        .table {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .table th {
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 1rem 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .table tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* 테이블 컬럼 너비 설정 */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 12%; }  /* 카테고리 */
+        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; }  /* 상품명 */
+        .table th:nth-child(3), .table td:nth-child(3) { width: 12%; }  /* 제조사 */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 10%; }  /* 가격 */
+        .table th:nth-child(5), .table td:nth-child(5) { width: 20%; }  /* 사이즈별 재고 */
+        .table th:nth-child(6), .table td:nth-child(6) { width: 10%; }  /* 상품ID */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 16%; }  /* 액션 */
+
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+        }
+
+        .btn-outline-primary {
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            background-color: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .size-tag { 
+            display: inline-block; 
+            margin: 2px 5px 2px 0; 
+            padding: 0.25rem 0.5rem; 
+            background-color: var(--hover-color); 
+            border-radius: 12px; 
+            font-size: 0.75rem; 
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+        }
+
+        .size-loading { 
+            color: var(--secondary-color); 
+            font-style: italic; 
+            font-size: 0.875rem;
+        }
+
+        .size-error { 
+            color: #dc3545; 
+            font-size: 0.75rem; 
+        }
+
         .modal { 
             display: none; 
             position: fixed; 
@@ -55,158 +247,281 @@
             background-color: rgba(0,0,0,0.5);
             overflow-y: auto;
         }
+
         .modal-content { 
-            background-color: white; 
+            background-color: var(--card-background); 
             margin: 5% auto; 
-            padding: 20px; 
+            padding: 2rem; 
             width: 50%; 
             max-height: 90vh;
             overflow-y: auto;
-            border-radius: 8px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
-        .close { float: right; font-size: 28px; cursor: pointer; }
-        .size-tag { 
-            display: inline-block; 
-            margin: 2px 5px 2px 0; 
-            padding: 2px 6px; 
-            background-color: #f0f0f0; 
-            border-radius: 3px; 
-            font-size: 12px; 
-            border: 1px solid #ddd;
+
+        .close { 
+            float: right; 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: var(--secondary-color);
+            transition: color 0.3s ease;
         }
-        .size-loading { color: #666; font-style: italic; }
-        .size-error { color: red; font-size: 11px; }
+
+        .close:hover {
+            color: var(--accent-color);
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 1.5rem;
         }
+
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
         }
+
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             box-sizing: border-box;
+            transition: all 0.3s ease;
         }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.1);
+            outline: none;
+        }
+
         .form-group textarea {
-            height: 80px;
+            height: 100px;
             resize: vertical;
         }
-        
-        table {
-            border-collapse: collapse;
-            width: 100%;
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
         }
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            text-align: left;
+
+        .summary-box {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
         }
-        th {
-            background-color: #f8f9fa;
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .summary-label {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: var(--accent-color);
             font-weight: 600;
         }
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .product-name {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        .company-name {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        .price-cell {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1400px) {
+            .container {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.75rem 0.25rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
-    
-
-    <!-- 사용자 정보 헤더 -->
-    <div class="header-info">
-        <div class="user-info">
-            <div>
-                <strong>판매자:</strong> ${sessionScope.loginUser.name} (${sessionScope.loginUser.id})
-                <span class="company-badge">${currentCompany}</span>
-            </div>
-            <div>
-                <a href="/logout" style="color: #dc3545; text-decoration: none;">로그아웃</a>
+    <div class="container">
+        <!-- 사용자 정보 헤더 -->
+        <div class="header-info">
+            <div class="user-info">
+                <div>
+                    <strong>판매자:</strong> ${sessionScope.loginUser.name} (${sessionScope.loginUser.id})
+                    <span class="company-badge">${currentCompany}</span>
+                </div>
+                <div>
+                    <a href="/logout" class="logout-link">
+                        <i class="fas fa-sign-out-alt me-1"></i>로그아웃
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- 네비게이션 -->
-    <div class="navigation">
-        <a href="/seller/list" class="nav-link"> 상품 목록</a>
-        <a href="/seller/register" class="nav-link"> 새 상품 등록</a>
-        <a href="/seller/sales" class="nav-link"> 판매 내역</a>
-        <a href="/seller/delivery" class="nav-link"> 배송 관리</a>
-    </div>
+        <h2 class="page-title">상품 목록</h2>
 
-    <h2>상품 목록</h2>
-    <p><strong>현재 표시 중:</strong> <span class="company-badge">${currentCompany}</span> 회사의 상품만 표시됩니다.</p>
-    
-    <!-- 카테고리 필터 -->
-    <div style="margin-bottom: 20px;">
-        <strong>카테고리 필터:</strong>
-        <form method="get" action="/seller/list" style="display: inline;">
-            <select name="category" onchange="this.form.submit()">
-                <option value="">전체 카테고리</option>
-                <c:forEach items="${categories}" var="category">
-                    <option value="${category.topName}" 
-                            <c:if test="${selectedCategory eq category.topName}">selected</c:if>>
-                        ${category.topName}
-                    </option>
-                </c:forEach>
-            </select>
-            <c:if test="${not empty selectedCategory}">
-                <a href="/seller/list">초기화</a>
-            </c:if>
-        </form>
-    </div>
-    
-    <!-- 상품 목록 테이블 -->
-    <c:choose>
-        <c:when test="${empty products}">
-            <p>등록된 상품이 없습니다.</p>
-        </c:when>
-        <c:otherwise>
-            <table border="1" width="100%">
-                <tr>
-                    <th>카테고리</th>
-                    <th>상품명</th>
-                    <th>제조사</th>
-                    <th>가격</th>
-                    <th>사이즈별 재고</th>
-                    <th>상품ID</th>
-                    <th>액션</th>
-                </tr>
-                <c:forEach items="${products}" var="product">
-                    <tr>
-                        <td>${product.category}</td>
-                        <td>${product.productName}</td>
-                        <td>${product.companyName}</td>
-                        <td><fmt:formatNumber value="${product.productPrice}" pattern="#,###"/>원</td>
-                        <td>
-                            <div id="sizeInfo_${product.productId}" class="size-loading">로딩중...</div>
-                        </td>
-                        <td>${product.productId}</td>
-                        <td>
-                            <button onclick="showProductDetail('${product.productId}')">상세보기</button>
-                            <button onclick="editProduct('${product.productId}')">수정</button>
-                            <button onclick="deleteProduct('${product.productId}')">삭제</button>
-                        </td>
-                    </tr>
-                </c:forEach>
-            </table>
-            
-            <p><strong>총 상품 수:</strong> ${products.size()}개</p>
-            
-            <!-- 페이지 로드 후 사이즈 정보 로드 -->
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    <c:forEach items="${products}" var="product">
-                        loadSizeInfo('${product.productId}');
+        <!-- 네비게이션 -->
+        <div class="nav-links">
+            <a href="/seller/list" class="nav-link">
+                <i class="fas fa-box"></i>상품 목록
+            </a>
+            <a href="/seller/register" class="nav-link">
+                <i class="fas fa-plus"></i>새 상품 등록
+            </a>
+            <a href="/seller/sales" class="nav-link">
+                <i class="fas fa-chart-line"></i>판매 내역
+            </a>
+            <a href="/seller/delivery" class="nav-link">
+                <i class="fas fa-truck"></i>배송 관리
+            </a>
+        </div>
+
+        <p><strong>현재 표시 중:</strong> <span class="company-badge">${currentCompany}</span> 회사의 상품만 표시됩니다.</p>
+        
+        <!-- 카테고리 필터 -->
+        <div class="filter-section">
+            <form method="get" action="/seller/list" class="d-flex align-items-center">
+                <span class="filter-label">
+                    <i class="fas fa-filter me-2"></i>카테고리 필터:
+                </span>
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">전체 카테고리</option>
+                    <c:forEach items="${categories}" var="category">
+                        <option value="${category.topName}" 
+                                <c:if test="${selectedCategory eq category.topName}">selected</c:if>>
+                            ${category.topName}
+                        </option>
                     </c:forEach>
-                });
-            </script>
-        </c:otherwise>
-    </c:choose>
+                </select>
+                <c:if test="${not empty selectedCategory}">
+                    <a href="/seller/list" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-times me-1"></i>초기화
+                    </a>
+                </c:if>
+            </form>
+        </div>
+        
+        <!-- 상품 목록 테이블 -->
+        <div class="card">
+            <c:choose>
+                <c:when test="${empty products}">
+                    <div class="empty-state">
+                        <i class="fas fa-box-open fa-3x mb-3"></i>
+                        <p>등록된 상품이 없습니다.</p>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>카테고리</th>
+                                    <th>상품명</th>
+                                    <th>제조사</th>
+                                    <th>가격</th>
+                                    <th>사이즈별 재고</th>
+                                    <th>상품ID</th>
+                                    <th>액션</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach items="${products}" var="product">
+                                    <tr>
+                                        <td>${product.category}</td>
+                                        <td>
+                                            <div class="product-name" title="${product.productName}">
+                                                ${product.productName}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="company-name" title="${product.companyName}">
+                                                ${product.companyName}
+                                            </div>
+                                        </td>
+                                        <td class="price-cell">
+                                            <fmt:formatNumber value="${product.productPrice}" pattern="#,###"/>원
+                                        </td>
+                                        <td>
+                                            <div id="sizeInfo_${product.productId}" class="size-loading">로딩중...</div>
+                                        </td>
+                                        <td>${product.productId}</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm me-1" onclick="showProductDetail('${product.productId}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-primary btn-sm me-1" onclick="editProduct('${product.productId}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteProduct('${product.productId}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <div class="summary-item">
+                            <span class="summary-label">총 상품 수</span>
+                            <span class="summary-value">${products.size()}개</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 페이지 로드 후 사이즈 정보 로드 -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            <c:forEach items="${products}" var="product">
+                                loadSizeInfo('${product.productId}');
+                            </c:forEach>
+                        });
+                    </script>
+                </c:otherwise>
+            </c:choose>
+        </div>
 
     <!-- 상세보기 모달 -->
     <div id="detailModal" class="modal">
@@ -263,12 +578,19 @@
                     <input type="text" id="editProductPhoto" name="productPhoto">
                 </div>
                 <div class="form-group">
-                    <button type="button" onclick="updateProduct()">수정 완료</button>
-                    <button type="button" onclick="closeModal('editModal')">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProduct()">
+                        <i class="fas fa-save me-1"></i>수정 완료
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="closeModal('editModal')">
+                        <i class="fas fa-times me-1"></i>취소
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- JavaScript 함수들 -->
     <script>
@@ -434,8 +756,10 @@
         // 알림 표시
         function showAlert(type, message) {
             const alertContainer = document.getElementById('alertContainer');
-            const color = type === 'success' ? 'green' : 'red';
-            alertContainer.innerHTML = '<div style="color: ' + color + ';">' + message + '</div>';
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            alertContainer.innerHTML = '<div class="alert ' + alertClass + '">' + 
+                                     '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + ' me-2"></i>' + 
+                                     message + '</div>';
         }
         
         // 알림 지우기
