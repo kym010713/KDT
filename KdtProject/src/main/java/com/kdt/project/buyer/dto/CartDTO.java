@@ -6,6 +6,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CartDTO {
     private Long cartId;
     private String productId;
@@ -13,4 +14,5 @@ public class CartDTO {
     private String productPhoto;
     private int cartCount;
     private String productSize;
+    private int productPrice;
 }

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -64,8 +65,7 @@ import lombok.RequiredArgsConstructor;
    
        @Override
        public ProductEntity getProductById(String productId) {
-           return productRepository.findById(productId)
-                   .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+           return productRepository.findById(productId).orElse(null);
        }
    
        @Override
@@ -89,7 +89,8 @@ import lombok.RequiredArgsConstructor;
                dto.setProductPhoto(cart.getProduct().getProductPhoto());
                dto.setCartCount(cart.getCartCount());
                dto.setProductSize(cart.getProductSize());
-              
+               dto.setProductPrice(cart.getProduct().getProductPrice().intValue());
+
                return dto;
            }).toList();
        }
@@ -122,10 +123,10 @@ import lombok.RequiredArgsConstructor;
            }
        }
    
-   
        // ✅ 장바구니에서 항목 삭제
+       @Transactional
        @Override
-       public void removeFromCart(Long cartId) {
+       public void deleteCartItem(Long cartId) {
            if (!cartRepository.existsById(cartId)) {
                throw new RuntimeException("장바구니 항목을 찾을 수 없습니다.");
            }
@@ -328,4 +329,10 @@ import lombok.RequiredArgsConstructor;
            return savedFileName;
        }
        
+       @Transactional
+       @Override
+       public void updateCartQuantity(Long cartId, int cartCount) {
+           // 수량이 0 이하인 경우의 로직은 컨트롤러나 화면에서 처리하므로, 여기서는 업데이트만 수행합니다.
+           cartRepository.updateCartCount(cartId, cartCount);
+       }
    }
