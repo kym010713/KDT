@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import com.kdt.project.user.dto.UserDto;
@@ -78,4 +79,15 @@ public class UserService {
 		Optional<UserEntity> optionalUser = userRepository.findByEmail(email);
 		return optionalUser.map(UserEntity::getId).orElse(null);
 	}
+	
+	 @Transactional
+	    public UserEntity updateAddress(String userId, String name, String phone, String addr, String zip) {
+	        UserEntity user = userRepository.findById(userId)
+	                          .orElseThrow(() -> new RuntimeException("사용자 없음"));
+	        user.setName(name);
+	        user.setPhoneNumber(phone);
+	        user.setAddress(addr);
+	        // user.setPostalCode(zip);
+	        return user;
+	    }
 }
