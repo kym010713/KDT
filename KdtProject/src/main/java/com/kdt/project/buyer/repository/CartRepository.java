@@ -3,6 +3,9 @@ package com.kdt.project.buyer.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kdt.project.buyer.entity.CartEntity;
@@ -24,5 +27,9 @@ public interface CartRepository extends JpaRepository<CartEntity, Long> {
     void deleteByUser(UserEntity user);
     
     CartEntity findByUser_IdAndProduct_ProductIdAndProductSize(String userId, String productId, String productSize);
+	
+    @Modifying
+    @Query("UPDATE CartEntity c SET c.cartCount = :cartCount WHERE c.cartId = :cartId")
+    void updateCartCount(@Param("cartId") Long cartId, @Param("cartCount") int cartCount);
 
 }
