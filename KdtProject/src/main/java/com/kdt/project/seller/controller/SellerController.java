@@ -347,23 +347,25 @@ public class SellerController {
     // 배송 상태 변경 (회사 검증 포함)
     @PostMapping("/delivery/update")
     @ResponseBody
-    public Map<String, Object> updateDeliveryStatus(@RequestParam Long orderNumber, 
-                                                   @RequestParam String newStatus,
-                                                   HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
+    public Map<String, Object> updateDeliveryStatus(
+        @RequestParam("orderNumber") Long orderNumber,
+        @RequestParam("newStatus") String newStatus,
+        HttpSession session) {
         
+        Map<String, Object> response = new HashMap<>();
+
         String validationResult = validateSellerAccess(session);
         if (validationResult != null) {
             response.put("success", false);
             response.put("message", "접근 권한이 없습니다.");
             return response;
         }
-        
+
         String companyName = getCurrentSellerCompany(session);
-        
+
         try {
             boolean success = deliveryService.updateDeliveryStatus(orderNumber, newStatus);
-            
+
             if (success) {
                 response.put("success", true);
                 String statusText = "";
@@ -382,7 +384,7 @@ public class SellerController {
             response.put("success", false);
             response.put("message", "오류가 발생했습니다: " + e.getMessage());
         }
-        
+
         return response;
     }
     
