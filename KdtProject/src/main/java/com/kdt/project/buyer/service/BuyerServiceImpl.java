@@ -1,34 +1,35 @@
 	package com.kdt.project.buyer.service;
 	
 	import java.io.IOException;
-	import java.nio.file.Files;
-	import java.nio.file.Path;
-	import java.nio.file.Paths;
-	import java.nio.file.StandardCopyOption;
-	import java.util.Date;
-	import java.util.List;
-	import java.util.UUID;
-	import java.util.stream.Collectors;
-	
-	import org.springframework.stereotype.Service;
-	import org.springframework.web.multipart.MultipartFile;
-	
-	import com.kdt.project.buyer.dto.CartDTO;
-	import com.kdt.project.buyer.dto.ReviewDTO;
-	import com.kdt.project.buyer.entity.CartEntity;
-	import com.kdt.project.buyer.entity.ProductEntity;
-	import com.kdt.project.buyer.entity.ProductOptionEntity;
-	import com.kdt.project.buyer.entity.ReviewEntity;
-	import com.kdt.project.buyer.repository.CartRepository;
-	import com.kdt.project.buyer.repository.ProductOptionRepository;
-	import com.kdt.project.buyer.repository.ProductRepository;
-	import com.kdt.project.buyer.repository.ReviewRepository;
-	import com.kdt.project.buyer.repository.SizeRepository;
-	import com.kdt.project.user.dto.UserDto;
-	import com.kdt.project.user.entity.UserEntity;
-	import com.kdt.project.user.repository.UserRepository;
-	
-	import lombok.RequiredArgsConstructor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.kdt.project.buyer.dto.CartDTO;
+import com.kdt.project.buyer.dto.ReviewDTO;
+import com.kdt.project.buyer.entity.CartEntity;
+import com.kdt.project.buyer.entity.ProductEntity;
+import com.kdt.project.buyer.entity.ProductOptionEntity;
+import com.kdt.project.buyer.entity.ReviewEntity;
+import com.kdt.project.buyer.repository.CartRepository;
+import com.kdt.project.buyer.repository.ProductOptionRepository;
+import com.kdt.project.buyer.repository.ProductRepository;
+import com.kdt.project.buyer.repository.ReviewRepository;
+import com.kdt.project.buyer.repository.SizeRepository;
+import com.kdt.project.user.dto.UserDto;
+import com.kdt.project.user.entity.UserEntity;
+import com.kdt.project.user.repository.UserRepository;
+
+import jakarta.servlet.ServletContext;
+import lombok.RequiredArgsConstructor;
 	
 	@Service
 	@RequiredArgsConstructor
@@ -41,6 +42,7 @@
 	    private final SizeRepository sizeRepository;
 	    private final ReviewRepository reviewRepository;
 	    
+	    private final ServletContext servletContext;
 	    
 	    @Override
 	    public UserDto getMyPage(String userId) {
@@ -178,8 +180,8 @@
 	        if (imageUrl != null && !imageUrl.isEmpty()) {
 	            try {
 	                // 절대 경로 설정
-	                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
-	                
+	            	String uploadDir = servletContext.getRealPath("/resources/upload/review/");
+	            	
 	                // imageUrl에서 파일명만 추출 (경로가 포함되어 있을 경우를 대비)
 	                String fileName = imageUrl;
 	                if (imageUrl.contains("/")) {
@@ -265,7 +267,7 @@
 	        if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
 	            try {
 	                // 절대 경로 설정 (기존 삭제 로직과 동일)
-	                String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
+	            	String uploadDir = servletContext.getRealPath("/resources/upload/review/");
 	                
 	                // imageUrl에서 파일명만 추출
 	                String fileName = oldImageUrl;
@@ -308,7 +310,7 @@
 	    // 이미지 저장 메서드 (기존 리뷰 작성과 동일한 경로 사용)
 	    private String saveReviewImage(MultipartFile image) throws IOException {
 	        // 기존 리뷰 작성과 동일한 절대 경로 사용
-	        String uploadDir = "C:\\Users\\023\\git\\KDT\\KdtProject\\src\\main\\webapp\\resources\\upload\\review\\";
+	    	String uploadDir = servletContext.getRealPath("/resources/upload/review/");
 	        
 	        String originalFilename = image.getOriginalFilename();
 	        String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
