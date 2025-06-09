@@ -26,11 +26,6 @@ public class BoardController {
 	@Autowired
 	BoardService service;
 	
-	@RequestMapping("main")
-	public String main() {
-		
-		return "board/main";
-	}
 	
 	@RequestMapping("writeForm")
 	public String writeForm(HttpSession session, Model model) {
@@ -64,7 +59,7 @@ public class BoardController {
 	@RequestMapping("list")
 	public String list(BoardDTO dto, Model model,
 			@RequestParam(name = "page", defaultValue="0") int page,
-			@RequestParam(name = "size", defaultValue="5") int size ) {
+			@RequestParam(name = "size", defaultValue="10") int size ) {
 		
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 		
