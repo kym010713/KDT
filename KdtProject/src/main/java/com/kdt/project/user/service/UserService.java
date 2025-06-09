@@ -54,7 +54,6 @@ public class UserService {
 		user.setRole("BUYER");
 		user.setAddress(dto.getAddress());
 		user.setGrade(dto.getGrade());
-		user.setCreatedAt(dto.getCreatedAt());
 		return userRepository.save(user);
 	}
 
