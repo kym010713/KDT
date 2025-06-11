@@ -101,14 +101,14 @@
 						role="menu" aria-orientation="vertical"
 						aria-labelledby="user-menu-button" tabindex="-1">
 						<a href="${pageContext.request.contextPath}/mypage"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Your
-							Profile</a> <a href="#" class="block px-4 py-2 text-sm text-gray-700"
-							role="menuitem">Settings</a>
-							<a href="../seller/list" class="block px-4 py-2 text-sm text-gray-700"
-							role="menuitem">Seller page</a> <a
-							href="${pageContext.request.contextPath}/logout"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">Sign
-							out</a>
+							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">내 프로필
+							</a>
+						<a href="${pageContext.request.contextPath}/mypage/order/list"
+							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">주문내역</a>
+						<a href="../seller/list"
+							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">판매자 페이지</a>
+						<a href="${pageContext.request.contextPath}/logout"
+							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">로그아웃</a>
 					</div>
 				</div>
 			</div>
