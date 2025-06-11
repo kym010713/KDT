@@ -1,19 +1,12 @@
 package com.kdt.project.buyer.controller;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.UUID;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +23,11 @@ import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.buyer.service.BuyerService;
+import com.kdt.project.order.entity.OrderDetailEntity;
+import com.kdt.project.order.entity.OrderEntity;
+import com.kdt.project.order.repository.OrderDetailRepository;
+import com.kdt.project.order.repository.OrderRepository;
+import com.kdt.project.order.service.OrderService;
 import com.kdt.project.user.entity.UserEntity;
 import com.kdt.project.user.repository.UserRepository;
 
@@ -39,13 +37,23 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/mypage")
 public class BuyerController {
 
+    private final OrderService orderService;
+
     private final BuyerService buyerService;
+    
+    @Autowired
+    OrderRepository orderRepository;
+    
+    @Autowired
+    OrderDetailRepository detailRepository;
+    
     
     @Autowired
     UserRepository userRepository;
 
-    public BuyerController(BuyerService buyerService) {
+    public BuyerController(BuyerService buyerService, OrderService orderService) {
         this.buyerService = buyerService;
+        this.orderService = orderService;
     }
 
     @GetMapping("")
@@ -288,6 +296,27 @@ public class BuyerController {
         return "redirect:/mypage/order/form";
     }
     
+    @GetMapping("/order/list")
+    public String orderList(HttpSession session, Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+
+        // ① 주문 헤더
+        List<OrderEntity> heads = orderRepository.findByUserId(user.getId());
+
+        // ② 주문번호별 상세
+        Map<Long, List<OrderDetailEntity>> detailMap = new HashMap<>();
+        for (OrderEntity h : heads) {
+            List<OrderDetailEntity> details =
+                    detailRepository.findByOrderGroup(h.getOrderGroup());
+            detailMap.put(h.getOrderGroup(), details);
+        }
+
+        model.addAttribute("headList", heads);
+        model.addAttribute("detailMap", detailMap);   // key=orderGroup
+        return "buyer/orderList";
+    }
+
 
 
 
