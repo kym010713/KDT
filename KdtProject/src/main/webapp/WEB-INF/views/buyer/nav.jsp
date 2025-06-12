@@ -144,15 +144,15 @@
         </div>
         
         <!-- 모달 내용 -->
-        <div class="p-6 space-y-4">
+        <div class="p-2 space-y-4">
             <div class="space-y-4">
             
-            <div class="p-4 bg-gray-50 rounded-lg">
+            <div class="p-1 bg-gray-50 rounded-lg">
                     <div class="flex items-center gap-2 text-gray-500 mb-1">
                         <i class="fas fa-id-card text-sm"></i>
                         <span class="text-sm">아이디</span>
                     </div>
-                    <p class="text-lg text-gray-800">${loginUser.id}</p>
+                    <p class="text-base text-gray-800">${loginUser.id}</p>
                 </div>
                 
                 <div class="p-4 bg-gray-50 rounded-lg">
@@ -161,6 +161,14 @@
                         <span class="text-sm">이메일</span>
                     </div>
                     <p class="text-lg text-gray-800">${loginUser.email}</p>
+                </div>  
+                
+                 <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-envelope text-sm"></i>
+                        <span class="text-sm">전화번호</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.phoneNumber}</p>
                 </div>  
                 
                 <div class="p-4 bg-gray-50 rounded-lg">
@@ -187,10 +195,12 @@
                     <p class="text-lg text-gray-800">${loginUser.grade}</p>
                 </div>
             </div>
+            <a href="${pageContext.request.contextPath}/mypage/address/UpdateForm" class="text-sm text-gray-500 hover:underline">&#x2039; 회원정보 수정</a>
         </div>
         
         <!-- 모달 푸터 -->
         <div class="p-6 border-t border-gray-100">
+         	
             <button id="closeModalBtn" 
                     class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                 닫기

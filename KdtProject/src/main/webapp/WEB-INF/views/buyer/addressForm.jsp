@@ -6,7 +6,9 @@
   <meta charset="UTF-8" />
   <title>배송지 정보 수정</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -20,6 +22,15 @@
         },
       },
     };
+
+    function execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('postcode').value = data.zonecode;
+                document.getElementById('address').value = data.address;
+            }
+        }).open();
+    }
   </script>
 </head>
 <body class="bg-gray-50 min-h-screen font-pretendard">
@@ -44,10 +55,20 @@
       </div>
 
       <!-- 주소 -->
-      <div>
+      <div class="space-y-2">
         <label for="address" class="block text-sm font-medium text-gray-700 mb-1">주소</label>
+        <div class="flex gap-2">
+          <input type="text" id="postcode" placeholder="우편번호"
+                 class="w-32 border-gray-300 rounded-md shadow-sm focus:ring-main-color focus:border-main-color" readonly />
+          <button type="button" onclick="execDaumPostcode()"
+                  class="px-4 py-2 text-white bg-main-color rounded-md hover:bg-main-color-hover transition-colors flex items-center gap-2">
+            <i class="fas fa-search text-sm"></i>
+            주소 찾기
+          </button>
+        </div>
         <input type="text" id="address" name="address" value="${sessionScope.loginUser.address}"
-               class="w-full border-gray-300 rounded-md shadow-sm focus:ring-main-color focus:border-main-color" required />
+               class="w-full border-gray-300 rounded-md shadow-sm focus:ring-main-color focus:border-main-color" 
+               placeholder="주소" readonly required />
       </div>
 
       <div class="flex justify-between pt-4">
