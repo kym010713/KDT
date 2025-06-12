@@ -13,7 +13,7 @@ public interface AdminService {
 	public void deleteUserById(String id);
 	List<AdminEntity> findUsersByName(String keyword);
 	public void updateGrade(String id, String grade);
-
+	public void updateUser(String id, String email, String passwd);
 	
 
 
