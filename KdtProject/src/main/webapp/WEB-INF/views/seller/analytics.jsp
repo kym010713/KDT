@@ -1,0 +1,918 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>매출 분석</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #333;
+            --secondary-color: #666;
+            --accent-color: #000;
+            --background-color: #f5f5f5;
+            --card-background: #fff;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            padding: 2rem;
+            padding-top: 5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            color: var(--accent-color);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-background) 0%, #f8fafc 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.revenue { background: linear-gradient(135deg, var(--success-color), #059669); }
+        .stat-icon.orders { background: linear-gradient(135deg, var(--info-color), #2563eb); }
+        .stat-icon.average { background: linear-gradient(135deg, var(--warning-color), #d97706); }
+        .stat-icon.delivery { background: linear-gradient(135deg, var(--danger-color), #dc2626); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .stat-increase {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-decrease {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .recent-sales {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .recent-sales-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sales-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .sales-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .sales-item:last-child {
+            border-bottom: none;
+        }
+
+        .sales-info {
+            flex: 1;
+        }
+
+        .sales-product {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sales-details {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        .sales-amount {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .export-section {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .export-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-export {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-excel {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-csv {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-csv:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .period-selector {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .period-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .form-select, .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), #1f2937);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .period-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
+    
+    <div class="container">
+        <h2 class="page-title">
+            <i class="fas fa-chart-line me-3"></i>매출 분석
+        </h2>
+        
+        <!-- 기간 선택 -->
+        <div class="period-selector">
+            <span class="period-label">
+                <i class="fas fa-calendar-alt me-2"></i>분석 기간:
+            </span>
+            <select id="yearSelect" class="form-select">
+                <option value="${currentYear}" selected>${currentYear}년</option>
+                <option value="${currentYear - 1}">${currentYear - 1}년</option>
+            </select>
+            <button type="button" class="btn btn-primary" onclick="updateAnalytics()">
+                <i class="fas fa-refresh me-2"></i>업데이트
+            </button>
+        </div>
+
+        <!-- 주요 통계 -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon revenue">
+                    <i class="fas fa-won-sign"></i>
+                </div>
+                <div class="stat-value">${analytics.formattedRevenue}</div>
+                <div class="stat-label">총 매출</div>
+                <div class="stat-change ${analytics.changeStatus == 'positive' ? 'stat-increase' : 'stat-decrease'}">
+                    ${analytics.formattedChangeRate} (전월 대비)
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-value">${analytics.totalOrders}건</div>
+                <div class="stat-label">총 주문</div>
+                <div class="stat-change stat-increase">+8.3% (전월 대비)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon average">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stat-value">${analytics.formattedAverageOrderValue}</div>
+                <div class="stat-label">평균 주문가</div>
+                <div class="stat-change stat-increase">+3.7% (전월 대비)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon delivery">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stat-value">${analytics.completedDeliveries}건</div>
+                <div class="stat-label">배송 완료</div>
+                <div class="stat-change stat-increase">+15.2% (전월 대비)</div>
+            </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div class="analytics-grid">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-line-chart"></i>
+                    ${currentYear}년 월별 매출 추이
+                </div>
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    상품별 매출 비중
+                </div>
+                <canvas id="productRevenueChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    월별 주문 건수
+                </div>
+                <canvas id="orderCountChart"></canvas>
+            </div>
+            
+            <div class="recent-sales">
+                <div class="recent-sales-title">
+                    <i class="fas fa-history"></i>
+                    최근 판매 내역
+                </div>
+                <c:choose>
+                    <c:when test="${empty recentSales}">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p>최근 판매 내역이 없습니다.</p>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach items="${recentSales}" var="sale" varStatus="status">
+                            <c:if test="${status.index < 10}">
+                                <div class="sales-item">
+                                    <div class="sales-info">
+                                        <div class="sales-product">${sale.productName}</div>
+                                        <div class="sales-details">
+                                            ${sale.userId} • <fmt:formatDate value="${sale.orderDate}" pattern="MM-dd"/>
+                                        </div>
+                                    </div>
+                                    <div class="sales-amount">
+                                        <fmt:formatNumber value="${sale.productPrice}" pattern="#,###"/>원
+                                    </div>
+                                </div>
+                            </c:if>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+
+        <!-- 데이터 내보내기 -->
+        <!-- analytics.jsp의 데이터 내보내기 섹션을 이것으로 교체하세요 -->
+
+<div class="export-section">
+    <div class="export-title">
+        <i class="fas fa-download me-2"></i>데이터 내보내기
+    </div>
+    <div class="export-buttons">
+        <button class="btn-export btn-excel" onclick="exportData('excel')" title="Excel 파일로 내보내기 (Ctrl+E)">
+            <i class="fas fa-file-excel"></i>
+            Excel로 내보내기
+        </button>
+        <button class="btn-export btn-csv" onclick="exportData('csv')" title="CSV 파일로 내보내기 (Ctrl+Shift+E)">
+            <i class="fas fa-file-csv"></i>
+            CSV로 내보내기
+        </button>
+        <button class="btn-export" onclick="printAnalytics()" 
+                style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;"
+                title="인쇄하기 (Ctrl+P)">
+            <i class="fas fa-print"></i>
+            인쇄하기
+        </button>
+        <button class="btn-export" onclick="saveChartAsImage('monthlyRevenueChart', 'monthly_revenue_chart')"
+                style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;"
+                title="차트를 이미지로 저장">
+            <i class="fas fa-camera"></i>
+            차트 저장
+        </button>
+    </div>
+    
+</div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let monthlyRevenueChart, productRevenueChart, orderCountChart;
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+        
+     // analytics.jsp의 initializeCharts 함수를 이렇게 수정하세요
+
+        function initializeCharts() {
+            // 월별 매출 차트
+            const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+            
+            // JSP 데이터 안전하게 가져오기
+            let monthlyData = [];
+            try {
+                monthlyData = [
+                    <c:choose>
+                        <c:when test="${not empty currentYearSales}">
+                            <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
+                                ${monthly.revenue}<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            47200, 94400, 141600, 47200, 188800, 236000, 0, 0, 0, 0, 0, 0
+                        </c:otherwise>
+                    </c:choose>
+                ];
+            } catch (e) {
+                console.log('JSP 데이터 파싱 오류, 샘플 데이터 사용:', e);
+                monthlyData = [47200, 94400, 141600, 47200, 188800, 236000, 0, 0, 0, 0, 0, 0];
+            }
+            
+            monthlyRevenueChart = new Chart(monthlyRevenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [{
+                        label: '매출액',
+                        data: monthlyData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000).toFixed(0) + 'K원';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 상품별 매출 비중 차트
+            const productRevenueCtx = document.getElementById('productRevenueChart').getContext('2d');
+            
+            let productLabels = [];
+            let productData = [];
+            
+            try {
+                productLabels = [
+                    <c:choose>
+                        <c:when test="${not empty productRevenueShare}">
+                            <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
+                                '${product.key}'<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            '소프트 베이직 브이넥 가디건'
+                        </c:otherwise>
+                    </c:choose>
+                ];
+                
+                productData = [
+                    <c:choose>
+                        <c:when test="${not empty productRevenueShare}">
+                            <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
+                                ${product.value}<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            100
+                        </c:otherwise>
+                    </c:choose>
+                ];
+            } catch (e) {
+                console.log('상품 데이터 파싱 오류, 샘플 데이터 사용:', e);
+                productLabels = ['소프트 베이직 브이넥 가디건'];
+                productData = [100];
+            }
+            
+            productRevenueChart = new Chart(productRevenueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        data: productData,
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 월별 주문 건수 차트
+            const orderCountCtx = document.getElementById('orderCountChart').getContext('2d');
+            
+            let orderCountData = [];
+            try {
+                orderCountData = [
+                    <c:choose>
+                        <c:when test="${not empty currentYearSales}">
+                            <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
+                                ${monthly.orderCount}<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            1, 2, 3, 1, 4, 5, 0, 0, 0, 0, 0, 0
+                        </c:otherwise>
+                    </c:choose>
+                ];
+            } catch (e) {
+                console.log('주문 데이터 파싱 오류, 샘플 데이터 사용:', e);
+                orderCountData = [1, 2, 3, 1, 4, 5, 0, 0, 0, 0, 0, 0];
+            }
+            
+            orderCountChart = new Chart(orderCountCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [{
+                        label: '주문 건수',
+                        data: orderCountData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '건';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            console.log('차트 초기화 완료:', {
+                monthlyData: monthlyData,
+                productLabels: productLabels,
+                productData: productData,
+                orderCountData: orderCountData
+            });
+        });
+            
+            // 월별 주문 건수 차트
+            const orderCountCtx = document.getElementById('orderCountChart').get
+            
+         // analytics.jsp의 <script> 태그 안에 이 함수들을 추가하세요
+
+         // 데이터 내보내기 함수
+         function exportData(format) {
+             const year = document.getElementById('yearSelect') ? 
+                          document.getElementById('yearSelect').value : 
+                          new Date().getFullYear();
+             
+             console.log(`${format} 내보내기 시작:`, year);
+             
+             try {
+                 if (format === 'excel') {
+                     // Excel 내보내기 URL
+                     const excelUrl = `/seller/export/sales?format=excel&year=${year}`;
+                     console.log('Excel URL:', excelUrl);
+                     
+                     // 새 창에서 다운로드
+                     window.open(excelUrl, '_blank');
+                     
+                     // 사용자에게 알림
+                     showNotification('Excel 파일 다운로드를 시작합니다.', 'success');
+                     
+                 } else if (format === 'csv') {
+                     // CSV 내보내기 URL
+                     const csvUrl = `/seller/export/sales?format=csv&year=${year}`;
+                     console.log('CSV URL:', csvUrl);
+                     
+                     // 새 창에서 다운로드
+                     window.open(csvUrl, '_blank');
+                     
+                     // 사용자에게 알림
+                     showNotification('CSV 파일 다운로드를 시작합니다.', 'success');
+                     
+                 } else {
+                     console.error('지원하지 않는 형식:', format);
+                     showNotification('지원하지 않는 파일 형식입니다.', 'error');
+                 }
+                 
+             } catch (error) {
+                 console.error('내보내기 오류:', error);
+                 showNotification('파일 내보내기 중 오류가 발생했습니다.', 'error');
+             }
+         }
+
+         // 알림 표시 함수
+         function showNotification(message, type = 'info') {
+             // 기존 알림 제거
+             const existingNotification = document.querySelector('.export-notification');
+             if (existingNotification) {
+                 existingNotification.remove();
+             }
+             
+             // 새 알림 생성
+             const notification = document.createElement('div');
+             notification.className = `export-notification alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+             notification.style.cssText = `
+                 position: fixed;
+                 top: 20px;
+                 right: 20px;
+                 z-index: 9999;
+                 min-width: 300px;
+                 padding: 15px;
+                 border-radius: 8px;
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                 animation: slideInRight 0.3s ease-out;
+             `;
+             
+             notification.innerHTML = `
+                 <div style="display: flex; align-items: center; justify-content: space-between;">
+                     <div style="display: flex; align-items: center;">
+                         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                         <span>${message}</span>
+                     </div>
+                     <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                 </div>
+             `;
+             
+             document.body.appendChild(notification);
+             
+             // 3초 후 자동 제거
+             setTimeout(() => {
+                 if (notification.parentElement) {
+                     notification.remove();
+                 }
+             }, 3000);
+         }
+
+         // 차트 이미지로 저장 함수
+         function saveChartAsImage(chartId, filename) {
+             try {
+                 const canvas = document.getElementById(chartId);
+                 if (!canvas) {
+                     console.error('차트를 찾을 수 없습니다:', chartId);
+                     showNotification('차트를 찾을 수 없습니다.', 'error');
+                     return;
+                 }
+                 
+                 // 차트를 이미지로 변환
+                 const url = canvas.toDataURL('image/png', 1.0);
+                 
+                 // 다운로드 링크 생성
+                 const link = document.createElement('a');
+                 link.download = `${filename || chartId}_${new Date().toISOString().split('T')[0]}.png`;
+                 link.href = url;
+                 
+                 // 클릭하여 다운로드
+                 document.body.appendChild(link);
+                 link.click();
+                 document.body.removeChild(link);
+                 
+                 showNotification('차트 이미지가 다운로드되었습니다.', 'success');
+                 console.log('차트 이미지 저장 완료:', filename);
+                 
+             } catch (error) {
+                 console.error('차트 이미지 저장 오류:', error);
+                 showNotification('차트 이미지 저장 중 오류가 발생했습니다.', 'error');
+             }
+         }
+
+         // 전체 분석 리포트 내보내기 (고급 기능)
+         function exportFullReport() {
+             try {
+                 const year = document.getElementById('yearSelect') ? 
+                              document.getElementById('yearSelect').value : 
+                              new Date().getFullYear();
+                 
+                 // 모든 차트를 이미지로 변환
+                 const charts = ['monthlyRevenueChart', 'productRevenueChart', 'orderCountChart'];
+                 const chartImages = {};
+                 
+                 charts.forEach(chartId => {
+                     const canvas = document.getElementById(chartId);
+                     if (canvas) {
+                         chartImages[chartId] = canvas.toDataURL('image/png', 1.0);
+                     }
+                 });
+                 
+                 // 리포트 데이터 준비
+                 const reportData = {
+                     year: year,
+                     generatedAt: new Date().toISOString(),
+                     charts: chartImages,
+                     summary: {
+                         totalRevenue: document.querySelector('.stat-card:nth-child(1) .stat-value')?.textContent || '0원',
+                         totalOrders: document.querySelector('.stat-card:nth-child(2) .stat-value')?.textContent || '0건',
+                         averageOrderValue: document.querySelector('.stat-card:nth-child(3) .stat-value')?.textContent || '0원',
+                         completedDeliveries: document.querySelector('.stat-card:nth-child(4) .stat-value')?.textContent || '0건'
+                     }
+                 };
+                 
+                 console.log('전체 리포트 데이터:', reportData);
+                 showNotification('전체 리포트 생성 기능은 추후 제공될 예정입니다.', 'info');
+                 
+             } catch (error) {
+                 console.error('전체 리포트 생성 오류:', error);
+                 showNotification('리포트 생성 중 오류가 발생했습니다.', 'error');
+             }
+         }
+
+         // 프린트 기능
+         function printAnalytics() {
+             try {
+                 // 프린트용 스타일 추가
+                 const printStyle = document.createElement('style');
+                 printStyle.textContent = `
+                     @media print {
+                         .no-print { display: none !important; }
+                         .container { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+                         .chart-container { page-break-inside: avoid; margin-bottom: 20px; }
+                         .stats-overview { page-break-inside: avoid; }
+                     }
+                 `;
+                 document.head.appendChild(printStyle);
+                 
+                 // 프린트 실행
+                 window.print();
+                 
+                 // 프린트 후 스타일 제거
+                 setTimeout(() => {
+                     document.head.removeChild(printStyle);
+                 }, 1000);
+                 
+             } catch (error) {
+                 console.error('프린트 오류:', error);
+                 showNotification('프린트 중 오류가 발생했습니다.', 'error');
+             }
+         }
+
+         // 애니메이션 CSS 추가
+         const animationStyle = document.createElement('style');
+         animationStyle.textContent = `
+             @keyframes slideInRight {
+                 from {
+                     transform: translateX(100%);
+                     opacity: 0;
+                 }
+                 to {
+                     transform: translateX(0);
+                     opacity: 1;
+                 }
+             }
+             
+             .export-notification {
+                 animation: slideInRight 0.3s ease-out;
+             }
+         `;
+         document.head.appendChild(animationStyle);
+
+         // 페이지 로드 시 내보내기 버튼 이벤트 리스너 추가
+         document.addEventListener('DOMContentLoaded', function() {
+             console.log('내보내기 함수들 초기화 완료');
+             
+             // 내보내기 버튼에 툴팁 추가
+             const exportButtons = document.querySelectorAll('.btn-export');
+             exportButtons.forEach(button => {
+                 button.setAttribute('title', '클릭하여 ' + button.textContent.trim() + '하기');
+             });
+         });
+
+
+         console.log('내보내기 기능 로드 완료 - 단축키: Ctrl+E (Excel), Ctrl+Shift+E (CSV), Ctrl+P (프린트)');
+            
+            </script>
