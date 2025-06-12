@@ -20,5 +20,5 @@ public interface AdminRepository extends JpaRepository<AdminEntity, String> {
     @Query("UPDATE AdminEntity u SET u.grade = :grade WHERE u.id = :id")
     void updateUserGrade(@Param("id") String id, @Param("grade") String grade);
 
-
+    boolean existsByEmailAndIdNot(String email, String id);
 }
