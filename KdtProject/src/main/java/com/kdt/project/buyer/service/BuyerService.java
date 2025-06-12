@@ -32,7 +32,8 @@ public interface BuyerService {
     // 리뷰 조회 및 등록 관련 기능 추가
     List<ReviewDTO> getReviewsByProductId(String productId);
 
-    void addReview(ReviewDTO reviewDto);
+    void addReview(ReviewDTO reviewDto, MultipartFile reviewImage);
+
     
     void deleteReview(Long reviewId);
     

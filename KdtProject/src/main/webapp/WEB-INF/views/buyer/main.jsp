@@ -59,7 +59,7 @@
                         <a href="${pageContext.request.contextPath}/mypage/product/detail?id=${product.productId}" class="block">
                             <div class="w-full h-56 overflow-hidden">
                                 <img 
-                                    src="${pageContext.request.contextPath}/resources/upload/${product.productPhoto}" 
+                                    src="${imagekitUrl}product/${product.productPhoto}" 
                                     alt="${product.productName}" 
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />

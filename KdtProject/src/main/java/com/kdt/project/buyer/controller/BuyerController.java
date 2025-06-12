@@ -1,6 +1,6 @@
 package com.kdt.project.buyer.controller;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,9 @@ import com.kdt.project.user.entity.UserEntity;
 import com.kdt.project.user.repository.UserRepository;
 import com.kdt.project.user.service.UserService;
 
+import io.imagekit.sdk.ImageKit;
+import io.imagekit.sdk.models.FileCreateRequest;
+import io.imagekit.sdk.models.results.Result;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -43,8 +46,11 @@ import jakarta.validation.Valid;
 public class BuyerController {
 
     private final OrderService orderService;
-
     private final BuyerService buyerService;
+    private final ImageKit imageKit;
+    
+    // ImageKit URL을 상수로 정의
+    private static final String IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/alzwu0day/clodi/";
     
     @Autowired
     OrderRepository orderRepository;
@@ -52,16 +58,19 @@ public class BuyerController {
     @Autowired
     OrderDetailRepository detailRepository;
     
+
+
     @Autowired
     UserService userService;
-    
     @Autowired
     UserRepository userRepository;
 
-    public BuyerController(BuyerService buyerService, OrderService orderService) {
+    public BuyerController(BuyerService buyerService, OrderService orderService, ImageKit imageKit) {
         this.buyerService = buyerService;
         this.orderService = orderService;
+        this.imageKit = imageKit;
     }
+
     /**
      * 상품 상세 보기 (상품 정보 + 옵션 정보 포함)
      */
@@ -79,38 +88,17 @@ public class BuyerController {
             model.addAttribute("options", options);
             model.addAttribute("reviews", reviews);
             
+            // ✅ ImageKit URL을 Model에 추가
+            model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+            
             return "buyer/productDetail";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("error", "상품을 찾을 수 없습니다.");
-            return "buyer/main"; // 
+            model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT); // 에러 시에도 추가
+            return "buyer/main";
         }
     }
-
-    /**
-     * 🔽 장바구니에 상품 추가
-     */
-    @PostMapping("/cart/add")
-    public String addToCart(@RequestParam("productId") String productId,
-                            @RequestParam("productSize") String productSize,
-                            @RequestParam("count") int count,
-                            HttpSession session,
-                            Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            buyerService.addToCart(user.getId(), productId, productSize, count);
-            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            // 기존 상세 페이지 URL 유지
-            return "redirect:/mypage/product/detail?id=" + productId;
-        }
-    }
-
 
     /**
      * 🔽 장바구니 목록 조회
@@ -124,9 +112,12 @@ public class BuyerController {
 
         List<CartDTO> cartList = buyerService.getCartList(user.getId());
         model.addAttribute("cartList", cartList);
+        
+        // ✅ 장바구니에서도 ImageKit URL 추가 (상품 이미지 표시용)
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+        
         return "buyer/cartList";
     }
-
     /**
      * 🔽 장바구니에서 항목 삭제
      */
@@ -136,7 +127,8 @@ public class BuyerController {
         return "redirect:/mypage/cart";
     }
     
-    //리뷰 작성
+    // ✅ 리뷰 작성 - 수정된 버전 (ImageKit 업로드 후 DB 저장)
+ // ✅ 리뷰 작성 - 수정된 버전 (중복 업로드 제거)
     @PostMapping("/product/review")
     public String addReview(@RequestParam("productId") String productId,
                             @RequestParam("score") int score,
@@ -150,37 +142,29 @@ public class BuyerController {
             return "redirect:/login";
         }
 
-        String reviewImageUrl = null;
-        if (reviewImage != null && !reviewImage.isEmpty()) {
-            // 서버에 저장 (예: /resources/upload/review/)
-            String uploadDir = session.getServletContext().getRealPath("/resources/upload/review/");
-            String originalFilename = reviewImage.getOriginalFilename();
-            String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String savedFileName = UUID.randomUUID().toString() + ext;
-
-            File dest = new File(uploadDir, savedFileName);
-            try {
-                reviewImage.transferTo(dest);
-                reviewImageUrl = savedFileName;
-            } catch (Exception e) {
-                e.printStackTrace();
-                model.addAttribute("error", "이미지 업로드 실패");
-                return "redirect:/mypage/product/detail?id=" + productId;
-            }
+        try {
+            // ReviewDTO 생성
+            ReviewDTO reviewDto = new ReviewDTO();
+            reviewDto.setProductId(productId);
+            reviewDto.setUserId(user.getId());
+            reviewDto.setScore(score);
+            reviewDto.setContent(content);
+           
+            
+            // 서비스를 통해 리뷰 저장 (이미지 업로드 포함)
+            buyerService.addReview(reviewDto, reviewImage);
+            
+            System.out.println("리뷰 등록 완료 - 상품ID: " + productId + ", 사용자ID: " + user.getId());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "리뷰 등록 중 오류가 발생했습니다: " + e.getMessage());
         }
-
-        ReviewDTO reviewDto = new ReviewDTO();
-        reviewDto.setProductId(productId);
-        reviewDto.setUserId(user.getId());
-        reviewDto.setScore(score);
-        reviewDto.setContent(content);
-        reviewDto.setReviewImageUrl(reviewImageUrl);
-
-        buyerService.addReview(reviewDto);
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
-    //리뷰 삭제
+    
+    // 리뷰 삭제
     @PostMapping("/product/review/delete")
     public String deleteReview(@RequestParam("reviewId") Long reviewId,
                                @RequestParam("productId") String productId,
@@ -195,14 +179,12 @@ public class BuyerController {
             buyerService.deleteReview(reviewId);
         } catch (RuntimeException e) {
             e.printStackTrace();
-            // 삭제 실패 시에도 상품 상세 페이지로 이동
         }
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
     
-    
- // ✅ 리뷰 수정 - 컨트롤러
+    // ✅ 리뷰 수정 - ImageKit 사용
     @PostMapping("/product/review/update")
     public String updateReview(@ModelAttribute ReviewDTO reviewDto,
                               @RequestParam(value = "reviewImage", required = false) MultipartFile reviewImage,
@@ -237,15 +219,12 @@ public class BuyerController {
         return result;
     }
     
-    
     @GetMapping("/order/form")
     public String orderForm(HttpSession session, Model model) {
-
         UserEntity user = (UserEntity) session.getAttribute("loginUser");
         if (user == null) return "redirect:/login";
 
         List<CartDTO> cartList = buyerService.getCartList(user.getId());
-
         model.addAttribute("cartList", cartList);
 
         int grandTotal = cartList.stream()
@@ -256,7 +235,6 @@ public class BuyerController {
         return "buyer/orderForm";
     }
 
-    
     @GetMapping("/address/form")
     public String addressForm(HttpSession session, Model model) {
         UserEntity user = (UserEntity) session.getAttribute("loginUser");
@@ -265,7 +243,6 @@ public class BuyerController {
         model.addAttribute("user", user);  
         return "buyer/addressForm";        
     }
-    
     
     @PostMapping("/address/update")
     public String updateAddress(
@@ -278,11 +255,9 @@ public class BuyerController {
         UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
         if (loginUser == null) return "redirect:/login";
 
-        // 엔티티 값 갱신
         loginUser.setName(name);
         loginUser.setPhoneNumber(phoneNumber);
         loginUser.setAddress(address);
-        // loginUser.setPostalCode(postalCode);
 
         userRepository.save(loginUser);
         session.setAttribute("loginUser", loginUser);
@@ -341,10 +316,7 @@ public class BuyerController {
         UserEntity user = (UserEntity) session.getAttribute("loginUser");
         if (user == null) return "redirect:/login";
 
-        // ① 주문 헤더
         List<OrderEntity> heads = orderRepository.findByUserId(user.getId());
-
-        // ② 주문번호별 상세
         Map<Long, List<OrderDetailEntity>> detailMap = new HashMap<>();
         for (OrderEntity h : heads) {
             List<OrderDetailEntity> details =
@@ -353,13 +325,11 @@ public class BuyerController {
         }
 
         model.addAttribute("headList", heads);
-        model.addAttribute("detailMap", detailMap);   // key=orderGroup
+        model.addAttribute("detailMap", detailMap);
         return "buyer/orderList";
     }
-
-
-
-
+    
+   
 
 
 }

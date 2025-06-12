@@ -10,15 +10,21 @@ import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.user.entity.UserEntity;
 
+import io.imagekit.sdk.ImageKit;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class HomeController {
 
     private final BuyerService buyerService;
-
-    public HomeController(BuyerService buyerService) {
+    private final ImageKit imageKit;
+    
+    
+    private static final String IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/alzwu0day/clodi/";
+    
+    public HomeController(BuyerService buyerService, ImageKit imageKit) {
         this.buyerService = buyerService;
+        this.imageKit = imageKit;
     }
 
     @GetMapping("/")
@@ -34,7 +40,8 @@ public class HomeController {
         // 상품 리스트 전달
         List<ProductEntity> productList = buyerService.getAllProducts();
         model.addAttribute("products", productList);
-
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+        
         return "buyer/main"; // → buyer/main.jsp
     }
 }
