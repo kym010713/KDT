@@ -1,5 +1,5 @@
 package com.kdt.project.buyer.service;
-   
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -29,11 +29,11 @@ import io.imagekit.sdk.ImageKit;
 import io.imagekit.sdk.models.FileCreateRequest;
 import io.imagekit.sdk.models.results.Result;
 import lombok.RequiredArgsConstructor;
-   
+
 @Service
 @RequiredArgsConstructor
 public class BuyerServiceImpl implements BuyerService {
-   
+
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
@@ -41,7 +41,7 @@ public class BuyerServiceImpl implements BuyerService {
     private final SizeRepository sizeRepository;
     private final ReviewRepository reviewRepository;
     private final ImageKit imageKit;
-    
+
     @Override
     public UserDto getMyPage(String userId) {
         UserEntity user = userRepository.findById(userId)
@@ -54,23 +54,22 @@ public class BuyerServiceImpl implements BuyerService {
                 .address(user.getAddress())
                 .build();
     }
-   
+
     @Override
     public List<ProductEntity> getAllProducts() {
         return productRepository.findAll();
     }
-   
+
     @Override
     public ProductEntity getProductById(String productId) {
         return productRepository.findById(productId).orElse(null);
     }
-   
+
     @Override
     public List<ProductOptionEntity> getProductOptionsByProductId(String productId) {
         return optionRepository.findByProduct_ProductId(productId);
     }
-   
-    // ✅ 장바구니 목록 조회
+
     @Override
     public List<CartDTO> getCartList(String userId) {
         UserEntity user = userRepository.findById(userId)
@@ -91,8 +90,7 @@ public class BuyerServiceImpl implements BuyerService {
             return dto;
         }).toList();
     }
-   
-    // ✅ 장바구니 추가
+
     @Override
     @Transactional
     public void addToCart(String userId, String productId, String productSize, int count) {
@@ -101,27 +99,22 @@ public class BuyerServiceImpl implements BuyerService {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
 
-        // 기존에 같은 상품+사이즈가 있는지 조회
         CartEntity existingCart = cartRepository.findByUser_IdAndProduct_ProductIdAndProductSize(userId, productId, productSize);
 
         if (existingCart != null) {
-            // 있으면 수량 더하기
             existingCart.setCartCount(existingCart.getCartCount() + count);
             cartRepository.save(existingCart);
         } else {
-            // 없으면 새로 추가
             CartEntity cart = new CartEntity();
             cart.setUser(user);
             cart.setProduct(product);
             cart.setProductSize(productSize);
             cart.setCartCount(count);
             cart.setCartDate(new Date());
-            
             cartRepository.save(cart);
         }
     }
-   
-    // ✅ 장바구니에서 항목 삭제
+
     @Transactional
     @Override
     public void deleteCartItem(Long cartId) {
@@ -130,8 +123,7 @@ public class BuyerServiceImpl implements BuyerService {
         }
         cartRepository.deleteById(cartId);
     }
-    
-    // 리뷰 목록 조회
+
     @Override
     public List<ReviewDTO> getReviewsByProductId(String productId) {
         List<ReviewEntity> reviews = reviewRepository.findByProduct_ProductId(productId);
@@ -148,145 +140,122 @@ public class BuyerServiceImpl implements BuyerService {
             return dto;
         }).collect(Collectors.toList());
     }
-   
-    // ✅ 리뷰 등록 - 컨트롤러에서 이미 업로드된 이미지 URL을 받아서 저장
+
     @Override
     @Transactional
-    public void addReview(ReviewDTO reviewDto) {
+    public void addReview(ReviewDTO reviewDto, MultipartFile reviewImage) {
         try {
-            // 사용자와 상품 조회
             ProductEntity product = productRepository.findById(reviewDto.getProductId())
                     .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
             UserEntity user = userRepository.findById(reviewDto.getUserId())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-            // 리뷰 엔티티 생성 및 저장
+            String imageUrl = null;
+            String fileId = null;
+
+            if (reviewImage != null && !reviewImage.isEmpty()) {
+                String[] result = uploadImageToImageKit(reviewImage, "review");
+                imageUrl = result[0];
+                fileId = result[1];
+            }
+
             ReviewEntity review = ReviewEntity.builder()
                     .reviewContent(reviewDto.getContent())
                     .reviewScore(reviewDto.getScore())
                     .reviewDate(new Date())
-                    .reviewImageUrl(reviewDto.getReviewImageUrl()) // 컨트롤러에서 업로드된 파일명
+                    .reviewImageUrl(imageUrl)
+                    .imageFileId(fileId)
                     .product(product)
                     .user(user)
                     .build();
 
-            ReviewEntity savedReview = reviewRepository.save(review);
-            
-            // 저장 확인 로그
-            System.out.println("리뷰 저장 완료 - ID: " + savedReview.getReviewId() + 
-                             ", 이미지 URL: " + savedReview.getReviewImageUrl());
-            
+            reviewRepository.save(review);
         } catch (Exception e) {
-            System.err.println("리뷰 저장 실패: " + e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException("리뷰 저장 중 오류가 발생했습니다.", e);
         }
     }
+
     
-    // 리뷰 삭제 - ImageKit에서 이미지 삭제
+
     @Override
     @Transactional
     public void deleteReview(Long reviewId) {
         ReviewEntity review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-        // 🔽 ImageKit에서 이미지 삭제 처리
-        String imageUrl = review.getReviewImageUrl();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            try {
-                // ImageKit에서 파일 삭제
-                deleteImageFromImageKit(imageUrl);
-            } catch (Exception e) {
-                System.err.println("ImageKit 이미지 삭제 실패: " + e.getMessage());
-                e.printStackTrace();
-            }
+        String fileId = review.getImageFileId(); // 🔁 fileId 가져오기
+        if (fileId != null && !fileId.isEmpty()) {
+            deleteImageFromImageKit(fileId);
         }
 
-        // 🔽 리뷰 엔티티 삭제
         reviewRepository.deleteById(reviewId);
     }
-    
+
     @Override
     @Transactional
     public void updateReview(ReviewDTO reviewDto, MultipartFile reviewImage) {
         ReviewEntity review = reviewRepository.findById(reviewDto.getReviewId())
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-        
-        // 기존 이미지 URL
-        String oldImageUrl = review.getReviewImageUrl();
-        
-        // 새 이미지가 업로드되었거나, 기존 이미지를 삭제하려는 경우
+
+        String oldFileId = review.getImageFileId();
+
         if (reviewImage != null && !reviewImage.isEmpty()) {
-            // 기존 이미지 삭제
-            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                deleteImageFromImageKit(oldImageUrl);
+            if (oldFileId != null && !oldFileId.isEmpty()) {
+                deleteImageFromImageKit(oldFileId);
             }
-            
-            // 새 이미지 ImageKit에 저장
             try {
-                String newImageUrl = uploadImageToImageKit(reviewImage, "review");
-                review.setReviewImageUrl(newImageUrl);
+                String[] result = uploadImageToImageKit(reviewImage, "review");
+                review.setReviewImageUrl(result[0]);
+                review.setImageFileId(result[1]);
             } catch (IOException e) {
                 throw new RuntimeException("이미지 저장 중 오류가 발생했습니다.", e);
             }
         } else if (reviewDto.getReviewImageUrl() == null || reviewDto.getReviewImageUrl().isEmpty()) {
-            // 이미지를 삭제하려는 경우 (프론트에서 삭제 요청)
-            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                deleteImageFromImageKit(oldImageUrl);
+            if (oldFileId != null && !oldFileId.isEmpty()) {
+                deleteImageFromImageKit(oldFileId);
             }
             review.setReviewImageUrl(null);
+            review.setImageFileId(null);
         }
-        // 그 외의 경우는 기존 이미지 유지
-        
-        // 리뷰 내용 수정
+
         review.setReviewScore(reviewDto.getScore());
         review.setReviewContent(reviewDto.getContent());
-        review.setReviewDate(new Date()); // 수정일 갱신
-        
+        review.setReviewDate(new Date());
+
         reviewRepository.save(review);
     }
 
-    // ImageKit에 이미지 업로드
-    private String uploadImageToImageKit(MultipartFile file, String folder) throws IOException {
+ // ✅ fileName과 fileId 둘 다 리턴 - 수정된 버전
+    private String[] uploadImageToImageKit(MultipartFile file, String folder) throws IOException {
         try {
             String originalFilename = file.getOriginalFilename();
             String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String fileName =  UUID.randomUUID().toString() + ext;
-            
-            FileCreateRequest fileCreateRequest = new FileCreateRequest(
-                file.getBytes(), 
-                fileName
-            );
+            String fileName = UUID.randomUUID().toString() + ext;
+
+            FileCreateRequest fileCreateRequest = new FileCreateRequest(file.getBytes(), fileName);
             fileCreateRequest.setFolder("/" + folder + "/");
             fileCreateRequest.setUseUniqueFileName(false);
-            
+
             Result result = imageKit.upload(fileCreateRequest);
-            
-            System.out.println("ImageKit 업로드 성공: " + result.getUrl());
-            
-            // DB에는 파일명만 저장 (기존 로직과 일치)
-            return fileName;
+
+            // ✅ 수정: result.getUrl() 대신 fileName을 반환 (Controller와 일치)
+            // Controller에서는 fileName을 저장하고 있으므로 일관성 유지
+            return new String[]{fileName, result.getFileId()};
             
         } catch (Exception e) {
-            System.err.println("ImageKit 업로드 실패: " + e.getMessage());
-            e.printStackTrace();
             throw new IOException("ImageKit 업로드 실패", e);
         }
     }
-    
-    // ImageKit에서 이미지 삭제
-    private void deleteImageFromImageKit(String fileName) {
+
+    // 🔁 fileId 기반 삭제
+    private void deleteImageFromImageKit(String fileId) {
         try {
-            // 파일명으로 ImageKit에서 파일 찾아서 삭제
-            // ImageKit의 file list API를 사용하여 파일 ID를 찾고 삭제해야 합니다.
-            // 실제 구현 시에는 파일 ID를 별도로 저장하거나, 파일명으로 검색하는 로직이 필요합니다.
-            System.out.println("ImageKit에서 파일 삭제 시도: " + fileName);
-            // imageKit.deleteFile(fileId); // 실제 삭제 로직
+            imageKit.deleteFile(fileId);
         } catch (Exception e) {
             System.err.println("ImageKit 파일 삭제 실패: " + e.getMessage());
         }
     }
-    
+
     @Transactional
     @Override
     public void updateCartQuantity(Long cartId, int cartCount) {

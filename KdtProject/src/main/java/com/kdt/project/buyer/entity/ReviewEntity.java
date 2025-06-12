@@ -61,4 +61,8 @@ public class ReviewEntity {
     
     @Column(name = "REVIEW_IMAGE_URL") 
     private String reviewImageUrl;
+    
+    @Column(name = "REVIEW_IMAGE_FILE_ID")
+    private String imageFileId;
+
 }

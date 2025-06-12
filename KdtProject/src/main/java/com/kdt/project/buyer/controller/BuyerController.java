@@ -128,6 +128,7 @@ public class BuyerController {
     }
     
     // ✅ 리뷰 작성 - 수정된 버전 (ImageKit 업로드 후 DB 저장)
+ // ✅ 리뷰 작성 - 수정된 버전 (중복 업로드 제거)
     @PostMapping("/product/review")
     public String addReview(@RequestParam("productId") String productId,
                             @RequestParam("score") int score,
@@ -140,8 +141,6 @@ public class BuyerController {
         if (user == null) {
             return "redirect:/login";
         }
-        
-        
 
         try {
             // ReviewDTO 생성
@@ -150,17 +149,10 @@ public class BuyerController {
             reviewDto.setUserId(user.getId());
             reviewDto.setScore(score);
             reviewDto.setContent(content);
+           
             
-            // 이미지가 있는 경우 ImageKit에 업로드
-            if (reviewImage != null && !reviewImage.isEmpty()) {
-                String reviewImageUrl = uploadImageToImageKit(reviewImage, "review");
-                reviewDto.setReviewImageUrl(reviewImageUrl);
-                
-                System.out.println("리뷰 이미지 업로드 완료: " + reviewImageUrl);
-            }
-            
-            // 서비스를 통해 리뷰 저장
-            buyerService.addReview(reviewDto);
+            // 서비스를 통해 리뷰 저장 (이미지 업로드 포함)
+            buyerService.addReview(reviewDto, reviewImage);
             
             System.out.println("리뷰 등록 완료 - 상품ID: " + productId + ", 사용자ID: " + user.getId());
             
@@ -337,45 +329,7 @@ public class BuyerController {
         return "buyer/orderList";
     }
     
-    // ✅ ImageKit에 이미지 업로드하는 헬퍼 메서드 - 예외 처리 강화
-    private String uploadImageToImageKit(MultipartFile file, String folder) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IOException("업로드할 파일이 없습니다.");
-        }
-
-        try {
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null || !originalFilename.contains(".")) {
-                throw new IOException("잘못된 파일 형식입니다.");
-            }
-
-            String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String shortRandom = UUID.randomUUID().toString().substring(0, 5);
-            String fileName = shortRandom + ext;
-
-            FileCreateRequest fileCreateRequest = new FileCreateRequest(file.getBytes(), fileName);
-            fileCreateRequest.setFolder("/" + folder + "/");
-
-            // ✅ 이 줄 추가: 랜덤 문자열 방지
-            fileCreateRequest.setUseUniqueFileName(false);
-
-            Result result = imageKit.upload(fileCreateRequest);
-
-            if (result == null || result.getUrl() == null) {
-                throw new IOException("ImageKit 업로드 결과가 null입니다.");
-            }
-
-            System.out.println("ImageKit 업로드 성공: " + result.getUrl());
-            System.out.println("저장할 파일명: " + fileName);
-
-            return fileName;
-
-        } catch (Exception e) {
-            System.err.println("ImageKit 업로드 실패: " + e.getMessage());
-            e.printStackTrace();
-            throw new IOException("ImageKit 업로드 실패: " + e.getMessage(), e);
-        }
-    }
+   
 
 
 }
