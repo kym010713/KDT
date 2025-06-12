@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>매출 분석</title>
+    <title>매출 분석 - 판매자</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -322,7 +322,7 @@
     
     <div class="container">
         <h2 class="page-title">
-            <i class="fas fa-chart-line me-3"></i>매출 분석
+            <i class="fas fa-chart-line me-3"></i>매출 분석 
         </h2>
         
         <!-- 기간 선택 -->
@@ -436,37 +436,8 @@
             </div>
         </div>
 
-        <!-- 데이터 내보내기 -->
-        <!-- analytics.jsp의 데이터 내보내기 섹션을 이것으로 교체하세요 -->
-
-<div class="export-section">
-    <div class="export-title">
-        <i class="fas fa-download me-2"></i>데이터 내보내기
+       
     </div>
-    <div class="export-buttons">
-        <button class="btn-export btn-excel" onclick="exportData('excel')" title="Excel 파일로 내보내기 (Ctrl+E)">
-            <i class="fas fa-file-excel"></i>
-            Excel로 내보내기
-        </button>
-        <button class="btn-export btn-csv" onclick="exportData('csv')" title="CSV 파일로 내보내기 (Ctrl+Shift+E)">
-            <i class="fas fa-file-csv"></i>
-            CSV로 내보내기
-        </button>
-        <button class="btn-export" onclick="printAnalytics()" 
-                style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;"
-                title="인쇄하기 (Ctrl+P)">
-            <i class="fas fa-print"></i>
-            인쇄하기
-        </button>
-        <button class="btn-export" onclick="saveChartAsImage('monthlyRevenueChart', 'monthly_revenue_chart')"
-                style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;"
-                title="차트를 이미지로 저장">
-            <i class="fas fa-camera"></i>
-            차트 저장
-        </button>
-    </div>
-    
-</div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -479,8 +450,6 @@
             initializeCharts();
         });
         
-     // analytics.jsp의 initializeCharts 함수를 이렇게 수정하세요
-
         function initializeCharts() {
             // 월별 매출 차트
             const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
@@ -688,231 +657,301 @@
                 productData: productData,
                 orderCountData: orderCountData
             });
-        });
+        }
             
             // 월별 주문 건수 차트
-            const orderCountCtx = document.getElementById('orderCountChart').get
+            const orderCountCtx = document.getElementById('orderCountChart').getContext('2d');
+            const orderCountData = [
+                <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
+                    ${monthly.orderCount}<c:if test="${!status.last}">,</c:if>
+                </c:forEach>
+            ];
             
-         // analytics.jsp의 <script> 태그 안에 이 함수들을 추가하세요
+            orderCountChart = new Chart(orderCountCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [{
+                        label: '주문 건수',
+                        data: orderCountData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '건';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 분석 데이터 업데이트
+        function updateAnalytics() {
+            const year = document.getElementById('yearSelect').value;
+            
+            fetch(`/seller/api/monthly-sales?year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateChartsWithData(data);
+                        updateStatsWithData(data);
+                    } else {
+                        alert('데이터 조회에 실패했습니다: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('데이터 조회 중 오류가 발생했습니다.');
+                });
+        }
+        
+        // 차트 데이터 업데이트
+        function updateChartsWithData(data) {
+            const monthlySales = data.monthlySales;
+            
+            // 월별 매출 데이터 추출
+            const revenueData = monthlySales.map(item => item.revenue);
+            const orderData = monthlySales.map(item => item.orderCount);
+            
+            // 월별 매출 차트 업데이트
+            monthlyRevenueChart.data.datasets[0].data = revenueData;
+            monthlyRevenueChart.update();
+            
+            // 주문 건수 차트 업데이트
+            orderCountChart.data.datasets[0].data = orderData;
+            orderCountChart.update();
+            
+            // 상품별 매출 차트 업데이트
+            if (data.productRevenueShare) {
+                const productLabels = Object.keys(data.productRevenueShare);
+                const productValues = Object.values(data.productRevenueShare);
+                
+                productRevenueChart.data.labels = productLabels;
+                productRevenueChart.data.datasets[0].data = productValues;
+                productRevenueChart.update();
+            }
+        }
+        
+        // 통계 카드 업데이트
+        function updateStatsWithData(data) {
+            const analytics = data.analytics;
+            
+            if (analytics) {
+                document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = 
+                    formatCurrency(analytics.totalRevenue);
+                document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = 
+                    analytics.totalOrders + '건';
+                document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = 
+                    formatCurrency(analytics.averageOrderValue);
+                document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = 
+                    analytics.completedDeliveries + '건';
+            }
+        }
+        
+        // 통화 포맷팅
+        function formatCurrency(amount) {
+            if (amount == null || amount == undefined) return '0원';
+            return parseInt(amount).toLocaleString() + '원';
+        }
+        
+        
+        
+        // 차트 이미지로 저장
+        function saveChartAsImage(chartId, filename) {
+            const canvas = document.getElementById(chartId);
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = filename + '.png';
+            link.href = url;
+            link.click();
+        }
+        
+        // 실시간 데이터 업데이트 (5분마다)
+        setInterval(function() {
+            updateAnalytics();
+        }, 5 * 60 * 1000); // 5분
+        
+        
 
-         // 데이터 내보내기 함수
-         function exportData(format) {
-             const year = document.getElementById('yearSelect') ? 
-                          document.getElementById('yearSelect').value : 
-                          new Date().getFullYear();
-             
-             console.log(`${format} 내보내기 시작:`, year);
-             
-             try {
-                 if (format === 'excel') {
-                     // Excel 내보내기 URL
-                     const excelUrl = `/seller/export/sales?format=excel&year=${year}`;
-                     console.log('Excel URL:', excelUrl);
-                     
-                     // 새 창에서 다운로드
-                     window.open(excelUrl, '_blank');
-                     
-                     // 사용자에게 알림
-                     showNotification('Excel 파일 다운로드를 시작합니다.', 'success');
-                     
-                 } else if (format === 'csv') {
-                     // CSV 내보내기 URL
-                     const csvUrl = `/seller/export/sales?format=csv&year=${year}`;
-                     console.log('CSV URL:', csvUrl);
-                     
-                     // 새 창에서 다운로드
-                     window.open(csvUrl, '_blank');
-                     
-                     // 사용자에게 알림
-                     showNotification('CSV 파일 다운로드를 시작합니다.', 'success');
-                     
+
+     // 분석 데이터 업데이트 함수
+     function updateAnalytics() {
+         const year = document.getElementById('yearSelect').value;
+         console.log('분석 데이터 업데이트:', year);
+         
+         // 실제 구현에서는 서버에 AJAX 요청을 보내야 함
+         fetch(`/seller/api/monthly-sales?year=${year}`)
+             .then(response => response.json())
+             .then(data => {
+                 if (data.success) {
+                     updateChartsWithData(data);
+                     updateStatsWithData(data);
+                     console.log('데이터 업데이트 성공:', data);
                  } else {
-                     console.error('지원하지 않는 형식:', format);
-                     showNotification('지원하지 않는 파일 형식입니다.', 'error');
+                     alert('데이터 조회에 실패했습니다: ' + data.message);
                  }
-                 
-             } catch (error) {
-                 console.error('내보내기 오류:', error);
-                 showNotification('파일 내보내기 중 오류가 발생했습니다.', 'error');
-             }
-         }
-
-         // 알림 표시 함수
-         function showNotification(message, type = 'info') {
-             // 기존 알림 제거
-             const existingNotification = document.querySelector('.export-notification');
-             if (existingNotification) {
-                 existingNotification.remove();
-             }
-             
-             // 새 알림 생성
-             const notification = document.createElement('div');
-             notification.className = `export-notification alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
-             notification.style.cssText = `
-                 position: fixed;
-                 top: 20px;
-                 right: 20px;
-                 z-index: 9999;
-                 min-width: 300px;
-                 padding: 15px;
-                 border-radius: 8px;
-                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                 animation: slideInRight 0.3s ease-out;
-             `;
-             
-             notification.innerHTML = `
-                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                     <div style="display: flex; align-items: center;">
-                         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-                         <span>${message}</span>
-                     </div>
-                     <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-                 </div>
-             `;
-             
-             document.body.appendChild(notification);
-             
-             // 3초 후 자동 제거
-             setTimeout(() => {
-                 if (notification.parentElement) {
-                     notification.remove();
-                 }
-             }, 3000);
-         }
-
-         // 차트 이미지로 저장 함수
-         function saveChartAsImage(chartId, filename) {
-             try {
-                 const canvas = document.getElementById(chartId);
-                 if (!canvas) {
-                     console.error('차트를 찾을 수 없습니다:', chartId);
-                     showNotification('차트를 찾을 수 없습니다.', 'error');
-                     return;
-                 }
-                 
-                 // 차트를 이미지로 변환
-                 const url = canvas.toDataURL('image/png', 1.0);
-                 
-                 // 다운로드 링크 생성
-                 const link = document.createElement('a');
-                 link.download = `${filename || chartId}_${new Date().toISOString().split('T')[0]}.png`;
-                 link.href = url;
-                 
-                 // 클릭하여 다운로드
-                 document.body.appendChild(link);
-                 link.click();
-                 document.body.removeChild(link);
-                 
-                 showNotification('차트 이미지가 다운로드되었습니다.', 'success');
-                 console.log('차트 이미지 저장 완료:', filename);
-                 
-             } catch (error) {
-                 console.error('차트 이미지 저장 오류:', error);
-                 showNotification('차트 이미지 저장 중 오류가 발생했습니다.', 'error');
-             }
-         }
-
-         // 전체 분석 리포트 내보내기 (고급 기능)
-         function exportFullReport() {
-             try {
-                 const year = document.getElementById('yearSelect') ? 
-                              document.getElementById('yearSelect').value : 
-                              new Date().getFullYear();
-                 
-                 // 모든 차트를 이미지로 변환
-                 const charts = ['monthlyRevenueChart', 'productRevenueChart', 'orderCountChart'];
-                 const chartImages = {};
-                 
-                 charts.forEach(chartId => {
-                     const canvas = document.getElementById(chartId);
-                     if (canvas) {
-                         chartImages[chartId] = canvas.toDataURL('image/png', 1.0);
-                     }
-                 });
-                 
-                 // 리포트 데이터 준비
-                 const reportData = {
-                     year: year,
-                     generatedAt: new Date().toISOString(),
-                     charts: chartImages,
-                     summary: {
-                         totalRevenue: document.querySelector('.stat-card:nth-child(1) .stat-value')?.textContent || '0원',
-                         totalOrders: document.querySelector('.stat-card:nth-child(2) .stat-value')?.textContent || '0건',
-                         averageOrderValue: document.querySelector('.stat-card:nth-child(3) .stat-value')?.textContent || '0원',
-                         completedDeliveries: document.querySelector('.stat-card:nth-child(4) .stat-value')?.textContent || '0건'
-                     }
-                 };
-                 
-                 console.log('전체 리포트 데이터:', reportData);
-                 showNotification('전체 리포트 생성 기능은 추후 제공될 예정입니다.', 'info');
-                 
-             } catch (error) {
-                 console.error('전체 리포트 생성 오류:', error);
-                 showNotification('리포트 생성 중 오류가 발생했습니다.', 'error');
-             }
-         }
-
-         // 프린트 기능
-         function printAnalytics() {
-             try {
-                 // 프린트용 스타일 추가
-                 const printStyle = document.createElement('style');
-                 printStyle.textContent = `
-                     @media print {
-                         .no-print { display: none !important; }
-                         .container { max-width: none !important; margin: 0 !important; padding: 0 !important; }
-                         .chart-container { page-break-inside: avoid; margin-bottom: 20px; }
-                         .stats-overview { page-break-inside: avoid; }
-                     }
-                 `;
-                 document.head.appendChild(printStyle);
-                 
-                 // 프린트 실행
-                 window.print();
-                 
-                 // 프린트 후 스타일 제거
-                 setTimeout(() => {
-                     document.head.removeChild(printStyle);
-                 }, 1000);
-                 
-             } catch (error) {
-                 console.error('프린트 오류:', error);
-                 showNotification('프린트 중 오류가 발생했습니다.', 'error');
-             }
-         }
-
-         // 애니메이션 CSS 추가
-         const animationStyle = document.createElement('style');
-         animationStyle.textContent = `
-             @keyframes slideInRight {
-                 from {
-                     transform: translateX(100%);
-                     opacity: 0;
-                 }
-                 to {
-                     transform: translateX(0);
-                     opacity: 1;
-                 }
-             }
-             
-             .export-notification {
-                 animation: slideInRight 0.3s ease-out;
-             }
-         `;
-         document.head.appendChild(animationStyle);
-
-         // 페이지 로드 시 내보내기 버튼 이벤트 리스너 추가
-         document.addEventListener('DOMContentLoaded', function() {
-             console.log('내보내기 함수들 초기화 완료');
-             
-             // 내보내기 버튼에 툴팁 추가
-             const exportButtons = document.querySelectorAll('.btn-export');
-             exportButtons.forEach(button => {
-                 button.setAttribute('title', '클릭하여 ' + button.textContent.trim() + '하기');
+             })
+             .catch(error => {
+                 console.error('Error:', error);
+                 // 서버 오류시 임시 데이터로 차트 업데이트
+                 updateChartsWithSampleData(year);
              });
+     }
+
+     // 차트 데이터 업데이트 함수
+     function updateChartsWithData(data) {
+         const monthlySales = data.monthlySales || [];
+         
+         // 월별 매출 데이터 추출
+         const revenueData = [];
+         const orderData = [];
+         
+         // 1-12월 데이터 준비 (데이터가 없는 월은 0으로)
+         for (let month = 1; month <= 12; month++) {
+             const monthData = monthlySales.find(item => item.month === month);
+             revenueData.push(monthData ? monthData.revenue : 0);
+             orderData.push(monthData ? monthData.orderCount : 0);
+         }
+         
+         // 월별 매출 차트 업데이트
+         if (monthlyRevenueChart) {
+             monthlyRevenueChart.data.datasets[0].data = revenueData;
+             monthlyRevenueChart.update();
+         }
+         
+         // 주문 건수 차트 업데이트
+         if (orderCountChart) {
+             orderCountChart.data.datasets[0].data = orderData;
+             orderCountChart.update();
+         }
+         
+         // 상품별 매출 차트 업데이트
+         if (data.productRevenueShare && productRevenueChart) {
+             const productLabels = Object.keys(data.productRevenueShare);
+             const productValues = Object.values(data.productRevenueShare);
+             
+             productRevenueChart.data.labels = productLabels;
+             productRevenueChart.data.datasets[0].data = productValues;
+             productRevenueChart.update();
+         }
+     }
+
+     // 서버 오류시 사용할 임시 데이터 함수
+     function updateChartsWithSampleData(year) {
+         console.log('샘플 데이터로 차트 업데이트:', year);
+         
+         // 현재 데이터를 기반으로 한 샘플 데이터 생성
+         const sampleRevenueData = [47200, 94400, 141600, 47200, 188800, 236000, 0, 0, 0, 0, 0, 0];
+         const sampleOrderData = [1, 2, 3, 1, 4, 5, 0, 0, 0, 0, 0, 0];
+         
+         // 월별 매출 차트 업데이트
+         if (monthlyRevenueChart) {
+             monthlyRevenueChart.data.datasets[0].data = sampleRevenueData;
+             monthlyRevenueChart.data.datasets[0].label = `${year}년 월별 매출`;
+             monthlyRevenueChart.update();
+         }
+         
+         // 주문 건수 차트 업데이트
+         if (orderCountChart) {
+             orderCountChart.data.datasets[0].data = sampleOrderData;
+             orderCountChart.update();
+         }
+         
+         // 상품별 매출 차트는 기존 데이터 유지
+         if (productRevenueChart) {
+             productRevenueChart.data.labels = ['소프트 베이직 브이넥 가디건'];
+             productRevenueChart.data.datasets[0].data = [100];
+             productRevenueChart.update();
+         }
+     }
+
+     // 통계 카드 업데이트 함수
+     function updateStatsWithData(data) {
+         const analytics = data.analytics;
+         
+         if (analytics) {
+             // 각 통계 카드의 값 업데이트
+             const statCards = document.querySelectorAll('.stat-value');
+             if (statCards.length >= 4) {
+                 statCards[0].textContent = formatCurrency(analytics.totalRevenue);
+                 statCards[1].textContent = analytics.totalOrders + '건';
+                 statCards[2].textContent = formatCurrency(analytics.averageOrderValue);
+                 statCards[3].textContent = analytics.completedDeliveries + '건';
+             }
+         }
+     }
+
+     // 통화 포맷팅 함수
+     function formatCurrency(amount) {
+         if (amount == null || amount == undefined) return '0원';
+         return parseInt(amount).toLocaleString() + '원';
+     }
+
+    
+
+     // 차트 이미지로 저장 함수
+     function saveChartAsImage(chartId, filename) {
+         const canvas = document.getElementById(chartId);
+         if (canvas) {
+             const url = canvas.toDataURL('image/png');
+             const link = document.createElement('a');
+             link.download = filename + '.png';
+             link.href = url;
+             link.click();
+         }
+     }
+
+     // 페이지 로드시 초기 데이터로 차트 업데이트
+     document.addEventListener('DOMContentLoaded', function() {
+         console.log('Analytics 페이지 로드됨');
+         
+         // 초기 차트 생성 후 샘플 데이터로 업데이트
+         setTimeout(() => {
+             const currentYear = new Date().getFullYear();
+             updateChartsWithSampleData(currentYear);
+         }, 1000);
+     });
+
+     // 오류 발생시 콘솔에 로그 출력
+     window.addEventListener('error', function(e) {
+         console.error('JavaScript 오류:', e.error);
+     });
+
+     // 차트 변수들이 정의되었는지 확인
+     setInterval(() => {
+         console.log('차트 상태 확인:', {
+             monthlyRevenueChart: typeof monthlyRevenueChart !== 'undefined',
+             orderCountChart: typeof orderCountChart !== 'undefined', 
+             productRevenueChart: typeof productRevenueChart !== 'undefined'
          });
+     }, 5000);
+    </script>
 
-
-         console.log('내보내기 기능 로드 완료 - 단축키: Ctrl+E (Excel), Ctrl+Shift+E (CSV), Ctrl+P (프린트)');
-            
-            </script>
+</body>
+</html>

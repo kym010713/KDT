@@ -509,22 +509,7 @@
                             </div>
                         </c:if>
                         
-                        <!-- 배송 완료율 -->
-                        <c:set var="completedCount" value="0" />
-                        <c:forEach items="${salesList}" var="sales">
-                            <c:if test="${sales.deliveryState == 'COMPLETED'}">
-                                <c:set var="completedCount" value="${completedCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        <c:if test="${salesList.size() > 0}">
-                            <div class="summary-item">
-                                <span class="summary-label">배송 완료율</span>
-                                <span class="summary-value">
-                                    <fmt:formatNumber value="${(completedCount / salesList.size()) * 100}" pattern="#.#"/>%
-                                    (${completedCount}/${salesList.size()})
-                                </span>
-                            </div>
-                        </c:if>
+                      
                     </div>
                 </c:otherwise>
             </c:choose>
