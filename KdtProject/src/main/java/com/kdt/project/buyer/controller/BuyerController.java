@@ -44,6 +44,9 @@ public class BuyerController {
     private final BuyerService buyerService;
     private final ImageKit imageKit;
     
+    // ImageKit URL을 상수로 정의
+    private static final String IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/alzwu0day/clodi/";
+    
     @Autowired
     OrderRepository orderRepository;
     
@@ -57,18 +60,6 @@ public class BuyerController {
         this.buyerService = buyerService;
         this.orderService = orderService;
         this.imageKit = imageKit;
-    }
-
-    @GetMapping("")
-    public String myPage(HttpSession session, Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("user", user);
-        return "buyer/myPage";
     }
 
     /**
@@ -88,34 +79,15 @@ public class BuyerController {
             model.addAttribute("options", options);
             model.addAttribute("reviews", reviews);
             
+            // ✅ ImageKit URL을 Model에 추가
+            model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+            
             return "buyer/productDetail";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("error", "상품을 찾을 수 없습니다.");
+            model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT); // 에러 시에도 추가
             return "buyer/main";
-        }
-    }
-
-    /**
-     * 🔽 장바구니에 상품 추가
-     */
-    @PostMapping("/cart/add")
-    public String addToCart(@RequestParam("productId") String productId,
-                            @RequestParam("productSize") String productSize,
-                            @RequestParam("count") int count,
-                            HttpSession session,
-                            Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            buyerService.addToCart(user.getId(), productId, productSize, count);
-            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            return "redirect:/mypage/product/detail?id=" + productId;
         }
     }
 
@@ -131,9 +103,12 @@ public class BuyerController {
 
         List<CartDTO> cartList = buyerService.getCartList(user.getId());
         model.addAttribute("cartList", cartList);
+        
+        // ✅ 장바구니에서도 ImageKit URL 추가 (상품 이미지 표시용)
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+        
         return "buyer/cartList";
     }
-
     /**
      * 🔽 장바구니에서 항목 삭제
      */
@@ -143,7 +118,7 @@ public class BuyerController {
         return "redirect:/mypage/cart";
     }
     
-    // 리뷰 작성 - ImageKit 사용
+    // ✅ 리뷰 작성 - 수정된 버전 (ImageKit 업로드 후 DB 저장)
     @PostMapping("/product/review")
     public String addReview(@RequestParam("productId") String productId,
                             @RequestParam("score") int score,
@@ -156,27 +131,34 @@ public class BuyerController {
         if (user == null) {
             return "redirect:/login";
         }
+        
+        
 
-        String reviewImageUrl = null;
-        if (reviewImage != null && !reviewImage.isEmpty()) {
-            try {
-                // ImageKit에 업로드
-                reviewImageUrl = uploadImageToImageKit(reviewImage, "review");
-            } catch (Exception e) {
-                e.printStackTrace();
-                model.addAttribute("error", "이미지 업로드 실패");
-                return "redirect:/mypage/product/detail?id=" + productId;
+        try {
+            // ReviewDTO 생성
+            ReviewDTO reviewDto = new ReviewDTO();
+            reviewDto.setProductId(productId);
+            reviewDto.setUserId(user.getId());
+            reviewDto.setScore(score);
+            reviewDto.setContent(content);
+            
+            // 이미지가 있는 경우 ImageKit에 업로드
+            if (reviewImage != null && !reviewImage.isEmpty()) {
+                String reviewImageUrl = uploadImageToImageKit(reviewImage, "review");
+                reviewDto.setReviewImageUrl(reviewImageUrl);
+                
+                System.out.println("리뷰 이미지 업로드 완료: " + reviewImageUrl);
             }
+            
+            // 서비스를 통해 리뷰 저장
+            buyerService.addReview(reviewDto);
+            
+            System.out.println("리뷰 등록 완료 - 상품ID: " + productId + ", 사용자ID: " + user.getId());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "리뷰 등록 중 오류가 발생했습니다: " + e.getMessage());
         }
-
-        ReviewDTO reviewDto = new ReviewDTO();
-        reviewDto.setProductId(productId);
-        reviewDto.setUserId(user.getId());
-        reviewDto.setScore(score);
-        reviewDto.setContent(content);
-        reviewDto.setReviewImageUrl(reviewImageUrl);
-
-        buyerService.addReview(reviewDto);
 
         return "redirect:/mypage/product/detail?id=" + productId;
     }
@@ -300,30 +282,45 @@ public class BuyerController {
         return "buyer/orderList";
     }
     
-    // ImageKit에 이미지 업로드하는 헬퍼 메서드
+    // ✅ ImageKit에 이미지 업로드하는 헬퍼 메서드 - 예외 처리 강화
     private String uploadImageToImageKit(MultipartFile file, String folder) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IOException("업로드할 파일이 없습니다.");
+        }
+
         try {
             String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || !originalFilename.contains(".")) {
+                throw new IOException("잘못된 파일 형식입니다.");
+            }
+
             String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String fileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString() + ext;
-            
-            FileCreateRequest fileCreateRequest = new FileCreateRequest(
-                file.getBytes(), 
-                fileName
-            );
+            String shortRandom = UUID.randomUUID().toString().substring(0, 5);
+            String fileName = shortRandom + ext;
+
+            FileCreateRequest fileCreateRequest = new FileCreateRequest(file.getBytes(), fileName);
             fileCreateRequest.setFolder("/" + folder + "/");
-            
+
+            // ✅ 이 줄 추가: 랜덤 문자열 방지
+            fileCreateRequest.setUseUniqueFileName(false);
+
             Result result = imageKit.upload(fileCreateRequest);
-            
+
+            if (result == null || result.getUrl() == null) {
+                throw new IOException("ImageKit 업로드 결과가 null입니다.");
+            }
+
             System.out.println("ImageKit 업로드 성공: " + result.getUrl());
-            
-            // DB에는 파일명만 저장 (기존 로직과 일치)
+            System.out.println("저장할 파일명: " + fileName);
+
             return fileName;
-            
+
         } catch (Exception e) {
             System.err.println("ImageKit 업로드 실패: " + e.getMessage());
             e.printStackTrace();
-            throw new IOException("ImageKit 업로드 실패", e);
+            throw new IOException("ImageKit 업로드 실패: " + e.getMessage(), e);
         }
     }
+
+
 }
