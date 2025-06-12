@@ -76,6 +76,6 @@
             </div>
         </div>
     </div>
-
+<%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
 </body>
 </html>
