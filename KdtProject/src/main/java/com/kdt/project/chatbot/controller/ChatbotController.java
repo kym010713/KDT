@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.kdt.project.chatbot.dto.FaqDto;
 import com.kdt.project.chatbot.service.ChatbotService;
+import com.kdt.project.user.entity.UserEntity;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -32,7 +33,14 @@ public class ChatbotController {
     @PostMapping("/ask")
     public String ask(@RequestParam("question") String question, Model model, HttpSession session) {
     	
-        String answer = chatbotService.getAnswer(question);
+    	UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+    	String userId = loginUser.getId();
+    	// userId가 없는 경우 기본 답변 처리
+        if (userId == null) {
+            return "/login";
+        }
+    	
+        String answer = chatbotService.getAnswer(question,userId);
 
         // 세션에 저장된 대화 리스트 가져오기 (없으면 새로 생성)
         List<FaqDto> chatHistory = (List<FaqDto>) session.getAttribute("chatHistory");

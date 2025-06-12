@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 			     JOIN ProductEntity p     ON p.productId   = d.productId
 			    WHERE o.userId = :userId
 			 GROUP BY o.orderGroup
-			 ORDER BY o.orderGroup DESC
+			 ORDER BY o.orderGroup DESC	
 			""")
 			List<OrderSummaryDTO> findOrderSummaries(@Param("userId") String userId);
 	

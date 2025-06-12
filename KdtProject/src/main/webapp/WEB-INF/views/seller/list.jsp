@@ -122,6 +122,7 @@
             color: var(--secondary-color);
             font-weight: 500;
             margin-right: 1rem;
+             white-space: nowrap;
         }
 
         .form-select {
