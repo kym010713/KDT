@@ -1,12 +1,14 @@
 package com.kdt.project.seller.service;
 
 import com.kdt.project.seller.dto.SalesDto;
-import com.kdt.project.seller.entity.Orders;
 import com.kdt.project.seller.entity.Product;
 import com.kdt.project.seller.entity.Delivery;
-import com.kdt.project.seller.repository.OrdersRepository;
+import com.kdt.project.order.entity.OrderDetailEntity;
+import com.kdt.project.order.entity.OrderEntity;
 import com.kdt.project.seller.repository.ProductSellerRepository;
 import com.kdt.project.seller.repository.DeliveryRepository;
+import com.kdt.project.order.repository.OrderDetailRepository;
+import com.kdt.project.order.repository.OrderEntityRepository; // 새로 생성한 Repository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,31 +20,30 @@ import java.util.Optional;
 public class SalesService {
     
     @Autowired
-    private OrdersRepository ordersRepository;
-    
-    @Autowired
     private ProductSellerRepository productSellerRepository;
     
-    private SalesDto createSalesDto(Orders order) {
+    @Autowired
+    private DeliveryRepository deliveryRepository;
+    
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+    
+    @Autowired
+    private OrderEntityRepository orderEntityRepository; // 새로 추가
+    
+    private SalesDto createSalesDto(OrderEntity order, OrderDetailEntity orderDetail, Product product) {
         try {
-            // Product 정보 조회
-            Optional<Product> productOpt = productSellerRepository.findById(order.getProductId());  // 이름 변경
-            if (productOpt.isEmpty()) {
-                return null;
-            }
-            Product product = productOpt.get();
-            
-            // Delivery 정보 조회
-            Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(order.getOrderNumber());
-            
             SalesDto salesDto = new SalesDto();
-            salesDto.setOrderNumber(order.getOrderNumber());
+            salesDto.setOrderNumber(order.getOrderGroup()); // ORDER_GROUP 사용
             salesDto.setUserId(order.getUserId());
             salesDto.setProductName(product.getProductName());
             salesDto.setCompanyName(product.getCompanyName());
-            salesDto.setProductPrice(String.valueOf(product.getProductPrice())); // Long을 String으로 변환
+            salesDto.setProductPrice(String.valueOf(product.getProductPrice()));
             salesDto.setOrderDate(order.getOrderDate());
             salesDto.setOrderAddress(order.getOrderAddress());
+            
+            // Delivery 정보 조회 (ORDER_GROUP 기준)
+            Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(order.getOrderGroup());
             
             if (deliveryOpt.isPresent()) {
                 Delivery delivery = deliveryOpt.get();
@@ -56,20 +57,27 @@ public class SalesService {
             return salesDto;
             
         } catch (Exception e) {
-            System.out.println("Error creating SalesDto for order: " + order.getOrderNumber() + " - " + e.getMessage());
+            System.out.println("Error creating SalesDto for order: " + order.getOrderId() + " - " + e.getMessage());
             return null;
         }
     }
     
-    @Autowired
-    private DeliveryRepository deliveryRepository;
-    
     public List<SalesDto> getAllSales() {
-        List<Orders> orders = ordersRepository.findAllByOrderByOrderDateDesc();
+        List<OrderDetailEntity> orderDetails = orderDetailRepository.findAll();
         List<SalesDto> salesList = new ArrayList<>();
         
-        for (Orders order : orders) {
-            SalesDto salesDto = createSalesDto(order);
+        for (OrderDetailEntity orderDetail : orderDetails) {
+            // 주문 정보 조회
+            Optional<OrderEntity> orderOpt = orderEntityRepository.findByOrderGroup(orderDetail.getOrderGroup());
+            if (orderOpt.isEmpty()) continue;
+            OrderEntity order = orderOpt.get();
+            
+            // 상품 정보 조회
+            Optional<Product> productOpt = productSellerRepository.findById(orderDetail.getProductId());
+            if (productOpt.isEmpty()) continue;
+            Product product = productOpt.get();
+            
+            SalesDto salesDto = createSalesDto(order, orderDetail, product);
             if (salesDto != null) {
                 salesList.add(salesDto);
             }
@@ -79,11 +87,24 @@ public class SalesService {
     }
     
     public List<SalesDto> getSalesByCompany(String companyName) {
-        List<Orders> orders = ordersRepository.findByCompanyNameOrderByOrderDateDesc(companyName);
+        List<OrderDetailEntity> allOrderDetails = orderDetailRepository.findAll();
         List<SalesDto> salesList = new ArrayList<>();
         
-        for (Orders order : orders) {
-            SalesDto salesDto = createSalesDto(order);
+        for (OrderDetailEntity orderDetail : allOrderDetails) {
+            // 주문 정보 조회
+            Optional<OrderEntity> orderOpt = orderEntityRepository.findByOrderGroup(orderDetail.getOrderGroup());
+            if (orderOpt.isEmpty()) continue;
+            OrderEntity order = orderOpt.get();
+            
+            // 상품 정보 조회
+            Optional<Product> productOpt = productSellerRepository.findById(orderDetail.getProductId());
+            if (productOpt.isEmpty()) continue;
+            Product product = productOpt.get();
+            
+            // 회사명 필터링
+            if (!companyName.equals(product.getCompanyName())) continue;
+            
+            SalesDto salesDto = createSalesDto(order, orderDetail, product);
             if (salesDto != null) {
                 salesList.add(salesDto);
             }
@@ -94,6 +115,7 @@ public class SalesService {
     
     public boolean updateDeliveryStatus(Long orderNumber, String newStatus) {
         try {
+            // orderNumber는 ORDER_GROUP
             Optional<Delivery> deliveryOpt = deliveryRepository.findByOrderNumber(orderNumber);
             
             if (deliveryOpt.isPresent()) {
@@ -110,7 +132,7 @@ public class SalesService {
             } else {
                 // 배송 정보가 없으면 새로 생성
                 Delivery newDelivery = new Delivery();
-                newDelivery.setOrderNumber(orderNumber);
+                newDelivery.setOrderNumber(orderNumber); // ORDER_GROUP
                 newDelivery.setDeliveryState(newStatus);
                 newDelivery.setRequestDate(new java.util.Date());
                 
@@ -129,6 +151,4 @@ public class SalesService {
             return false;
         }
     }
-    
-   
 }

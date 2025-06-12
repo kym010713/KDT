@@ -15,14 +15,12 @@ import java.util.Date;
 public class Orders {
     
     @Id
-    @Column(name = "ORDER_NUMBER")
-    private Long orderNumber;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ORDER_ID")
+    private Long orderId;
     
     @Column(name = "USER_ID")
     private String userId;
-    
-    @Column(name = "PRODUCT_ID")
-    private String productId;
     
     @Column(name = "ORDER_DATE")
     @Temporal(TemporalType.DATE)
@@ -33,4 +31,12 @@ public class Orders {
     
     @Column(name = "ORDER_ADDRESS")
     private String orderAddress;
+    
+    @Column(name = "ORDER_GROUP")
+    private Long orderGroup;
+    
+ 
+    public Long getOrderNumber() {
+        return this.orderGroup; 
+    }
 }
