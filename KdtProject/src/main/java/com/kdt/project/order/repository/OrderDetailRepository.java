@@ -23,5 +23,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
 	    List<OrderDetailDTO> findDetailsByOrderGroup(@Param("orderGroup") Long orderGroup);
 	
     List<OrderDetailEntity> findByOrderGroup(Long orderGroup);
+    
+    @Query("""
+            SELECT d
+              FROM OrderDetailEntity d
+              JOIN OrderEntity   o ON o.orderGroup = d.orderGroup
+             WHERE o.userId = :userId
+             ORDER BY o.orderDate DESC, d.detailId
+            """)
+     List<OrderDetailEntity> findByUserId(@Param("userId") String userId);
 
 }

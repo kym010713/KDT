@@ -1,15 +1,14 @@
 package com.kdt.project.buyer.controller;
 
-import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,21 +24,17 @@ import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
 import com.kdt.project.buyer.service.BuyerService;
+import com.kdt.project.order.dto.OrderSummaryDTO;
 import com.kdt.project.order.entity.OrderDetailEntity;
-import com.kdt.project.order.entity.OrderEntity;
 import com.kdt.project.order.repository.OrderDetailRepository;
 import com.kdt.project.order.repository.OrderRepository;
 import com.kdt.project.order.service.OrderService;
-import com.kdt.project.user.dto.UserDto;
 import com.kdt.project.user.entity.UserEntity;
 import com.kdt.project.user.repository.UserRepository;
 import com.kdt.project.user.service.UserService;
 
 import io.imagekit.sdk.ImageKit;
-import io.imagekit.sdk.models.FileCreateRequest;
-import io.imagekit.sdk.models.results.Result;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/mypage")
@@ -313,21 +308,31 @@ public class BuyerController {
     
     @GetMapping("/order/list")
     public String orderList(HttpSession session, Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-        if (user == null) return "redirect:/login";
 
-        List<OrderEntity> heads = orderRepository.findByUserId(user.getId());
-        Map<Long, List<OrderDetailEntity>> detailMap = new HashMap<>();
-        for (OrderEntity h : heads) {
-            List<OrderDetailEntity> details =
-                    detailRepository.findByOrderGroup(h.getOrderGroup());
-            detailMap.put(h.getOrderGroup(), details);
-        }
+        UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/login";
 
-        model.addAttribute("headList", heads);
+        /* 1) 헤더 : 최신순 JPQL 로 한 방 조회 */
+        List<OrderSummaryDTO> headList =
+                orderService.getOrderList(loginUser.getId());   // ← 이미 DESC 정렬
+
+        /* 2) 상세 : 사용자별 전체 → 한 방 조회 후 groupingBy( LinkedHashMap ) */
+        List<OrderDetailEntity> detailList =
+        		detailRepository.findByUserId(loginUser.getId());
+
+        Map<Long, List<OrderDetailEntity>> detailMap =
+                detailList.stream()
+                          .collect(Collectors.groupingBy(
+                                  OrderDetailEntity::getOrderGroup,
+                                  LinkedHashMap::new,          // ★ 삽입순서 유지
+                                  Collectors.toList()));
+
+        /* 3) 화면 전달 */
+        model.addAttribute("headList",  headList);
         model.addAttribute("detailMap", detailMap);
         return "buyer/orderList";
     }
+
     
    
 

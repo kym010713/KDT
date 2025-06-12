@@ -11,9 +11,14 @@ import com.kdt.project.seller.entity.SellerRoleEntity;
 import com.kdt.project.seller.repository.SellerRoleRepository;
 import com.kdt.project.user.repository.UserRepository;
 
-@Service
-public class SellerRoleServiceImpl implements SellerRoleService {
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class SellerRoleServiceImpl implements SellerRoleService {
+	
     @Autowired
     private SellerRoleRepository sellerRoleRepository;
     
@@ -42,19 +47,28 @@ public class SellerRoleServiceImpl implements SellerRoleService {
     }
     
     @Override
-    @Transactional
-    public void updateStatusToApproved(Long sellerRoleId) {
-        SellerRoleEntity entity = sellerRoleRepository.findById(sellerRoleId).orElseThrow();
-        entity.setStatus("Y");
-        sellerRoleRepository.save(entity);
-
-        // 승인된 판매자의 사용자 ROLE 업데이트
-        userRepository.updateUserRoleToSeller(entity.getSellerId());
+    public void updateStatusToApproved(Long id) {
+        SellerRoleEntity e = sellerRoleRepository.findById(id).orElseThrow();
+        e.setStatus("Y");               // Dirty-checking
+        userRepository.updateUserRoleToSeller(e.getSellerId());
+        // save() 호출 불필요 – TX commit 시 flush
     }
     
     @Override
     public String getCompanyNameBySellerId(String sellerId) {
         Optional<SellerRoleEntity> sellerRole = sellerRoleRepository.findBySellerIdAndStatus(sellerId, "Y");
         return sellerRole.map(SellerRoleEntity::getBrandName).orElse(null);
+    }
+    
+    
+    @Override
+    public void updateStatusToRejected(Long id) {
+    	sellerRoleRepository.updateStatusToRejected(id);   // ← @Modifying query
+    }
+    
+    @Override
+    public void deleteApplication(Long sellerRoleId) {
+        sellerRoleRepository.deleteById(sellerRoleId);
+        
     }
 }

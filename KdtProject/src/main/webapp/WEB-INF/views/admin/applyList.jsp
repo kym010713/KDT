@@ -7,25 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>입점 신청 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="${pageContext.request.contextPath}/resources/js/tailwind-config.js"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        pretendard: ['Pretendard', 'sans-serif'],
-                    },
-                    colors: {
-                        'main-color': {
-                            DEFAULT: '#1f2937',
-                            'hover': '#111827'
-                        }
-                    }
-                },
-            },
-        }
-    </script>
 </head>
 <body class="bg-gray-50 font-pretendard">
 
@@ -61,6 +45,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사업자 번호</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">대표 전화번호</th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">승인 처리</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">삭제</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -75,16 +60,31 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     <c:choose>
                                         <c:when test="${seller.status == 'Y'}">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                                <i class="fas fa-check-circle mr-2"></i>승인됨
-                                            </span>
+                                            <!-- Approved State: Toggle ON -->
+                                            <div class="flex items-center justify-center gap-3 cursor-pointer" onclick="rejectSeller('${seller.sellerRoleId}')">
+                                                <div class="relative">
+                                                    <div class="w-11 h-6 bg-main-color rounded-full"></div>
+                                                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform transform translate-x-5"></div>
+                                                </div>
+                                                <span class="font-semibold text-main-color">승인됨</span>
+                                            </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <button onclick="approveSeller('${seller.sellerRoleId}')" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-main-color hover:bg-main-color-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main-color">
-                                                <i class="fas fa-check mr-2"></i>승인
-                                            </button>
+                                            <!-- Not Approved State: Toggle OFF -->
+                                            <div class="flex items-center justify-center gap-3 cursor-pointer" onclick="approveSeller('${seller.sellerRoleId}')">
+                                                <div class="relative">
+                                                    <div class="w-11 h-6 bg-gray-200 rounded-full"></div>
+                                                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></div>
+                                                </div>
+                                                <span class="text-gray-500">미승인</span>
+                                            </div>
                                         </c:otherwise>
                                     </c:choose>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                    <button onclick="deleteApplication('${seller.sellerRoleId}')" class="text-gray-400 hover:text-red-600 transition-colors" title="신청 삭제">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -96,26 +96,60 @@
 </div>
 
 <script>
-function approveSeller(sellerRoleId) {
-    if (confirm('해당 신청을 승인하시겠습니까?')) {
-        fetch('${pageContext.request.contextPath}/admin/approveSeller?sellerRoleId=' + sellerRoleId, {
-            method: 'POST'
-        }).then(response => {
-            if (response.ok) {
-                alert('승인 처리되었습니다.');
-                location.reload();
-            } else {
-                response.text().then(text => {
-                    alert('승인 처리 중 오류가 발생했습니다: ' + text);
-                });
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-            alert('승인 처리 중 네트워크 또는 스크립트 오류가 발생했습니다.');
-        });
+    // 승인
+    function approveSeller(sellerRoleId) {
+        if (confirm('해당 신청을 승인하시겠습니까?')) {
+            fetch('${pageContext.request.contextPath}/admin/approveSeller?sellerRoleId=' + sellerRoleId, {
+                method: 'POST'
+            })
+            .then(res => {
+                if (res.ok) {
+                    alert('승인 처리되었습니다.');
+                    location.reload();
+                } else {
+                    return res.text().then(t => { throw new Error(t); });
+                }
+            })
+            .catch(err => alert('승인 처리 중 오류가 발생했습니다: ' + err.message));
+        }
     }
-}
+
+    // 승인 취소
+    function rejectSeller(sellerRoleId) {
+        if (confirm('이 신청의 승인을 취소하시겠습니까?')) {
+            fetch('${pageContext.request.contextPath}/admin/rejectSeller?sellerRoleId=' + sellerRoleId, {
+                method: 'POST'
+            })
+            .then(res => {
+                if (res.ok) {
+                    alert('승인 취소 처리되었습니다.');
+                    location.reload();
+                } else {
+                    return res.text().then(t => { throw new Error(t); });
+                }
+            })
+            .catch(err => alert('승인 취소 처리 중 오류가 발생했습니다: ' + err.message));
+        }
+    }
+
+    function deleteApplication(sellerRoleId) {
+    	  if (confirm('이 신청 내역을 완전히 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    	    fetch('${pageContext.request.contextPath}/admin/deleteApplication?sellerRoleId=' + sellerRoleId,
+    	          { method: 'POST' })
+    	    .then(res => {
+    	        if (res.ok) {
+    	            alert('삭제 처리되었습니다.');
+    	            location.reload();
+    	        } else {
+    	            return res.text().then(t => { throw new Error(t); });
+    	        }
+    	    })
+    	    .catch(err => alert('삭제 중 오류가 발생했습니다: ' + err.message));
+    	  }
+    	}
+
 </script>
+
 
 </body>
 </html>
