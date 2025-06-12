@@ -48,7 +48,7 @@
                 <span class="question-item cursor-pointer px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm">아이디를 잊어버렸어요</span>
                 <span class="question-item cursor-pointer px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm">비밀번호 변경하고 싶어요</span>
                 <span class="question-item cursor-pointer px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm">로그인이 안돼요</span>
-                <span class="question-item cursor-pointer px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm">회원탈퇴는 어떻게 하나요?</span>
+                <span class="question-item cursor-pointer px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm">주문내역을 알고싶어요</span>
             </div>
         </div>
     </div>
