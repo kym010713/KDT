@@ -6,10 +6,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kdt.project.admin.entity.AdminEntity;
 import com.kdt.project.admin.service.AdminService;
@@ -99,5 +101,24 @@ public class AdminController {
 	    sellerRoleService.updateStatusToApproved(sellerRoleId);  // status = 'Y'
 	    return "OK";
 	}
+	
+	@PostMapping("/admin/updateUser")
+	public String updateUser(
+	        @RequestParam("id")    String id,
+	        @RequestParam("email") String email,
+	        @RequestParam(value = "passwd", required = false) String passwd,
+	        RedirectAttributes ra) {
+
+	    try {
+	        adminService.updateUser(id, email, passwd);   // ← 아까 만든 서비스
+	        ra.addFlashAttribute("alertMsg", "수정 완료!");
+	    } catch (IllegalStateException e) {               // 이메일 중복
+	        ra.addFlashAttribute("alertMsg", e.getMessage());
+	    }
+	    return "redirect:/admin/userList";
+	}
+
+
+
 
 }

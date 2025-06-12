@@ -10,7 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kdt.project.admin.entity.AdminEntity;
 import com.kdt.project.admin.repository.AdminRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService{
 	
     @Autowired
@@ -41,7 +44,26 @@ public class AdminServiceImpl implements AdminService{
 	    }
 	}
 
+	
+	@Transactional
+	@Override
+	public void updateUser(String id, String email, String passwd) {
 
+	    // ① 중복 이메일 검사
+	    if (adminRepository.existsByEmailAndIdNot(email, id)) {
+	        throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+	    }
+
+	    // ② 실제 업데이트
+	    AdminEntity user = adminRepository.findById(id)
+	                                      .orElseThrow();
+	    user.setEmail(email.trim());
+
+	    if (passwd != null && !passwd.isBlank()) {
+	        user.setPasswd(passwd);          // 평문 그대로
+	    }
+	    /* dirty-checking 으로 자동 UPDATE */
+	}
 
 
 }
