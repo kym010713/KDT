@@ -55,19 +55,6 @@ public class BuyerController {
         this.buyerService = buyerService;
         this.orderService = orderService;
     }
-
-    @GetMapping("")
-    public String myPage(HttpSession session, Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("user", user);
-        return "buyer/myPage";
-    }
-
     /**
      * 상품 상세 보기 (상품 정보 + 옵션 정보 포함)
      */

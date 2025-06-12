@@ -100,15 +100,16 @@
 						class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden hidden"
 						role="menu" aria-orientation="vertical"
 						aria-labelledby="user-menu-button" tabindex="-1">
-						<a href="${pageContext.request.contextPath}/mypage"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">내 프로필
-							</a>
+						<button id="profileBtn"
+							class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+							내 프로필
+						</button>
 						<a href="${pageContext.request.contextPath}/mypage/order/list"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">주문내역</a>
+							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">주문내역</a>
 						<a href="../seller/list"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">판매자 페이지</a>
+							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">판매자 페이지</a>
 						<a href="${pageContext.request.contextPath}/logout"
-							class="block px-4 py-2 text-sm text-gray-700" role="menuitem">로그아웃</a>
+							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">로그아웃</a>
 					</div>
 				</div>
 			</div>
@@ -130,22 +131,127 @@
 	</div>
 </nav>
 
+<!-- 프로필 모달 -->
+<div id="profileModal" 
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full mx-4 overflow-hidden">
+        <!-- 모달 헤더 -->
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-navy-dark">프로필 정보</h3>
+            <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 모달 내용 -->
+        <div class="p-6 space-y-4">
+            <div class="space-y-4">
+            
+            <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-id-card text-sm"></i>
+                        <span class="text-sm">아이디</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.id}</p>
+                </div>
+                
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-envelope text-sm"></i>
+                        <span class="text-sm">이메일</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.email}</p>
+                </div>  
+                
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-user text-sm"></i>
+                        <span class="text-sm">이름</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.name}</p>
+                </div>
+                
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-map-marker-alt text-sm"></i>
+                        <span class="text-sm">주소</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.address}</p>
+                </div>
+                
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2 text-gray-500 mb-1">
+                        <i class="fas fa-crown text-sm"></i>
+                        <span class="text-sm">등급</span>
+                    </div>
+                    <p class="text-lg text-gray-800">${loginUser.grade}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 모달 푸터 -->
+        <div class="p-6 border-t border-gray-100">
+            <button id="closeModalBtn" 
+                    class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                닫기
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const button = document.getElementById("user-menu-button");
     const menu = button?.parentElement?.nextElementSibling;
+    const profileBtn = document.getElementById("profileBtn");
+    const profileModal = document.getElementById("profileModal");
+    const closeModal = document.getElementById("closeModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
 
+    // 유저 메뉴 토글
     if (button && menu) {
       button.addEventListener("click", function (e) {
         e.stopPropagation();
         menu.classList.toggle("hidden");
       });
 
-      document.addEventListener("click", function () {
-        if (!menu.classList.contains("hidden")) {
+      document.addEventListener("click", function (e) {
+        // 프로필 모달이 열려있지 않을 때만 메뉴를 닫음
+        if (!menu.classList.contains("hidden") && !profileModal.contains(e.target)) {
           menu.classList.add("hidden");
         }
       });
     }
+
+    // 모달 열기
+    profileBtn?.addEventListener("click", () => {
+        profileModal.classList.remove("hidden");
+        menu.classList.add("hidden"); // 메뉴 닫기
+        document.body.style.overflow = "hidden"; // 스크롤 방지
+    });
+
+    // 모달 닫기 함수
+    const hideModal = () => {
+        profileModal.classList.add("hidden");
+        document.body.style.overflow = ""; // 스크롤 복원
+    };
+
+    // 닫기 버튼 클릭
+    closeModal?.addEventListener("click", hideModal);
+    closeModalBtn?.addEventListener("click", hideModal);
+
+    // 모달 외부 클릭시 닫기
+    profileModal?.addEventListener("click", (e) => {
+        if (e.target === profileModal) {
+            hideModal();
+        }
+    });
+
+    // ESC 키 누를때 모달 닫기
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !profileModal.classList.contains("hidden")) {
+            hideModal();
+        }
+    });
   });
 </script>
