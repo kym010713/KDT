@@ -15,7 +15,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 	@Query("""
 			   SELECT new com.kdt.project.order.dto.OrderSummaryDTO(
 			          o.orderGroup,
-			          MAX(o.orderDate),
+			          MAX(o.orderDate),     
 			          MAX(o.orderAddress),
 			          SUM(d.quantity * p.productPrice))
 			     FROM OrderEntity  o
@@ -23,9 +23,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 			     JOIN ProductEntity p     ON p.productId   = d.productId
 			    WHERE o.userId = :userId
 			 GROUP BY o.orderGroup
-			 ORDER BY o.orderGroup DESC	
+			 ORDER BY MAX(o.orderDate) DESC       
 			""")
 			List<OrderSummaryDTO> findOrderSummaries(@Param("userId") String userId);
+
+
+
 	
     List<OrderEntity> findByUserId(String userId);
 

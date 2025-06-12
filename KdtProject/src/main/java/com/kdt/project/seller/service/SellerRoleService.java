@@ -13,6 +13,11 @@ public interface SellerRoleService {
     @Transactional
     public void updateStatusToApproved(Long sellerRoleId);
     
+    @Transactional
+    public void updateStatusToRejected(Long sellerRoleId);
+    
     // 승인된 판매자의 회사명 조회
     public String getCompanyNameBySellerId(String sellerId);
+    
+    public void deleteApplication(Long sellerRoleId);
 }
