@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
@@ -28,13 +30,16 @@ import com.kdt.project.order.entity.OrderEntity;
 import com.kdt.project.order.repository.OrderDetailRepository;
 import com.kdt.project.order.repository.OrderRepository;
 import com.kdt.project.order.service.OrderService;
+import com.kdt.project.user.dto.UserDto;
 import com.kdt.project.user.entity.UserEntity;
 import com.kdt.project.user.repository.UserRepository;
+import com.kdt.project.user.service.UserService;
 
 import io.imagekit.sdk.ImageKit;
 import io.imagekit.sdk.models.FileCreateRequest;
 import io.imagekit.sdk.models.results.Result;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/mypage")
@@ -53,6 +58,10 @@ public class BuyerController {
     @Autowired
     OrderDetailRepository detailRepository;
     
+
+
+    @Autowired
+    UserService userService;
     @Autowired
     UserRepository userRepository;
 
@@ -262,6 +271,52 @@ public class BuyerController {
         session.setAttribute("loginUser", loginUser);
 
         return "redirect:/mypage/order/form";
+    }
+    
+    @GetMapping("/address/UpdateForm")
+    public String UpdateForm(HttpSession session, Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+
+        model.addAttribute("user", user);  
+        return "buyer/UpdateForm";        
+    }
+    
+    
+    @PostMapping("/address/updateUser")
+    public String updateUser(
+            @RequestParam("name")        String name,
+            @RequestParam("email")        String email,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("address")     String address,
+            RedirectAttributes redirectAttributes,
+            HttpSession session,
+            Model model) {
+
+        UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/login";
+        
+     // 이메일 중복 검사 (현재 로그인 사용자의 이메일은 예외)
+     if (!loginUser.getEmail().equals(email) && userService.existsByEmail(email)) {
+         redirectAttributes.addFlashAttribute("error", "이미 사용 중인 이메일입니다.");
+         return "redirect:/mypage/address/UpdateForm";
+     }
+     
+     if (!loginUser.getPhoneNumber().equals(phoneNumber) && userService.existsByPhoneNumber(phoneNumber)) {
+         redirectAttributes.addFlashAttribute("error", "이미 사용 중인 전화번호입니다.");
+         return "redirect:/mypage/address/UpdateForm";
+     }
+
+        // 엔티티 값 갱신
+        loginUser.setName(name);
+        loginUser.setEmail(email);
+        loginUser.setPhoneNumber(phoneNumber);
+        loginUser.setAddress(address);
+
+        userRepository.save(loginUser);
+        session.setAttribute("loginUser", loginUser);
+
+        return "redirect:/";
     }
     
     @GetMapping("/order/list")

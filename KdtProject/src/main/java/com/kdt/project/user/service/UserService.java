@@ -44,6 +44,11 @@ public class UserService {
 	 public boolean existsByEmail(String email) {
 		    return userRepository.existsByEmail(email);
 		}
+	 
+	 public boolean existsByPhoneNumber(String phoneNumber) {
+		    return userRepository.existsByPhoneNumber(phoneNumber);
+		}
+	 
 
 	public UserEntity join(UserDto dto) {	// 회원가입
 		UserEntity user = new UserEntity();

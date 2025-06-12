@@ -6,9 +6,21 @@
 <head>
     <title>회원가입</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/user/join.css" />
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    
     <script>
     const contextPath = '${pageContext.request.contextPath}';
+
+    function execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('postcode').value = data.zonecode;
+                document.getElementById('address').value = data.address;
+            }
+        }).open();
+    }
 
     function sendVerificationCode() {
         const email = document.getElementById("email").value.trim();
@@ -126,10 +138,20 @@
 
             <div class="form-group">
                 <label for="address">주소</label>
-                <input type="text" id="address" name="address" value="${userDto.address}" />
-                <c:if test="${not empty errors['address']}">
-                    <div class="error-message">${errors['address']}</div>
-                </c:if>
+                <div class="address-input-container">
+                    <div class="postcode-group">
+                        <input type="text" id="postcode" placeholder="우편번호" readonly />
+                        <button type="button" onclick="execDaumPostcode()" class="address-search-btn">
+                            <i class="fas fa-search"></i>
+                            주소 찾기
+                        </button>
+                    </div>
+                    <input type="text" id="address" name="address" value="${userDto.address}"
+                        placeholder="주소" readonly required />
+                    <c:if test="${not empty errors['address']}">
+                        <div class="error-message">${errors['address']}</div>
+                    </c:if>
+                </div>
             </div>
 
             <button type="submit">회원가입</button>
