@@ -398,7 +398,7 @@
             <div class="chart-container">
                 <div class="chart-title">
                     <i class="fas fa-chart-bar"></i>
-                    월별 주문 건수
+                    월별 주문건수
                 </div>
                 <canvas id="orderCountChart"></canvas>
             </div>
