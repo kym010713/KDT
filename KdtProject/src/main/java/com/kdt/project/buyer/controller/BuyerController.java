@@ -94,6 +94,27 @@ public class BuyerController {
             return "buyer/main";
         }
     }
+    @PostMapping("/cart/add")
+    public String addToCart(@RequestParam("productId") String productId,
+                            @RequestParam("productSize") String productSize,
+                            @RequestParam("count") int count,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.addToCart(user.getId(), productId, productSize, count);
+            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            // 기존 상세 페이지 URL 유지
+            return "redirect:/mypage/product/detail?id=" + productId;
+        }
+    }
+    
 
     /**
      * 🔽 장바구니 목록 조회
@@ -107,6 +128,7 @@ public class BuyerController {
 
         List<CartDTO> cartList = buyerService.getCartList(user.getId());
         model.addAttribute("cartList", cartList);
+        
         
         // ✅ 장바구니에서도 ImageKit URL 추가 (상품 이미지 표시용)
         model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
@@ -330,6 +352,7 @@ public class BuyerController {
         /* 3) 화면 전달 */
         model.addAttribute("headList",  headList);
         model.addAttribute("detailMap", detailMap);
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
         return "buyer/orderList";
     }
 

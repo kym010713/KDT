@@ -76,7 +76,7 @@
                     <c:forEach var="d" items="${detailMap[h.orderGroup]}">
                         <tr class="bg-white border-b">
                             <td class="px-6 py-4">
-                                <img src="${pageContext.request.contextPath}/resources/upload/${d.product.productPhoto}"
+                                <img src="${imagekitUrl}product/${d.product.productPhoto}"
                                      class="w-16 h-16 object-cover rounded-md"/>
                             </td>
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
