@@ -140,6 +140,46 @@
             content: " *";
             color: var(--error-color);
         }
+
+        /* 이미지 업로드 관련 스타일 */
+        .image-upload-container {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+
+        .image-upload-container:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f0f0;
+        }
+
+        .image-upload-container.dragover {
+            border-color: var(--accent-color);
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 1rem auto;
+            display: none;
+            object-fit: cover;
+        }
+
+        .upload-text {
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+        }
+
+        .file-info {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -165,7 +205,7 @@
                 </div>
             </c:if>
             
-            <form:form method="post" modelAttribute="productDto" action="/seller/register">
+            <form:form method="post" modelAttribute="productDto" action="/seller/register" enctype="multipart/form-data">
                 <!-- 카테고리 선택 -->
                 <div class="form-group">
                     <label for="category" class="form-label required-field">카테고리</label>
@@ -185,12 +225,7 @@
                     <form:errors path="productName" cssClass="error" />
                 </div>
                 
-                <!-- 제조사 -->
-                <div class="form-group">
-                    <label for="companyName" class="form-label required-field">제조사</label>
-                    <form:input path="companyName" id="companyName" class="form-control" placeholder="제조사를 입력하세요" />
-                    <form:errors path="companyName" cssClass="error" />
-                </div>
+                <form:hidden path="companyName" />
                 
                 <!-- 상품 설명 -->
                 <div class="form-group">
@@ -204,6 +239,31 @@
                     <label for="productPrice" class="form-label required-field">상품 가격</label>
                     <form:input path="productPrice" id="productPrice" class="form-control" placeholder="예: 29000" />
                     <form:errors path="productPrice" cssClass="error" />
+                </div>
+                
+                <!-- 상품 이미지 업로드 - 새로 추가 -->
+                <div class="form-group">
+                    <label for="productImageFile" class="form-label">상품 이미지</label>
+                    <div class="image-upload-container" id="imageUploadContainer">
+                        <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <div>
+                            <input type="file" id="productImageFile" name="productImageFile" 
+                                   accept="image/*" style="display: none;" onchange="handleImageSelect(this)">
+                            <label for="productImageFile" class="btn" style="cursor: pointer;">
+                                <i class="fas fa-plus me-2"></i>이미지 선택
+                            </label>
+                        </div>
+                        <div class="upload-text">또는 이미지를 드래그해서 올려주세요</div>
+                        <img id="imagePreview" class="image-preview" alt="이미지 미리보기">
+                        <div id="fileInfo" class="file-info"></div>
+                    </div>
+                    
+                    <!-- URL 직접 입력 옵션 -->
+                    <div class="mt-3">
+                        <label for="productPhoto" class="form-label">또는 이미지 URL 직접 입력</label>
+                        <form:input path="productPhoto" id="productPhoto" class="form-control" placeholder="이미지 URL을 입력하세요 (선택사항)" />
+                        <form:errors path="productPhoto" cssClass="error" />
+                    </div>
                 </div>
                 
                 <!-- 상품 사이즈 -->
@@ -236,13 +296,6 @@
                     <form:errors path="productCount" cssClass="error" />
                 </div>
                 
-                <!-- 상품 사진 URL -->
-                <div class="form-group">
-                    <label for="productPhoto" class="form-label">상품 사진 URL</label>
-                    <form:input path="productPhoto" id="productPhoto" class="form-control" placeholder="상품 사진 URL을 입력하세요 (선택사항)" />
-                    <form:errors path="productPhoto" cssClass="error" />
-                </div>
-                
                 <!-- 등록 버튼 -->
                 <div class="form-group mb-0">
                     <button type="submit" class="btn">
@@ -255,5 +308,139 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 이미지 선택 처리
+        function handleImageSelect(input) {
+            const file = input.files[0];
+            const preview = document.getElementById('imagePreview');
+            const fileInfo = document.getElementById('fileInfo');
+            
+            if (file) {
+                // 파일 크기 체크 (10MB 제한)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('파일 크기는 10MB 이하여야 합니다.');
+                    input.value = '';
+                    return;
+                }
+                
+                // 이미지 파일 타입 체크
+                if (!file.type.startsWith('image/')) {
+                    alert('이미지 파일만 업로드 가능합니다.');
+                    input.value = '';
+                    return;
+                }
+                
+                // 파일 정보 표시
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `<i class="fas fa-file-image me-1"></i>${file.name} (${fileSize}MB)`;
+                
+                // 이미지 미리보기
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                
+                // URL 입력 필드 비우기 (파일 업로드 우선)
+                document.getElementById('productPhoto').value = '';
+            } else {
+                preview.style.display = 'none';
+                fileInfo.innerHTML = '';
+            }
+        }
+        
+        // 드래그 앤 드롭 기능
+        const uploadContainer = document.getElementById('imageUploadContainer');
+        const fileInput = document.getElementById('productImageFile');
+        
+        uploadContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadContainer.classList.add('dragover');
+        });
+        
+        uploadContainer.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadContainer.classList.remove('dragover');
+        });
+        
+        uploadContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadContainer.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleImageSelect(fileInput);
+            }
+        });
+        
+        // URL 입력 시 파일 입력 비우기
+        document.getElementById('productPhoto').addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                fileInput.value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('fileInfo').innerHTML = '';
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            console.log('폼 요소:', form);
+            console.log('제출 버튼:', submitButton);
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('=== 폼 제출 시작 ===');
+                    
+                    // 폼 데이터 확인
+                    const formData = new FormData(form);
+                    console.log('폼 데이터:');
+                    for (let [key, value] of formData.entries()) {
+                        if (value instanceof File) {
+                            console.log(key + ':', value.name, '(' + value.size + ' bytes)');
+                        } else {
+                            console.log(key + ':', value);
+                        }
+                    }
+                    
+                    // 필수 필드 확인
+                    const category = document.getElementById('category').value;
+                    const productName = document.getElementById('productName').value;
+                    const productDetail = document.getElementById('productDetail').value;
+                    const productPrice = document.getElementById('productPrice').value;
+                    const productSize = document.getElementById('productSize').value;
+                    const productCount = document.getElementById('productCount').value;
+                    
+                    console.log('필수 필드 확인:');
+                    console.log('- 카테고리:', category);
+                    console.log('- 상품명:', productName);
+                    console.log('- 상품설명:', productDetail);
+                    console.log('- 가격:', productPrice);
+                    console.log('- 사이즈:', productSize);
+                    console.log('- 수량:', productCount);
+                    
+                    if (!category || !productName || !productDetail || !productPrice || !productSize || !productCount) {
+                        console.log('필수 필드 누락!');
+                        alert('필수 필드를 모두 입력해주세요.');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    console.log('폼 제출 계속 진행...');
+                });
+            }
+            
+            // 제출 버튼 클릭 이벤트도 확인
+            if (submitButton) {
+                submitButton.addEventListener('click', function(e) {
+                    console.log('제출 버튼 클릭됨');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

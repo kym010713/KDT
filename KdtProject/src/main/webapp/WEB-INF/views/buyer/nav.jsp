@@ -106,7 +106,7 @@
 						</button>
 						<a href="${pageContext.request.contextPath}/mypage/order/list"
 							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">주문내역</a>
-						<a href="../seller/list"
+						<a href="${pageContext.request.contextPath}/seller/list"
 							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">판매자 페이지</a>
 						<a href="${pageContext.request.contextPath}/logout"
 							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">로그아웃</a>

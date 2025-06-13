@@ -356,7 +356,28 @@ public class BuyerController {
         return "buyer/orderList";
     }
 
+    @PostMapping("/cart/add")
+    public String addToCart(@RequestParam("productId") String productId,
+                            @RequestParam("productSize") String productSize,
+                            @RequestParam("count") int count,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.addToCart(user.getId(), productId, productSize, count);
+            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            // 기존 상세 페이지 URL 유지
+            return "redirect:/mypage/product/detail?id=" + productId;
+        }
+    }
     
+
    
 
 
