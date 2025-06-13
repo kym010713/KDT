@@ -20,7 +20,7 @@ public class ProductRegistrationDto {
     @NotBlank(message = "상품명을 입력해주세요")
     private String productName;
     
-    // ✅ companyName에서 @NotBlank 제거 (컨트롤러에서 자동 설정하므로)
+    @NotBlank(message = "제조사를 입력해주세요")
     private String companyName;
     
     @NotBlank(message = "상품 설명을 입력해주세요")
@@ -28,6 +28,7 @@ public class ProductRegistrationDto {
     
     @NotBlank(message = "상품 가격을 입력해주세요")
     private String productPrice;
+    
     
     @NotBlank(message = "상품 사이즈를 입력해주세요")
     private String productSize;

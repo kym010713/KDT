@@ -445,33 +445,33 @@
     <script>
         let monthlyRevenueChart, productRevenueChart, orderCountChart;
         
-     // 페이지 로드 시 초기화
+        // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
         });
-
+        
         function initializeCharts() {
             // 월별 매출 차트
             const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
             
-            // JSP 데이터 안전하게 가져오기 - toFixed() 문제 해결
+            // JSP 데이터 안전하게 가져오기
             let monthlyData = [];
             try {
                 monthlyData = [
                     <c:choose>
                         <c:when test="${not empty currentYearSales}">
                             <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
-                                <fmt:formatNumber value="${monthly.revenue}" pattern="0" maxFractionDigits="0"/><c:if test="${!status.last}">,</c:if>
+                                ${monthly.revenue}<c:if test="${!status.last}">,</c:if>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                            47200, 94400, 141600, 47200, 188800, 236000, 0, 0, 0, 0, 0, 0
                         </c:otherwise>
                     </c:choose>
                 ];
             } catch (e) {
                 console.log('JSP 데이터 파싱 오류, 샘플 데이터 사용:', e);
-                monthlyData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                monthlyData = [47200, 94400, 141600, 47200, 188800, 236000, 0, 0, 0, 0, 0, 0];
             }
             
             monthlyRevenueChart = new Chart(monthlyRevenueCtx, {
@@ -507,7 +507,7 @@
                             },
                             ticks: {
                                 callback: function(value) {
-                                    return formatCurrency(value);
+                                    return (value / 1000).toFixed(0) + 'K원';
                                 }
                             }
                         },
@@ -521,144 +521,199 @@
             });
             
             // 상품별 매출 비중 차트
-            const productRevenueCtx = document.getElementById('productRevenueChart')?.getContext('2d');
-            if (productRevenueCtx) {
-                let productLabels = [];
-                let productData = [];
+            const productRevenueCtx = document.getElementById('productRevenueChart').getContext('2d');
+            
+            let productLabels = [];
+            let productData = [];
+            
+            try {
+                productLabels = [
+                    <c:choose>
+                        <c:when test="${not empty productRevenueShare}">
+                            <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
+                                '${product.key}'<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            '소프트 베이직 브이넥 가디건'
+                        </c:otherwise>
+                    </c:choose>
+                ];
                 
-                try {
-                    productLabels = [
-                        <c:choose>
-                            <c:when test="${not empty productRevenueShare}">
-                                <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
-                                    '${product.key}'<c:if test="${!status.last}">,</c:if>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                '데이터 없음'
-                            </c:otherwise>
-                        </c:choose>
-                    ];
-                    
-                    productData = [
-                        <c:choose>
-                            <c:when test="${not empty productRevenueShare}">
-                                <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
-                                    <fmt:formatNumber value="${product.value}" pattern="0" maxFractionDigits="0"/><c:if test="${!status.last}">,</c:if>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                0
-                            </c:otherwise>
-                        </c:choose>
-                    ];
-                } catch (e) {
-                    console.log('상품 데이터 파싱 오류, 샘플 데이터 사용:', e);
-                    productLabels = ['데이터 없음'];
-                    productData = [0];
-                }
-                
-                productRevenueChart = new Chart(productRevenueCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: productLabels,
-                        datasets: [{
-                            data: productData,
-                            backgroundColor: [
-                                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'
-                            ],
-                            borderWidth: 3,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true
-                                }
+                productData = [
+                    <c:choose>
+                        <c:when test="${not empty productRevenueShare}">
+                            <c:forEach items="${productRevenueShare}" var="product" varStatus="status">
+                                ${product.value}<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            100
+                        </c:otherwise>
+                    </c:choose>
+                ];
+            } catch (e) {
+                console.log('상품 데이터 파싱 오류, 샘플 데이터 사용:', e);
+                productLabels = ['소프트 베이직 브이넥 가디건'];
+                productData = [100];
+            }
+            
+            productRevenueChart = new Chart(productRevenueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        data: productData,
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
                             }
                         }
                     }
-                });
-            }
+                }
+            });
             
             // 월별 주문 건수 차트
-            const orderCountCtx = document.getElementById('orderCountChart')?.getContext('2d');
-            if (orderCountCtx) {
-                let orderCountData = [];
-                try {
-                    orderCountData = [
-                        <c:choose>
-                            <c:when test="${not empty currentYearSales}">
-                                <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
-                                    ${monthly.orderCount}<c:if test="${!status.last}">,</c:if>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                            </c:otherwise>
-                        </c:choose>
-                    ];
-                } catch (e) {
-                    console.log('주문 데이터 파싱 오류, 샘플 데이터 사용:', e);
-                    orderCountData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-                }
-                
-                orderCountChart = new Chart(orderCountCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-                        datasets: [{
-                            label: '주문 건수',
-                            data: orderCountData,
-                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                            borderColor: '#3b82f6',
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            borderSkipped: false
-                        }]
+            const orderCountCtx = document.getElementById('orderCountChart').getContext('2d');
+            
+            let orderCountData = [];
+            try {
+                orderCountData = [
+                    <c:choose>
+                        <c:when test="${not empty currentYearSales}">
+                            <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
+                                ${monthly.orderCount}<c:if test="${!status.last}">,</c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            1, 2, 3, 1, 4, 5, 0, 0, 0, 0, 0, 0
+                        </c:otherwise>
+                    </c:choose>
+                ];
+            } catch (e) {
+                console.log('주문 데이터 파싱 오류, 샘플 데이터 사용:', e);
+                orderCountData = [1, 2, 3, 1, 4, 5, 0, 0, 0, 0, 0, 0];
+            }
+            
+            orderCountChart = new Chart(orderCountCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [{
+                        label: '주문 건수',
+                        data: orderCountData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '건';
+                                }
                             }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return value + '건';
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
+                        x: {
+                            grid: {
+                                display: false
                             }
                         }
                     }
-                });
-            }
+                }
+            });
             
-            console.log('차트 초기화 완료');
+            console.log('차트 초기화 완료:', {
+                monthlyData: monthlyData,
+                productLabels: productLabels,
+                productData: productData,
+                orderCountData: orderCountData
+            });
         }
-
+            
+            // 월별 주문 건수 차트
+            const orderCountCtx = document.getElementById('orderCountChart').getContext('2d');
+            const orderCountData = [
+                <c:forEach items="${currentYearSales}" var="monthly" varStatus="status">
+                    ${monthly.orderCount}<c:if test="${!status.last}">,</c:if>
+                </c:forEach>
+            ];
+            
+            orderCountChart = new Chart(orderCountCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [{
+                        label: '주문 건수',
+                        data: orderCountData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '건';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
         // 분석 데이터 업데이트
         function updateAnalytics() {
-            const year = document.getElementById('yearSelect')?.value || new Date().getFullYear();
+            const year = document.getElementById('yearSelect').value;
             
             fetch(`/seller/api/monthly-sales?year=${year}`)
                 .then(response => response.json())
@@ -675,68 +730,56 @@
                     alert('데이터 조회 중 오류가 발생했습니다.');
                 });
         }
-
+        
         // 차트 데이터 업데이트
         function updateChartsWithData(data) {
-            const monthlySales = data.monthlySales || [];
+            const monthlySales = data.monthlySales;
             
             // 월별 매출 데이터 추출
-            const revenueData = [];
-            const orderData = [];
-            
-            // 1-12월 데이터 준비 (데이터가 없는 월은 0으로)
-            for (let month = 1; month <= 12; month++) {
-                const monthData = monthlySales.find(item => item.month === month);
-                revenueData.push(monthData ? parseFloat(monthData.revenue) || 0 : 0);
-                orderData.push(monthData ? parseInt(monthData.orderCount) || 0 : 0);
-            }
+            const revenueData = monthlySales.map(item => item.revenue);
+            const orderData = monthlySales.map(item => item.orderCount);
             
             // 월별 매출 차트 업데이트
-            if (window.monthlyRevenueChart) {
-                window.monthlyRevenueChart.data.datasets[0].data = revenueData;
-                window.monthlyRevenueChart.update();
-            }
+            monthlyRevenueChart.data.datasets[0].data = revenueData;
+            monthlyRevenueChart.update();
             
             // 주문 건수 차트 업데이트
-            if (window.orderCountChart) {
-                window.orderCountChart.data.datasets[0].data = orderData;
-                window.orderCountChart.update();
-            }
+            orderCountChart.data.datasets[0].data = orderData;
+            orderCountChart.update();
             
             // 상품별 매출 차트 업데이트
-            if (data.productRevenueShare && window.productRevenueChart) {
+            if (data.productRevenueShare) {
                 const productLabels = Object.keys(data.productRevenueShare);
-                const productValues = Object.values(data.productRevenueShare).map(val => parseFloat(val) || 0);
+                const productValues = Object.values(data.productRevenueShare);
                 
-                window.productRevenueChart.data.labels = productLabels;
-                window.productRevenueChart.data.datasets[0].data = productValues;
-                window.productRevenueChart.update();
+                productRevenueChart.data.labels = productLabels;
+                productRevenueChart.data.datasets[0].data = productValues;
+                productRevenueChart.update();
             }
         }
-
+        
         // 통계 카드 업데이트
         function updateStatsWithData(data) {
             const analytics = data.analytics;
             
             if (analytics) {
-                const statCards = document.querySelectorAll('.stat-value');
-                if (statCards.length >= 4) {
-                    statCards[0].textContent = formatCurrency(analytics.totalRevenue);
-                    statCards[1].textContent = (analytics.totalOrders || 0) + '건';
-                    statCards[2].textContent = formatCurrency(analytics.averageOrderValue);
-                    statCards[3].textContent = (analytics.completedDeliveries || 0) + '건';
-                }
+                document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = 
+                    formatCurrency(analytics.totalRevenue);
+                document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = 
+                    analytics.totalOrders + '건';
+                document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = 
+                    formatCurrency(analytics.averageOrderValue);
+                document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = 
+                    analytics.completedDeliveries + '건';
             }
         }
-
-        // 통화 포맷팅 함수
+        
+        // 통화 포맷팅
         function formatCurrency(amount) {
-            if (amount == null || amount == undefined || isNaN(amount)) return '0원';
-            return Math.round(parseFloat(amount)).toLocaleString() + '원';
+            if (amount == null || amount == undefined) return '0원';
+            return parseInt(amount).toLocaleString() + '원';
         }
-
-        // 차트 변수를 전역으로 선언
-        let monthlyRevenueChart, productRevenueChart, orderCountChart;
+        
         
         
         // 차트 이미지로 저장
