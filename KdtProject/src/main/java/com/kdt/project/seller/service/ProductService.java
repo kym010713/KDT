@@ -90,7 +90,7 @@ public class ProductService {
         return result;
     }
     
-    // 이미지 업로드를 포함하는 상품 등록 메서드 - 수정됨
+    // ✅ ImageKit 활성화된 상품 등록 메서드
     @Transactional
     public void registerProduct(ProductRegistrationDto dto, MultipartFile productImage) {
         System.out.println("=== ProductService.registerProduct 시작 ===");
@@ -108,15 +108,20 @@ public class ProductService {
         product.setProductDetail(dto.getProductDetail());
         product.setProductPrice(Long.parseLong(dto.getProductPrice()));
         
-        // 임시로 이미지 업로드 비활성화 - URL만 처리
+        // ✅ ImageKit 업로드 처리 (fileId는 저장 안함)
         String imageFileName = null;
-        if (dto.getProductPhoto() != null && !dto.getProductPhoto().trim().isEmpty()) {
+        
+        if (productImage != null && !productImage.isEmpty()) {
+            try {
+                imageFileName = uploadImageToImageKit(productImage, "product");
+                System.out.println("ImageKit 업로드 성공: " + imageFileName);
+            } catch (IOException e) {
+                System.err.println("ImageKit 업로드 실패: " + e.getMessage());
+                throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
+            }
+        } else if (dto.getProductPhoto() != null && !dto.getProductPhoto().trim().isEmpty()) {
             imageFileName = dto.getProductPhoto();
             System.out.println("URL로 이미지 설정: " + imageFileName);
-        } else if (productImage != null && !productImage.isEmpty()) {
-            // 임시로 파일명만 저장 (실제 업로드는 나중에)
-            imageFileName = productImage.getOriginalFilename();
-            System.out.println("임시 파일명 저장: " + imageFileName);
         }
         
         product.setProductPhoto(imageFileName != null ? imageFileName : "");
@@ -149,7 +154,7 @@ public class ProductService {
         registerProduct(dto, null);
     }
     
-    // ImageKit에 이미지 업로드하는 메서드 (임시로 비활성화)
+    // ✅ ImageKit 업로드 메서드 - fileName만 반환
     private String uploadImageToImageKit(MultipartFile file, String folder) throws IOException {
         try {
             String originalFilename = file.getOriginalFilename();
@@ -161,13 +166,14 @@ public class ProductService {
             fileCreateRequest.setUseUniqueFileName(false);
 
             Result result = imageKit.upload(fileCreateRequest);
-            return fileName; // 파일명만 반환
+            return fileName; // fileName만 반환
             
         } catch (Exception e) {
             throw new IOException("ImageKit 업로드 실패", e);
         }
     }
     
+    // ✅ 필수 메서드들 추가
     public List<Product> getAllProducts() {
         return productSellerRepository.findAll();
     }
@@ -188,9 +194,9 @@ public class ProductService {
         return productSellerRepository.findById(productId).orElse(null);
     }
     
+    // ✅ 상품 삭제 (ImageKit 삭제 기능 없음)
     @Transactional
     public void deleteProduct(String productId) {
-        // 이미지 삭제는 일단 생략 (파일명만 저장하므로 FileId가 없음)
         productOptionsRepository.deleteByProductId(productId);
         productSellerRepository.deleteById(productId);
     }
@@ -200,6 +206,7 @@ public class ProductService {
         updateProduct(productId, dto, null);
     }
     
+    // ✅ 상품 수정 메서드 (fileId 없이)
     @Transactional
     public void updateProduct(String productId, ProductRegistrationDto dto, MultipartFile productImage) {
         System.out.println("=== ProductService.updateProduct 시작 ===");
@@ -222,14 +229,13 @@ public class ProductService {
         product.setProductDetail(dto.getProductDetail());
         product.setProductPrice(Long.parseLong(dto.getProductPrice()));
         
-        // 새 이미지가 업로드된 경우
+        // ✅ 새 이미지가 업로드된 경우 ImageKit 업로드
         if (productImage != null && !productImage.isEmpty()) {
             System.out.println("새 이미지 업로드 처리");
             try {
-                // 임시로 파일명만 저장 (ImageKit 업로드는 나중에 구현)
-                String newImageFileName = productImage.getOriginalFilename();
+                String newImageFileName = uploadImageToImageKit(productImage, "product");
                 product.setProductPhoto(newImageFileName);
-                System.out.println("새 이미지 파일명 설정: " + newImageFileName);
+                System.out.println("새 이미지 ImageKit 업로드 성공: " + newImageFileName);
             } catch (Exception e) {
                 System.out.println("이미지 처리 중 오류: " + e.getMessage());
                 throw new RuntimeException("이미지 처리 중 오류가 발생했습니다.", e);
@@ -237,7 +243,7 @@ public class ProductService {
         } else if (dto.getProductPhoto() != null && !dto.getProductPhoto().trim().isEmpty()) {
             // URL로 직접 입력된 경우
             product.setProductPhoto(dto.getProductPhoto());
-            System.out.println("URL로 이미지 설정: " + dto.getProductPhoto());
+            System.out.println("URL로 이미지 업데이트: " + dto.getProductPhoto());
         }
         // else: 기존 이미지 유지
         
