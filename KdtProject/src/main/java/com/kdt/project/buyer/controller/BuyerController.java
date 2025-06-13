@@ -1,5 +1,9 @@
 package com.kdt.project.buyer.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,6 +70,30 @@ public class BuyerController {
         this.orderService = orderService;
         this.imageKit = imageKit;
     }
+    
+    @PostMapping("/cart/add")
+    public String addToCart(@RequestParam("productId") String productId,
+                            @RequestParam("productSize") String productSize,
+                            @RequestParam("count") int count,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.addToCart(user.getId(), productId, productSize, count);
+            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            // 기존 상세 페이지 URL 유지
+            return "redirect:/mypage/product/detail?id=" + productId;
+        }
+    }
+    
+
+    
 
     /**
      * 상품 상세 보기 (상품 정보 + 옵션 정보 포함)
@@ -307,31 +336,39 @@ public class BuyerController {
     }
     
     @GetMapping("/order/list")
-    public String orderList(HttpSession session, Model model) {
+    public String orderList(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    						@RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate  end,
+                            HttpSession session,
+                            Model model) {
 
         UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
         if (loginUser == null) return "redirect:/login";
 
-        /* 1) 헤더 : 최신순 JPQL 로 한 방 조회 */
-        List<OrderSummaryDTO> headList =
-                orderService.getOrderList(loginUser.getId());   // ← 이미 DESC 정렬
+        // 기본값: 최근 3개월
+        if (start == null || end == null) {
+            end   = LocalDate.now();
+            start = end.minusMonths(3);
+        }
 
-        /* 2) 상세 : 사용자별 전체 → 한 방 조회 후 groupingBy( LinkedHashMap ) */
-        List<OrderDetailEntity> detailList =
-        		detailRepository.findByUserId(loginUser.getId());
+        Date s = java.sql.Date.valueOf(start);
+        Date e = java.sql.Date.valueOf(end);
+        
+        // 1) 주문 헤더 (요약)
+        List<OrderSummaryDTO> headList = orderService.getOrderListByPeriod(loginUser.getId(), s, e);
 
-        Map<Long, List<OrderDetailEntity>> detailMap =
-                detailList.stream()
-                          .collect(Collectors.groupingBy(
-                                  OrderDetailEntity::getOrderGroup,
-                                  LinkedHashMap::new,          // ★ 삽입순서 유지
-                                  Collectors.toList()));
+        // 2) 상세는 전체 불러오기 (필터링은 헤더 기준으로 충분함)
+        List<OrderDetailEntity> detailList = detailRepository.findByUserId(loginUser.getId());
 
-        /* 3) 화면 전달 */
-        model.addAttribute("headList",  headList);
+        Map<Long, List<OrderDetailEntity>> detailMap = detailList.stream()
+                .collect(Collectors.groupingBy(OrderDetailEntity::getOrderGroup, LinkedHashMap::new, Collectors.toList()));
+
+        model.addAttribute("headList", headList);
         model.addAttribute("detailMap", detailMap);
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
         return "buyer/orderList";
     }
+
+
 
     
    
