@@ -149,8 +149,12 @@
     	}
 
 </script>
+<<<<<<< HEAD
+    <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
+=======
 
 
+>>>>>>> refs/heads/dev
 </body>
 </html>
 

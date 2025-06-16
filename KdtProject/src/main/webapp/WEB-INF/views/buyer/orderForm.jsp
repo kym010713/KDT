@@ -103,5 +103,6 @@
       </form>
     </section>
   </div>
+  <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
 </body>
 </html>

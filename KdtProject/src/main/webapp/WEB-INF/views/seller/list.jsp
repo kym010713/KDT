@@ -1051,6 +1051,10 @@
         if (editModal && event.target === editModal) {
             closeModal('editModal');
         }
+<<<<<<< HEAD
+    </script>
+<%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
+=======
     }
     
     // 전역 에러 핸들러
@@ -1063,5 +1067,6 @@
         console.error('Unhandled promise rejection:', event.reason);
     });
 </script>
+>>>>>>> refs/heads/dev
 </body>
 </html>
