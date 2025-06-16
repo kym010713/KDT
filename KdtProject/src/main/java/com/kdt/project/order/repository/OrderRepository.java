@@ -17,20 +17,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 	@Query("""
 			SELECT new com.kdt.project.order.dto.OrderSummaryDTO(
 			         o.orderGroup,
-			         MAX(o.orderDate),
-			         MAX(o.orderAddress),
-			         SUM(d.quantity * p.productPrice),
-			         COALESCE(MAX(del.deliveryState), com.kdt.project.order.entity.DeliveryState.REQUESTED)
+			         o.orderDate,
+			         COALESCE(CAST(del.deliveryState AS string), 'REQUESTED')  
 			)
-			FROM  OrderEntity        o
-			JOIN  OrderDetailEntity  d   ON d.orderGroup = o.orderGroup
-			JOIN  ProductEntity      p   ON p.productId  = d.productId
-			LEFT JOIN Delivery       del ON del.orderNumber = o.orderGroup
-			WHERE o.userId = :userId
-			GROUP BY o.orderGroup
-			ORDER BY MAX(o.orderDate) DESC
+			FROM   OrderEntity o
+			LEFT JOIN o.delivery del
+			WHERE  o.userId = :userId
+			ORDER  BY o.orderDate DESC
 			""")
 			List<OrderSummaryDTO> findOrderSummaries(@Param("userId") String userId);
+
 
 
 

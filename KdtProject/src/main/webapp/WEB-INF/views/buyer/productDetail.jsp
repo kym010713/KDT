@@ -220,7 +220,7 @@
 					</c:forEach>
 
 					<!-- 리뷰 작성 폼 (리뷰를 작성하지 않은 경우에만 표시) -->
-					<c:if
+					<c:if test="${canWriteReview}">
 						test="${not alreadyReviewed and not empty sessionScope.loginUser}">
 						<div class="mt-8">
 							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>

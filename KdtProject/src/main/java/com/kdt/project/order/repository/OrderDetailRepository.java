@@ -32,5 +32,15 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
              ORDER BY o.orderDate DESC, d.detailId
             """)
      List<OrderDetailEntity> findByUserId(@Param("userId") String userId);
+    
+    
+    @Query("""
+    		SELECT COUNT(d) > 0
+    		FROM   OrderDetailEntity d
+    		JOIN   OrderEntity  o ON o.orderGroup = d.orderGroup
+    		WHERE  o.userId   = :userId
+    		AND    d.productId = :productId
+    		""")
+    		public boolean existsPurchasedByUser(String userId, String productId);
 
 }
