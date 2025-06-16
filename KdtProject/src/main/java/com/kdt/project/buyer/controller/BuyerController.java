@@ -28,6 +28,7 @@ import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
+import com.kdt.project.buyer.repository.ReviewRepository;
 import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.order.dto.OrderSummaryDTO;
 import com.kdt.project.order.entity.OrderDetailEntity;
@@ -58,7 +59,8 @@ public class BuyerController {
     @Autowired
     OrderDetailRepository detailRepository;
     
-
+    @Autowired
+    ReviewRepository reviewRepository;
 
     @Autowired
     UserService userService;
@@ -75,7 +77,7 @@ public class BuyerController {
      * 상품 상세 보기 (상품 정보 + 옵션 정보 포함)
      */
     @GetMapping("/product/detail")
-    public String productDetail(@RequestParam("id") String productId, Model model) {
+    public String productDetail(@RequestParam("id") String productId, HttpSession session, Model model) {
         try {
             ProductEntity product = buyerService.getProductById(productId);
             List<ProductOptionEntity> options = buyerService.getProductOptionsByProductId(productId);
@@ -87,10 +89,21 @@ public class BuyerController {
             model.addAttribute("product", product);
             model.addAttribute("options", options);
             model.addAttribute("reviews", reviews);
-            
             // ✅ ImageKit URL을 Model에 추가
             model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
             
+            UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+
+            boolean purchased = false;
+            boolean already   = false;
+            if (loginUser != null) {
+                String uid = loginUser.getId();
+                purchased = detailRepository.existsPurchasedByUser(uid, productId);
+				/*
+				 * already = reviewRepository.existsByProduct_ProductIdAndUser_Id(productId,
+				 * uid);
+				 */
+            }
             return "buyer/productDetail";
         } catch (Exception e) {
             e.printStackTrace();
