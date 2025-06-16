@@ -1,5 +1,6 @@
 package com.kdt.project.order.service;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -56,7 +57,15 @@ public class OrderServiceImpl implements OrderService{
     public List<OrderSummaryDTO> getOrderList(String userId) {
         return orderRepository.findOrderSummaries(userId);
     }
-    
-    
+
+    @Override
+    public List<OrderSummaryDTO> getOrderListByPeriod(String userId,
+                                                      Date startDate,
+                                                      Date endDate) {
+        return orderRepository.findSummaryByUserIdAndPeriod(userId, startDate, endDate);
+    }
+
 
 }
+    
+   
