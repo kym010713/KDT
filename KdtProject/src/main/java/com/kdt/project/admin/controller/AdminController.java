@@ -102,7 +102,22 @@ public class AdminController {
 	    return "OK";
 	}
 	
-	@PostMapping("/admin/updateUser")
+	@RequestMapping(value = "rejectSeller", method = RequestMethod.POST)
+	@ResponseBody
+	public String rejectSeller(@RequestParam("sellerRoleId") Long sellerRoleId) {
+	    sellerRoleService.updateStatusToRejected(sellerRoleId);   // status = 'N'
+	    return "OK";
+	}
+	
+	@RequestMapping(value = "deleteApplication", method = RequestMethod.POST)
+	@ResponseBody
+	public String deleteApplication(@RequestParam("sellerRoleId") Long sellerRoleId) {
+	    sellerRoleService.deleteApplication(sellerRoleId);
+	    return "OK";
+	}
+	
+	
+	@PostMapping("updateUser")
 	public String updateUser(
 	        @RequestParam("id")    String id,
 	        @RequestParam("email") String email,

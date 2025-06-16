@@ -59,7 +59,7 @@
             <tr class="border-b">
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
-                  <img src="${pageContext.request.contextPath}/resources/upload/${item.productPhoto}" class="w-12 h-12 object-cover rounded" />
+                  <img src="${imagekitUrl}product/${item.productPhoto}" class="w-12 h-12 object-cover rounded" />
                   <span class="font-medium text-gray-800">${item.productName}</span>
                 </div>
               </td>

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 
 import java.util.Date;
 
+import com.kdt.project.order.entity.OrderEntity;
+
 @Entity
 @Table(name = "DELIVERY")
 @Data
@@ -31,4 +33,9 @@ public class Delivery {
     @Column(name = "COMPLETE_DATE")
     @Temporal(TemporalType.DATE)
     private Date completeDate;
+    
+    
+    @OneToOne
+    @JoinColumn(name = "ORDER_NUMBER", insertable = false, updatable = false)
+    private OrderEntity order;
 }
