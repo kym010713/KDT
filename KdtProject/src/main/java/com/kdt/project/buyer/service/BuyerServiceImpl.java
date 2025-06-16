@@ -155,7 +155,7 @@ public class BuyerServiceImpl implements BuyerService {
             UserEntity user = userRepository.findById(reviewDto.getUserId())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             
-            if (!orderDetailRepository.existsPurchasedByUser(reviewDto.getUserId(), reviewDto.getProductId())) {
+            if (!orderDetailRepository.existsPurchasedByUser(reviewDto.getProductId(), reviewDto.getUserId())) {
                 throw new IllegalStateException("구매한 사용자만 리뷰를 작성할 수 있습니다.");
             }
 

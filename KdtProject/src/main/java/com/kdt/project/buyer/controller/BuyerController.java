@@ -94,13 +94,13 @@ public class BuyerController {
 
 			UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
 
-			boolean purchased = false;
 			boolean already = false;
 			if (loginUser != null) {
-				String uid = loginUser.getId();
-				purchased = detailRepository.existsPurchasedByUser(uid, productId);
-				already = reviewRepository.existsByProduct_ProductIdAndUser_Id(productId, uid);
+			    String uid = loginUser.getId();
+			    boolean purchased = detailRepository.existsPurchasedByUser(productId, uid);
+			    already   = reviewRepository.existsByProduct_ProductIdAndUser_Id(productId, uid);
 
+			    model.addAttribute("canWriteReview", purchased && !already);
 			}
 			return "buyer/productDetail";
 		} catch (Exception e) {
