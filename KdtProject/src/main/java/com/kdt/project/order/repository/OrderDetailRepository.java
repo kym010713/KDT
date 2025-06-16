@@ -35,12 +35,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
     
     
     @Query("""
-    		SELECT COUNT(d) > 0
-    		FROM   OrderDetailEntity d
-    		JOIN   OrderEntity  o ON o.orderGroup = d.orderGroup
-    		WHERE  o.userId   = :userId
-    		AND    d.productId = :productId
-    		""")
-    		public boolean existsPurchasedByUser(String userId, String productId);
+            SELECT COUNT(od) > 0
+              FROM OrderDetailEntity od
+              JOIN OrderEntity     o
+                    ON o.orderGroup = od.orderGroup   
+             WHERE od.product.productId = :productId
+               AND o.userId             = :userId
+        """)
+        boolean existsPurchasedByUser(@Param("productId") Long productId,
+                                      @Param("userId")    String userId);
 
 }
