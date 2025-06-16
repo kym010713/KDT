@@ -617,27 +617,6 @@
 <script>
     let currentEditProductId = null;
     
-    // 페이지 로드 후 사이즈 정보 로드 - 안전한 방식으로 수정
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM Content Loaded');
-        
-        // products 배열이 존재하는지 확인
-        <c:if test="${not empty products}">
-            const productIds = [
-                <c:forEach items="${products}" var="product" varStatus="status">
-                    '${product.productId}'<c:if test="${!status.last}">,</c:if>
-                </c:forEach>
-            ];
-            
-            // 각 상품의 사이즈 정보를 로드
-            productIds.forEach(function(productId) {
-                if (productId && productId.trim() !== '') {
-                    loadSizeInfo(productId);
-                }
-            });
-        </c:if>
-    });
-
     // HTML 이스케이프 함수
     function escapeHtml(text) {
         if (!text) return '';
@@ -646,7 +625,7 @@
         return div.innerHTML;
     }
     
-    // ✅ 안전한 필드 값 설정 함수 (누락된 함수)
+    // 안전한 필드 값 설정 함수
     function setFieldValue(fieldId, value) {
         const field = document.getElementById(fieldId);
         if (field) {
@@ -656,8 +635,10 @@
         }
     }
 
-    // 사이즈 정보 로드 - 에러 처리 강화
+    // ✅ 사이즈 정보 로드 함수 (다시 정의)
     function loadSizeInfo(productId) {
+        console.log('Loading size info for product:', productId);
+        
         if (!productId) {
             console.error('Product ID is null or undefined');
             return;
@@ -674,12 +655,15 @@
         
         fetch('/seller/product/detail/' + encodeURIComponent(productId))
             .then(response => {
+                console.log('Response status for', productId, ':', response.status);
                 if (!response.ok) {
                     throw new Error('HTTP ' + response.status + ': ' + response.statusText);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('API Response for', productId, ':', data);
+                
                 if (data.success && data.optionDetails && data.optionDetails.length > 0) {
                     let sizeHtml = '';
                     data.optionDetails.forEach(option => {
@@ -687,17 +671,46 @@
                                    escapeHtml(option.sizeName) + ': ' + option.stock + '개</span>';
                     });
                     container.innerHTML = sizeHtml;
+                    console.log('Successfully updated size info for', productId);
                 } else {
+                    console.warn('No option details found for', productId, ':', data);
                     container.innerHTML = '<span class="size-error">재고 정보 없음</span>';
                 }
             })
             .catch(error => {
                 console.error('Error loading size info for product ' + productId + ':', error);
-                container.innerHTML = '<span class="size-error">로드 실패</span>';
+                container.innerHTML = '<span class="size-error">로드 실패: ' + error.message + '</span>';
             });
     }
     
-    // 상품 상세보기 - 에러 처리 강화
+    // ✅ 페이지 로드 후 사이즈 정보 로드 - 통합된 이벤트 리스너
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded - Starting size info load');
+        
+        // 약간의 지연을 두고 실행 (DOM이 완전히 준비될 때까지)
+        setTimeout(function() {
+            <c:if test="${not empty products}">
+                const productIds = [
+                    <c:forEach items="${products}" var="product" varStatus="status">
+                        '${product.productId}'<c:if test="${!status.last}">,</c:if>
+                    </c:forEach>
+                ];
+                
+                console.log('Product IDs to load:', productIds);
+                
+                productIds.forEach(function(productId, index) {
+                    if (productId && productId.trim() !== '') {
+                        // 순차적으로 로드 (서버 부하 방지)
+                        setTimeout(() => {
+                            loadSizeInfo(productId);
+                        }, index * 100);
+                    }
+                });
+            </c:if>
+        }, 200);
+    });
+    
+    // 상품 상세보기
     function showProductDetail(productId) {
         if (!productId) {
             alert('상품 ID가 유효하지 않습니다.');
@@ -749,7 +762,7 @@
             });
     }
     
-    // ✅ 현재 이미지 표시 함수
+    // 현재 이미지 표시 함수
     function displayCurrentImage(photoUrl) {
         const currentImageDisplay = document.getElementById('currentImageDisplay');
         if (currentImageDisplay) {
@@ -765,7 +778,7 @@
         }
     }
     
-    // ✅ 이미지 선택 핸들러
+    // 이미지 선택 핸들러
     function handleEditImageSelect(input) {
         const file = input.files[0];
         const preview = document.getElementById('editImagePreview');
@@ -880,7 +893,7 @@
         });
     }
     
-    // 상품 업데이트 - FormData 사용
+    // 상품 업데이트
     function updateProduct() {
         if (!currentEditProductId) {
             alert('상품 ID가 설정되지 않았습니다.');
@@ -1051,17 +1064,18 @@
         if (editModal && event.target === editModal) {
             closeModal('editModal');
         }
+    }
 
-     // 전역 에러 핸들러
-        window.addEventListener('error', function(event) {
-            console.error('Global error:', event.error);
-        });
-        
-        // Promise rejection 핸들러
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Unhandled promise rejection:', event.reason);
-        });
-    </script>
+    // 전역 에러 핸들러
+    window.addEventListener('error', function(event) {
+        console.error('Global error:', event.error);
+    });
+    
+    // Promise rejection 핸들러
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+    });
+</script>
     <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
     </body>
     </html>

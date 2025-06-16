@@ -264,7 +264,7 @@
                     <p class="text-lg text-blue-800">활성 판매자</p>
                 </div>
             </div>
-            <a href="${pageContext.request.contextPath}/seller/profile" class="text-sm text-gray-500 hover:underline">&#x2039; 판매자 정보 수정</a>
+          
         </div>
         
         <!-- 모달 푸터 -->
