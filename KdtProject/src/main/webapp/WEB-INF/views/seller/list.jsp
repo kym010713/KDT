@@ -1051,22 +1051,17 @@
         if (editModal && event.target === editModal) {
             closeModal('editModal');
         }
-<<<<<<< HEAD
+
+     // 전역 에러 핸들러
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error);
+        });
+        
+        // Promise rejection 핸들러
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
     </script>
-<%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
-=======
-    }
-    
-    // 전역 에러 핸들러
-    window.addEventListener('error', function(event) {
-        console.error('Global error:', event.error);
-    });
-    
-    // Promise rejection 핸들러
-    window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-    });
-</script>
->>>>>>> refs/heads/dev
-</body>
-</html>
+    <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
+    </body>
+    </html>
