@@ -26,17 +26,24 @@
         }
 
         body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: var(--background-color);
-            color: var(--primary-color);
-            padding: 2rem;
-            padding-top: 5rem;
-        }
+    font-family: 'Pretendard', sans-serif;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    margin: 0;
+    padding: 0;
+   
+}
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+.main-content {
+    margin-top: 100px; 
+    padding: 2rem;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    /* 기존 padding 제거 */
+}
 
         .card {
             background-color: var(--card-background);
@@ -398,13 +405,15 @@
 <body>
     <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
     
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 class="page-title" style="margin-bottom: 0;">상품 목록</h2>
-            <a href="/seller/register" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>새 상품 등록
-            </a>
-        </div>
+    
+        <div class="main-content">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 class="page-title" style="margin-bottom: 0;">상품 목록</h2>
+                <a href="/seller/register" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>새 상품 등록
+                </a>
+            </div>
 
         <!-- 카테고리 필터 -->
         <div class="filter-section">
@@ -608,6 +617,7 @@
         </form>
     </div>
 </div>
+    </div>
     </div>
 
     <!-- Bootstrap JS -->

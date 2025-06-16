@@ -37,6 +37,10 @@
             padding: 2rem;
             padding-top: 5rem;
         }
+        .main-content {
+    margin-top: 100px; 
+    padding: 2rem;
+}
 
         .container {
             max-width: 1400px;
@@ -319,7 +323,7 @@
 </head>
 <body>
     <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
-    
+    <div class="main-content">
     <div class="container">
         <h2 class="page-title">
             <i class="fas fa-chart-line me-3"></i>매출 분석 
@@ -436,7 +440,7 @@
             </div>
         </div>
 
-       
+       </div>
     </div>
 
     <!-- Bootstrap JS -->
