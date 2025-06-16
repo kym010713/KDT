@@ -71,30 +71,6 @@ public class BuyerController {
         this.imageKit = imageKit;
     }
     
-    @PostMapping("/cart/add")
-    public String addToCart(@RequestParam("productId") String productId,
-                            @RequestParam("productSize") String productSize,
-                            @RequestParam("count") int count,
-                            HttpSession session,
-                            Model model) {
-        UserEntity user = (UserEntity) session.getAttribute("loginUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            buyerService.addToCart(user.getId(), productId, productSize, count);
-            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            // 기존 상세 페이지 URL 유지
-            return "redirect:/mypage/product/detail?id=" + productId;
-        }
-    }
-    
-
-    
-
     /**
      * 상품 상세 보기 (상품 정보 + 옵션 정보 포함)
      */
@@ -255,6 +231,7 @@ public class BuyerController {
                 .mapToInt(c -> c.getCartCount() * c.getProductPrice())
                 .sum();
         model.addAttribute("grandTotal", grandTotal);
+        model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
 
         return "buyer/orderForm";
     }
@@ -298,7 +275,6 @@ public class BuyerController {
         return "buyer/UpdateForm";        
     }
     
-    
     @PostMapping("/address/updateUser")
     public String updateUser(
             @RequestParam("name")        String name,
@@ -334,6 +310,29 @@ public class BuyerController {
 
         return "redirect:/";
     }
+    @PostMapping("/cart/add")
+    public String addToCart(@RequestParam("productId") String productId,
+                            @RequestParam("productSize") String productSize,
+                            @RequestParam("count") int count,
+                            HttpSession session,
+                            Model model) {
+        UserEntity user = (UserEntity) session.getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            buyerService.addToCart(user.getId(), productId, productSize, count);
+            return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            // 기존 상세 페이지 URL 유지
+            return "redirect:/mypage/product/detail?id=" + productId;
+        }
+    }
+    
+    
+    
     
     @GetMapping("/order/list")
     public String orderList(@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -350,8 +349,8 @@ public class BuyerController {
             start = end.minusMonths(3);
         }
 
-        Date s = java.sql.Date.valueOf(start);
-        Date e = java.sql.Date.valueOf(end);
+        Date s = java.sql.Timestamp.valueOf(start.atStartOfDay());       
+        Date e = java.sql.Timestamp.valueOf(end.atTime(23, 59, 59));
         
         // 1) 주문 헤더 (요약)
         List<OrderSummaryDTO> headList = orderService.getOrderListByPeriod(loginUser.getId(), s, e);
@@ -367,11 +366,5 @@ public class BuyerController {
         model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
         return "buyer/orderList";
     }
-
-
-
     
-   
-
-
 }

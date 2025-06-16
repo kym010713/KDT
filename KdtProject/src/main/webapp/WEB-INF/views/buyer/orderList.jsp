@@ -16,7 +16,7 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
           integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
-
+	<script src="<c:url value='/resources/js/orderList.js'/>"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -81,10 +81,6 @@
                 </button>
             </form>
         </div>
-
-        <div class="mt-4 text-xs text-gray-600 space-y-1">
-            <p>・ 기본적으로 최근 3개월간의 자료가 조회되며, 기간 검색 시 주문처리완료 후 36개월 이내의 주문내역만 확인할 수 있습니다.</p>
-        </div>
     </div>
 
     <!-- 주문 없음 -->
@@ -105,7 +101,7 @@
                 <div>
                     <p class="text-sm text-gray-600">
                         <span class="font-semibold">주문일:</span>
-                        <fmt:formatDate value="${h.orderDate}" pattern="yyyy-MM-dd HH:mm"/>
+                        <c:out value="${h.formattedOrderDate}" />
                     </p>
                     <p class="text-sm text-gray-600">
                         <span class="font-semibold">주문번호:</span> ${h.orderGroup}
@@ -230,39 +226,5 @@
         </div>
     </c:forEach>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const startDateInput = document.querySelector('input[name="start"]');
-    const endDateInput   = document.querySelector('input[name="end"]');
-    const searchForm     = document.getElementById('searchForm');
-
-    // 날짜 yyyy-MM-dd 포맷터
-	const formatDate = d =>
-        d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('start') && !urlParams.has('end')) {
-        document.querySelector('.date-preset-btn[data-amount="3"]').click();
-    }
-
-    // 빠른기간 버튼
-    document.querySelectorAll('.date-preset-btn').forEach(btn =>
-        btn.addEventListener('click', () => {
-            const today  = new Date();
-            const amount = Number(btn.dataset.amount);
-            const start  = new Date(today);
-
-            if (btn.dataset.period === 'day')   start.setDate(today.getDate() - amount);
-            if (btn.dataset.period === 'month') start.setMonth(today.getMonth() - amount, today.getDate());
-
-            startDateInput.value = formatDate(start);
-            endDateInput.value   = formatDate(today);
-            searchForm.submit();
-        }));
-});
-</script>
 </body>
 </html>

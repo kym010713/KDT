@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
@@ -510,44 +511,7 @@ public class SellerController {
         }
     }
     
-    // 상품 수정 처리 (회사 검증 포함)
-    @PostMapping("/product/update/{productId}")
-    @ResponseBody
-    public Map<String, Object> updateProduct(@PathVariable("productId") String productId,
-                                           @RequestBody ProductRegistrationDto productDto,
-                                           HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-        
-        String validationResult = validateSellerAccess(session);
-        if (validationResult != null) {
-            response.put("success", false);
-            response.put("message", "접근 권한이 없습니다.");
-            return response;
-        }
-        
-        String companyName = getCurrentSellerCompany(session);
-        
-        // 상품이 현재 판매자의 것인지 확인
-        Product product = productService.getProductById(productId);
-        if (product == null || !companyName.equals(product.getCompanyName())) {
-            response.put("success", false);
-            response.put("message", "해당 상품에 대한 권한이 없습니다.");
-            return response;
-        }
-        
-        try {
-            // 회사명을 현재 로그인한 판매자의 회사명으로 고정
-            productDto.setCompanyName(companyName);
-            productService.updateProduct(productId, productDto);
-            response.put("success", true);
-            response.put("message", "상품이 성공적으로 수정되었습니다.");
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-        }
-        
-        return response;
-    }
+    
     
     // 상품 삭제 처리 (회사 검증 포함)
     @DeleteMapping("/product/delete/{productId}")
@@ -628,38 +592,207 @@ public class SellerController {
         return response;
     }
     
-    // 상품 등록 처리
+ // 상품 등록 처리 - 디버그 로그 추가
     @PostMapping("/register") 
-    public String registerProduct(@Valid @ModelAttribute("productDto") ProductRegistrationDto productDto,
-                                BindingResult bindingResult,
+    public String registerProduct(@ModelAttribute("productDto") ProductRegistrationDto productDto,
+                                @RequestParam(value = "productImageFile", required = false) MultipartFile productImageFile,
                                 Model model,
                                 RedirectAttributes redirectAttributes,
                                 HttpSession session) {
         
+        System.out.println("=== 상품 등록 요청 시작 ===");
+        System.out.println("productDto (before): " + productDto);
+        System.out.println("productImageFile: " + (productImageFile != null ? productImageFile.getOriginalFilename() : "null"));
+        
         String validationResult = validateSellerAccessWithAlert(session);
         if (validationResult != null) {
-            return validationResult; // alert JSP 페이지 반환
+            System.out.println("권한 검증 실패: " + validationResult);
+            return validationResult;
         }
         
         String companyName = getCurrentSellerCompany(session);
+        System.out.println("현재 회사명: " + companyName);
         
-        if (bindingResult.hasErrors()) {
+        // ✅ 바인딩 검증 전에 companyName 설정
+        productDto.setCompanyName(companyName);
+        System.out.println("productDto (after companyName set): " + productDto);
+        
+        // ✅ 수동으로 검증 수행
+        if (productDto.getCategory() == null || productDto.getCategory().trim().isEmpty()) {
+            model.addAttribute("errorMessage", "카테고리를 선택해주세요.");
+            model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";
+        }
+        
+        if (productDto.getProductName() == null || productDto.getProductName().trim().isEmpty()) {
+            model.addAttribute("errorMessage", "상품명을 입력해주세요.");
+            model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";
+        }
+        
+        if (productDto.getProductDetail() == null || productDto.getProductDetail().trim().isEmpty()) {
+            model.addAttribute("errorMessage", "상품 설명을 입력해주세요.");
+            model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";
+        }
+        
+        if (productDto.getProductPrice() == null || productDto.getProductPrice().trim().isEmpty()) {
+            model.addAttribute("errorMessage", "상품 가격을 입력해주세요.");
+            model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";
+        }
+        
+        if (productDto.getProductSize() == null || productDto.getProductSize().trim().isEmpty()) {
+            model.addAttribute("errorMessage", "상품 사이즈를 선택해주세요.");
+            model.addAttribute("categories", productService.getAllCategories());
+            model.addAttribute("sizes", productService.getAllSizes());
+            return "seller/register";
+        }
+        
+        if (productDto.getProductCount() == null || productDto.getProductCount() < 1) {
+            model.addAttribute("errorMessage", "상품 수량은 1개 이상이어야 합니다.");
             model.addAttribute("categories", productService.getAllCategories());
             model.addAttribute("sizes", productService.getAllSizes());
             return "seller/register";
         }
         
         try {
-            // 현재 로그인한 판매자의 회사명으로 상품 등록
-            productDto.setCompanyName(companyName);
-            productService.registerProduct(productDto);
+            System.out.println("상품 등록 서비스 호출 전");
+            productService.registerProduct(productDto, productImageFile);
+            System.out.println("상품 등록 서비스 호출 완료");
             redirectAttributes.addFlashAttribute("successMessage", "상품이 성공적으로 등록되었습니다.");
             return "redirect:/seller/register";  
         } catch (Exception e) {
+            System.out.println("상품 등록 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("categories", productService.getAllCategories());
             model.addAttribute("sizes", productService.getAllSizes());
             return "seller/register";  
         }
+    }
+
+ // 상품 수정 처리 - 단순화된 버전
+    @PostMapping("/product/update/{productId}")
+    @ResponseBody
+    public Map<String, Object> updateProduct(@PathVariable("productId") String productId,
+                                           @RequestParam(value = "productImageFile", required = false) MultipartFile productImageFile,
+                                           @RequestParam("category") String category,
+                                           @RequestParam("productName") String productName,
+                                           @RequestParam("companyName") String companyName,
+                                           @RequestParam("productDetail") String productDetail,
+                                           @RequestParam("productPrice") String productPrice,
+                                           @RequestParam(value = "productPhoto", required = false) String productPhoto,
+                                           @RequestParam(value = "productOptions", required = false) String productOptionsJson,
+                                           HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        System.out.println("=== 상품 수정 요청 시작 ===");
+        System.out.println("productId: " + productId);
+        System.out.println("category: " + category);
+        System.out.println("productName: " + productName);
+        System.out.println("productImageFile: " + (productImageFile != null ? productImageFile.getOriginalFilename() : "null"));
+        System.out.println("productOptionsJson: " + productOptionsJson);
+        
+        String validationResult = validateSellerAccess(session);
+        if (validationResult != null) {
+            response.put("success", false);
+            response.put("message", "접근 권한이 없습니다.");
+            return response;
+        }
+        
+        String currentCompanyName = getCurrentSellerCompany(session);
+        
+        // 상품이 현재 판매자의 것인지 확인
+        Product product = productService.getProductById(productId);
+        if (product == null || !currentCompanyName.equals(product.getCompanyName())) {
+            response.put("success", false);
+            response.put("message", "해당 상품에 대한 권한이 없습니다.");
+            return response;
+        }
+        
+        try {
+            // ProductRegistrationDto 생성
+            ProductRegistrationDto productDto = new ProductRegistrationDto();
+            productDto.setCategory(category);
+            productDto.setProductName(productName);
+            productDto.setCompanyName(currentCompanyName); // 현재 판매자의 회사명으로 고정
+            productDto.setProductDetail(productDetail);
+            productDto.setProductPrice(productPrice);
+            productDto.setProductPhoto(productPhoto);
+            
+            // JSON 문자열로 받은 productOptions 파싱
+            if (productOptionsJson != null && !productOptionsJson.trim().isEmpty()) {
+                try {
+                    List<ProductRegistrationDto.ProductOptionDto> optionsList = parseProductOptions(productOptionsJson);
+                    productDto.setProductOptions(optionsList);
+                    System.out.println("파싱된 옵션: " + optionsList);
+                } catch (Exception e) {
+                    System.out.println("상품 옵션 JSON 파싱 오류: " + e.getMessage());
+                }
+            }
+            
+            // 이미지 파일과 함께 상품 수정
+            productService.updateProduct(productId, productDto, productImageFile);
+            response.put("success", true);
+            response.put("message", "상품이 성공적으로 수정되었습니다.");
+            
+        } catch (Exception e) {
+            System.out.println("상품 수정 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        
+        return response;
+    }
+    // JSON 문자열을 ProductOptionDto 리스트로 파싱하는 헬퍼 메서드
+    private List<ProductRegistrationDto.ProductOptionDto> parseProductOptions(String json) {
+        List<ProductRegistrationDto.ProductOptionDto> options = new ArrayList<>();
+        
+        try {
+            // 간단한 JSON 파싱 (실제로는 Jackson ObjectMapper 사용 권장)
+            // 예: [{"sizeId":1,"stock":10},{"sizeId":2,"stock":5}]
+            json = json.trim();
+            if (json.startsWith("[") && json.endsWith("]")) {
+                json = json.substring(1, json.length() - 1); // 대괄호 제거
+                
+                if (!json.trim().isEmpty()) {
+                    String[] items = json.split("\\},\\{");
+                    for (String item : items) {
+                        item = item.replace("{", "").replace("}", "").trim();
+                        String[] pairs = item.split(",");
+                        
+                        ProductRegistrationDto.ProductOptionDto option = new ProductRegistrationDto.ProductOptionDto();
+                        
+                        for (String pair : pairs) {
+                            String[] keyValue = pair.split(":");
+                            if (keyValue.length == 2) {
+                                String key = keyValue[0].trim().replace("\"", "");
+                                String value = keyValue[1].trim().replace("\"", "");
+                                
+                                if ("sizeId".equals(key)) {
+                                    option.setSizeId(Long.parseLong(value));
+                                } else if ("stock".equals(key)) {
+                                    option.setStock(Integer.parseInt(value));
+                                }
+                            }
+                        }
+                        
+                        if (option.getSizeId() != null && option.getStock() != null) {
+                            options.add(option);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("JSON 파싱 오류: " + e.getMessage());
+        }
+        
+        return options;
     }
 }
