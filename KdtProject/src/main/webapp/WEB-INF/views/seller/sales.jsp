@@ -31,6 +31,10 @@
             padding: 2rem;
             padding-top: 5rem;
         }
+        .main-content {
+    margin-top: 100px; 
+    padding: 2rem;
+}
 
         .container {
             max-width: 1400px;
@@ -295,6 +299,7 @@
 <body>
     <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
     
+    <div class="main-content">
     <div class="container">
         <h2 class="page-title">판매 내역</h2>
         
@@ -514,6 +519,7 @@
                 </c:otherwise>
             </c:choose>
         </div>
+    </div>
     </div>
 
     <!-- Bootstrap JS -->
