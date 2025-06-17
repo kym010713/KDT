@@ -38,5 +38,8 @@ public interface BuyerService {
     void deleteReview(Long reviewId);
     
     void updateReview(ReviewDTO reviewDto, MultipartFile reviewImage);
+    
+    List<ProductEntity> getProductsByCategory(String category);
+    
 
 }

@@ -1,8 +1,6 @@
 package com.kdt.project.buyer.controller;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +25,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
+import com.kdt.project.buyer.entity.CategoryCode;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
+import com.kdt.project.buyer.repository.ProductRepository;
 import com.kdt.project.buyer.repository.ReviewRepository;
 import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.order.dto.OrderSummaryDTO;
@@ -64,9 +65,14 @@ public class BuyerController {
 
 	@Autowired
 	UserService userService;
+	
 	@Autowired
 	UserRepository userRepository;
-
+	
+	@Autowired
+	ProductRepository productRepository;
+	
+	
 	public BuyerController(BuyerService buyerService, OrderService orderService, ImageKit imageKit) {
 		this.buyerService = buyerService;
 		this.orderService = orderService;
@@ -365,5 +371,33 @@ public class BuyerController {
 		model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
 		return "buyer/orderList";
 	}
+	
+	private static final Map<String, String> SLUG_TO_KOR = Map.of(
+	        "top", "상의",
+	        "bottom", "하의",
+	        "outer", "아우터",
+	        "shoes", "신발",
+	        "accessory", "액세서리"
+	    );
+	
+	
+	@GetMapping("/category/{slug}")
+	public String listByCategory(@PathVariable("slug") String slug, Model model) {
+
+	    String korCategory = SLUG_TO_KOR.get(slug.toLowerCase());
+	    if (korCategory == null) {        // 잘못된 슬러그 보호
+	        return "redirect:/";          // or 404 page
+	    }
+
+	    List<ProductEntity> products = productRepository.findByCategory(korCategory);
+
+	    // ★ JSP에서 쓸 수 있게 한글 카테고리명을 category 로 넣어준다
+	    model.addAttribute("category", korCategory);
+	    model.addAttribute("products", products);
+	    model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+	    return "buyer/productList";
+	}
+
+
 
 }
