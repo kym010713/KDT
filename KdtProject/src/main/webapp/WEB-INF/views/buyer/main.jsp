@@ -52,24 +52,20 @@
                 </div>
             </c:if>
 
-            <!-- 상품 목록을 카드 형태로 표시 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <!-- 상품 목록 -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
                 <c:forEach var="product" items="${products}">
-                    <div class="group relative bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300">
-                        <a href="${pageContext.request.contextPath}/mypage/product/detail?id=${product.productId}" class="block">
-                            <div class="w-full h-56 overflow-hidden">
-                                <img 
-                                    src="${imagekitUrl}product/${product.productPhoto}" 
-                                    alt="${product.productName}" 
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
+                    <div class="group relative">
+                        <a href="${pageContext.request.contextPath}/mypage/product/detail?id=${product.productId}"
+                           class="block text-left">
+                            <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200">
+                                <img src="${imagekitUrl}product/${product.productPhoto}"
+                                     alt="${product.productName}" class="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300">
                             </div>
-                            <div class="p-4">
-                                <h3 class="text-lg font-semibold text-gray-800 truncate">${product.productName}</h3>
-                                <p class="text-md text-gray-900 font-bold mt-2">
-                                    <fmt:formatNumber value="${product.productPrice}" groupingUsed="true"/>원
-                                </p>
-                            </div>
+                            <h3 class="mt-4 text-sm text-gray-700 h-10">${product.productName}</h3>
+                            <p class="mt-1 text-lg font-medium text-gray-900">
+                                <fmt:formatNumber value="${product.productPrice}" type="number" groupingUsed="true"/>원
+                            </p>
                         </a>
                     </div>
                 </c:forEach>
