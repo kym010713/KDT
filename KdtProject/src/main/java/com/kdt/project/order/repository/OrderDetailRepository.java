@@ -11,17 +11,17 @@ import com.kdt.project.order.entity.OrderDetailEntity;
 
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, Long> {
-	@Query("""
-	        SELECT new com.kdt.project.order.dto.OrderDetailDTO(
-	            d.orderGroup,
-	            d.product.productName,
-	            d.quantity
-	        )
-	        FROM OrderDetailEntity d
-	        WHERE d.orderGroup = :orderGroup
-	    """)
-	    List<OrderDetailDTO> findDetailsByOrderGroup(@Param("orderGroup") Long orderGroup);
-	
+   @Query("""
+           SELECT new com.kdt.project.order.dto.OrderDetailDTO(
+               d.orderGroup,
+               d.product.productName,
+               d.quantity
+           )
+           FROM OrderDetailEntity d
+           WHERE d.orderGroup = :orderGroup
+       """)
+       List<OrderDetailDTO> findDetailsByOrderGroup(@Param("orderGroup") Long orderGroup);
+   
     List<OrderDetailEntity> findByOrderGroup(Long orderGroup);
     
     @Query("""
@@ -32,5 +32,16 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
              ORDER BY o.orderDate DESC, d.detailId
             """)
      List<OrderDetailEntity> findByUserId(@Param("userId") String userId);
+    
+    
+    @Query("""
+              SELECT COUNT(od) > 0
+                FROM OrderDetailEntity od
+                JOIN OrderEntity o ON o.orderGroup = od.orderGroup
+               WHERE od.product.productId = :productId
+                 AND o.userId            = :userId
+              """)
+       boolean existsPurchasedByUser(@Param("productId") String productId,
+                                     @Param("userId")    String userId);
 
 }
