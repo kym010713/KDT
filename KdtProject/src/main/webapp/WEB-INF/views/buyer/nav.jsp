@@ -38,14 +38,31 @@
 				</div>
 				<div class="hidden sm:ml-6 sm:block ml-8">
 					<div class="flex space-x-4 mt-12">
+						<!-- 카테고리 드롭다운 -->
+						<div class="relative" id="category-dropdown">
+							<button type="button"
+								class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center"
+								aria-expanded="false" aria-haspopup="true">
+								<span>카테고리</span>
+								<svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+								</svg>
+							</button>
+							<div
+								class="absolute left-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none hidden"
+								role="menu" aria-orientation="vertical"
+								aria-labelledby="category-menu-button" tabindex="-1">
+								<a href="${pageContext.request.contextPath}/mypage/category/top" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">상의</a>
+								<a href="${pageContext.request.contextPath}/mypage/category/bottom" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">하의</a>
+								<a href="${pageContext.request.contextPath}/mypage/category/outer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">아우터</a>
+								<a href="${pageContext.request.contextPath}/mypage/category/shoes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">신발</a>
+								<a href="${pageContext.request.contextPath}/mypage/category/accessory" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">액세서리</a>
+							</div>
+						</div>
 						<a href="${pageContext.request.contextPath}/board/list"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">공지사항</a>
 						<a href="${pageContext.request.contextPath}/chatbot/faq"
 							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">챗봇상담</a>	
-						<a href="#"
-							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Projects</a>
-						<a href="#"
-							class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
 					</div>
 				</div>
 			</div>
@@ -211,57 +228,74 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const button = document.getElementById("user-menu-button");
-    const menu = button?.parentElement?.nextElementSibling;
+    // --- 드롭다운 메뉴 관리 ---
+    const userMenuButton = document.getElementById("user-menu-button");
+    const userMenuDropdown = userMenuButton?.closest(".relative");
+    const userMenu = userMenuDropdown?.querySelector("div[role='menu']");
+
+    const categoryDropdown = document.getElementById("category-dropdown");
+    const categoryButton = categoryDropdown?.querySelector("button");
+    const categoryMenu = categoryDropdown?.querySelector("div[role='menu']");
+
+    const closeAllMenus = () => {
+        userMenu?.classList.add("hidden");
+        categoryMenu?.classList.add("hidden");
+    };
+    
+    const toggleMenu = (menuToToggle) => {
+      const isHidden = menuToToggle.classList.contains("hidden");
+      closeAllMenus();
+      if(isHidden) {
+          menuToToggle.classList.remove("hidden");
+      }
+    };
+
+    userMenuButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMenu(userMenu);
+    });
+
+    categoryButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMenu(categoryMenu);
+    });
+
+    // --- 프로필 모달 관리 ---
     const profileBtn = document.getElementById("profileBtn");
     const profileModal = document.getElementById("profileModal");
     const closeModal = document.getElementById("closeModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
-
-    // 유저 메뉴 토글
-    if (button && menu) {
-      button.addEventListener("click", function (e) {
-        e.stopPropagation();
-        menu.classList.toggle("hidden");
-      });
-
-      document.addEventListener("click", function (e) {
-        // 프로필 모달이 열려있지 않을 때만 메뉴를 닫음
-        if (!menu.classList.contains("hidden") && !profileModal.contains(e.target)) {
-          menu.classList.add("hidden");
-        }
-      });
-    }
-
-    // 모달 열기
+    
     profileBtn?.addEventListener("click", () => {
+        closeAllMenus();
         profileModal.classList.remove("hidden");
-        menu.classList.add("hidden"); // 메뉴 닫기
-        document.body.style.overflow = "hidden"; // 스크롤 방지
+        document.body.style.overflow = "hidden";
     });
 
-    // 모달 닫기 함수
     const hideModal = () => {
-        profileModal.classList.add("hidden");
-        document.body.style.overflow = ""; // 스크롤 복원
+        if(profileModal) {
+            profileModal.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
     };
 
-    // 닫기 버튼 클릭
     closeModal?.addEventListener("click", hideModal);
     closeModalBtn?.addEventListener("click", hideModal);
-
-    // 모달 외부 클릭시 닫기
     profileModal?.addEventListener("click", (e) => {
-        if (e.target === profileModal) {
-            hideModal();
-        }
+        if (e.target === profileModal) hideModal();
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && profileModal && !profileModal.classList.contains("hidden")) hideModal();
     });
 
-    // ESC 키 누를때 모달 닫기
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && !profileModal.classList.contains("hidden")) {
-            hideModal();
-        }
+    // 문서 클릭 시 열려있는 메뉴 닫기
+    document.addEventListener("click", (e) => {
+      if (userMenu && !userMenu.classList.contains("hidden") && !userMenuDropdown.contains(e.target)) {
+          userMenu.classList.add("hidden");
+      }
+      if (categoryMenu && !categoryMenu.classList.contains("hidden") && !categoryDropdown.contains(e.target)) {
+          categoryMenu.classList.add("hidden");
+      }
     });
   });
 </script>

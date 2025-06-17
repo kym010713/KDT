@@ -261,4 +261,10 @@ public class BuyerServiceImpl implements BuyerService {
     public void updateCartQuantity(Long cartId, int cartCount) {
         cartRepository.updateCartCount(cartId, cartCount);
     }
+    
+    
+    @Override
+    public List<ProductEntity> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
+    }
 }

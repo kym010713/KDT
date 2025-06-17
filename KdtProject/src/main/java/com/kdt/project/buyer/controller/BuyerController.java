@@ -1,5 +1,7 @@
 package com.kdt.project.buyer.controller;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +24,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kdt.project.buyer.dto.CartDTO;
 import com.kdt.project.buyer.dto.ReviewDTO;
+import com.kdt.project.buyer.entity.CategoryCode;
 import com.kdt.project.buyer.entity.ProductEntity;
 import com.kdt.project.buyer.entity.ProductOptionEntity;
+import com.kdt.project.buyer.repository.ProductRepository;
+import com.kdt.project.buyer.repository.ReviewRepository;
 import com.kdt.project.buyer.service.BuyerService;
 import com.kdt.project.order.dto.OrderSummaryDTO;
 import com.kdt.project.order.entity.OrderDetailEntity;
@@ -105,6 +111,7 @@ public class BuyerController {
             return "redirect:/login";
         }
 
+<<<<<<< HEAD
         try {
             buyerService.addToCart(user.getId(), productId, productSize, count);
             return "redirect:/mypage/cart";  // 장바구니 페이지로 이동
@@ -125,6 +132,23 @@ public class BuyerController {
         if (user == null) {
             return "redirect:/login";
         }
+=======
+	@Autowired
+	UserService userService;
+	
+	@Autowired
+	UserRepository userRepository;
+	
+	@Autowired
+	ProductRepository productRepository;
+	
+	
+	public BuyerController(BuyerService buyerService, OrderService orderService, ImageKit imageKit) {
+		this.buyerService = buyerService;
+		this.orderService = orderService;
+		this.imageKit = imageKit;
+	}
+>>>>>>> refs/heads/dev
 
         List<CartDTO> cartList = buyerService.getCartList(user.getId());
         model.addAttribute("cartList", cartList);
@@ -359,6 +383,162 @@ public class BuyerController {
     
 
    
+
+<<<<<<< HEAD
+=======
+		return "buyer/orderForm";
+	}
+
+	@GetMapping("/address/form")
+	public String addressForm(HttpSession session, Model model) {
+		UserEntity user = (UserEntity) session.getAttribute("loginUser");
+		if (user == null)
+			return "redirect:/login";
+
+		model.addAttribute("user", user);
+		return "buyer/addressForm";
+	}
+
+	@PostMapping("/address/update")
+	public String updateAddress(@RequestParam("name") String name, @RequestParam("phoneNumber") String phoneNumber,
+			@RequestParam("address") String address,
+			@RequestParam(value = "postalCode", required = false) String postalCode, HttpSession session) {
+
+		UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+		if (loginUser == null)
+			return "redirect:/login";
+
+		loginUser.setName(name);
+		loginUser.setPhoneNumber(phoneNumber);
+		loginUser.setAddress(address);
+
+		userRepository.save(loginUser);
+		session.setAttribute("loginUser", loginUser);
+
+		return "redirect:/mypage/order/form";
+	}
+
+	@GetMapping("/address/UpdateForm")
+	public String UpdateForm(HttpSession session, Model model) {
+		UserEntity user = (UserEntity) session.getAttribute("loginUser");
+		if (user == null)
+			return "redirect:/login";
+
+		model.addAttribute("user", user);
+		return "buyer/UpdateForm";
+	}
+
+	@PostMapping("/address/updateUser")
+	public String updateUser(@RequestParam("name") String name, @RequestParam("email") String email,
+			@RequestParam("phoneNumber") String phoneNumber, @RequestParam("address") String address,
+			RedirectAttributes redirectAttributes, HttpSession session, Model model) {
+
+		UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+		if (loginUser == null)
+			return "redirect:/login";
+
+		// 이메일 중복 검사 (현재 로그인 사용자의 이메일은 예외)
+		if (!loginUser.getEmail().equals(email) && userService.existsByEmail(email)) {
+			redirectAttributes.addFlashAttribute("error", "이미 사용 중인 이메일입니다.");
+			return "redirect:/mypage/address/UpdateForm";
+		}
+
+		if (!loginUser.getPhoneNumber().equals(phoneNumber) && userService.existsByPhoneNumber(phoneNumber)) {
+			redirectAttributes.addFlashAttribute("error", "이미 사용 중인 전화번호입니다.");
+			return "redirect:/mypage/address/UpdateForm";
+		}
+
+		// 엔티티 값 갱신
+		loginUser.setName(name);
+		loginUser.setEmail(email);
+		loginUser.setPhoneNumber(phoneNumber);
+		loginUser.setAddress(address);
+
+		userRepository.save(loginUser);
+		session.setAttribute("loginUser", loginUser);
+
+		return "redirect:/";
+	}
+
+	@PostMapping("/cart/add")
+	public String addToCart(@RequestParam("productId") String productId,
+			@RequestParam("productSize") String productSize, @RequestParam("count") int count, HttpSession session,
+			Model model) {
+		UserEntity user = (UserEntity) session.getAttribute("loginUser");
+		if (user == null) {
+			return "redirect:/login";
+		}
+
+		try {
+			buyerService.addToCart(user.getId(), productId, productSize, count);
+			return "redirect:/mypage/cart"; // 장바구니 페이지로 이동
+		} catch (RuntimeException e) {
+			model.addAttribute("error", e.getMessage());
+			// 기존 상세 페이지 URL 유지
+			return "redirect:/mypage/product/detail?id=" + productId;
+		}
+	}
+
+	@GetMapping("/order/list")
+	public String orderList(
+			@RequestParam(name = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam(name = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+			HttpSession session, Model model) {
+
+		UserEntity loginUser = (UserEntity) session.getAttribute("loginUser");
+		if (loginUser == null)
+			return "redirect:/login";
+
+		// 기본값: 최근 3개월
+		if (start == null || end == null) {
+			end = LocalDate.now();
+			start = end.minusMonths(3);
+		}
+
+		Date s = java.sql.Timestamp.valueOf(start.atStartOfDay());
+		Date e = java.sql.Timestamp.valueOf(end.atTime(23, 59, 59));
+
+		// 1) 주문 헤더 (요약)
+		List<OrderSummaryDTO> headList = orderService.getOrderListByPeriod(loginUser.getId(), s, e);
+
+		// 2) 상세는 전체 불러오기 (필터링은 헤더 기준으로 충분함)
+		List<OrderDetailEntity> detailList = detailRepository.findByUserId(loginUser.getId());
+
+		Map<Long, List<OrderDetailEntity>> detailMap = detailList.stream().collect(
+				Collectors.groupingBy(OrderDetailEntity::getOrderGroup, LinkedHashMap::new, Collectors.toList()));
+
+		model.addAttribute("headList", headList);
+		model.addAttribute("detailMap", detailMap);
+		model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+		return "buyer/orderList";
+	}
+	
+	private static final Map<String, String> SLUG_TO_KOR = Map.of(
+	        "top", "상의",
+	        "bottom", "하의",
+	        "outer", "아우터",
+	        "shoes", "신발",
+	        "accessory", "액세서리"
+	    );
+	
+	
+	@GetMapping("/category/{slug}")
+	public String listByCategory(@PathVariable("slug") String slug, Model model) {
+
+	    String korCategory = SLUG_TO_KOR.get(slug.toLowerCase());
+	    if (korCategory == null) {        // 잘못된 슬러그 보호
+	        return "redirect:/";          // or 404 page
+	    }
+
+	    List<ProductEntity> products = productRepository.findByCategory(korCategory);
+
+	    // ★ JSP에서 쓸 수 있게 한글 카테고리명을 category 로 넣어준다
+	    model.addAttribute("category", korCategory);
+	    model.addAttribute("products", products);
+	    model.addAttribute("imagekitUrl", IMAGEKIT_URL_ENDPOINT);
+	    return "buyer/productList";
+	}
+
 
 
 }
