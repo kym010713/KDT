@@ -142,6 +142,7 @@ public class BuyerServiceImpl implements BuyerService {
             dto.setScore(review.getReviewScore());
             dto.setReviewDate(review.getReviewDate());
             dto.setReviewImageUrl(review.getReviewImageUrl());
+            dto.setUserName(review.getUser().getName());
             return dto;
         }).collect(Collectors.toList());
     }

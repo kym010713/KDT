@@ -111,7 +111,7 @@
 									<tbody>
 										<c:forEach var="review" items="${reviews}">
 											<tr class="text-center">
-												<td class="border px-4 py-2">${review.userId}</td>
+												<td class="border px-4 py-2">${review.userName}</td>
 												<td class="border px-4 py-2"><c:forEach var="i"
 														begin="1" end="${review.score}">★</c:forEach> <c:forEach
 														var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
