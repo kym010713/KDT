@@ -123,69 +123,74 @@
 
 				<c:choose>
 					<c:when test="${not empty reviews}">
-						<table
-							class="min-w-full table-auto bg-white border border-gray-300">
-							<thead class="bg-gray-200">
-								<tr>
-									<th class="px-4 py-2 border">작성자</th>
-									<th class="px-4 py-2 border">평점</th>
-									<th class="px-4 py-2 border">내용</th>
-									<th class="px-4 py-2 border">이미지</th>
-									<th class="px-4 py-2 border">작성일</th>
-								</tr>
-							</thead>
-							<tbody>
-								<c:forEach var="review" items="${reviews}">
-									<tr class="text-center">
-										<td class="border px-4 py-2">${review.userName}</td>
-										<td class="border px-4 py-2">
-											<c:forEach var="i" begin="1" end="${review.score}">★</c:forEach>
-											<c:forEach var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
-										</td>
-										<td class="border px-4 py-2">${review.content}</td>
-										<td class="border px-4 py-2">
-											<c:if test="${not empty review.reviewImageUrl}">
-												<!-- ImageKit URL 직접 구성 -->
-												<img src="${imagekitUrl}review/${review.reviewImageUrl}"
-													alt="리뷰 이미지" style="width: 200px;"
-													onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
-											</c:if>
-											<%-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) --%>
-											<c:if test="${review.userId eq sessionScope.loginUser.id}">
-												<div class="mt-2">
-													<form
-														action="${pageContext.request.contextPath}/mypage/product/review/delete"
-														method="post"
-														onsubmit="return confirm('리뷰를 삭제하시겠습니까?');"
-														style="display: inline;">
-														<input type="hidden" name="reviewId"
-															value="${review.reviewId}" />
-														<input type="hidden" name="productId"
-															value="${firstOption.product.productId}">
-														<button type="submit"
-															class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
-															삭제</button>
-													</form>
-
-													<%-- 리뷰 수정 버튼 --%>
-													<button
-														onclick="showEditForm('${review.reviewId}', '${review.score}', 
-														'${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
-														class="ml-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
-														수정</button>
-												</div>
-											</c:if>
-										</td>
-										<td class="border px-4 py-2">
+						<div class="space-y-4">
+							<c:forEach var="review" items="${reviews}">
+								<div class="bg-white rounded-lg shadow-md p-6">
+									<!-- 이름 + 작성일 -->
+									<div class="mb-3">
+										<span class="font-semibold text-gray-900">${review.userName} </span>
+										<span class="text-sm text-gray-500">
 											<fmt:formatDate value="${review.reviewDate}" pattern="yyyy-MM-dd" />
-										</td>
-									</tr>
-								</c:forEach>
-							</tbody>
-						</table>
+										</span>
+									</div>
+									
+									<!-- 평점 -->
+									<div class="mb-3">
+										<div class="flex items-center">
+											<c:forEach var="i" begin="1" end="${review.score}">
+												<span class="text-yellow-400 text-lg">★</span>
+											</c:forEach>
+											<c:forEach var="i" begin="1" end="${5 - review.score}">
+												<span class="text-gray-300 text-lg">☆</span>
+											</c:forEach>
+										</div>
+									</div>
+									
+									<!-- 이미지 -->
+									<c:if test="${not empty review.reviewImageUrl}">
+										<div class="mb-4">
+											<img src="${imagekitUrl}review/${review.reviewImageUrl}"
+												alt="리뷰 이미지" 
+												class="w-48 h-48 object-cover rounded-lg"
+												onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
+										</div>
+									</c:if>
+									
+									<!-- 내용 -->
+									<div class="mb-4">
+										<p class="text-gray-700 leading-relaxed">${review.content}</p>
+									</div>
+									
+									<!-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) -->
+									<c:if test="${review.userId eq sessionScope.loginUser.id}">
+										<div class="flex gap-2 pt-2 border-t">
+											<form
+												action="${pageContext.request.contextPath}/mypage/product/review/delete"
+												method="post"
+												onsubmit="return confirm('리뷰를 삭제하시겠습니까?');"
+												style="display: inline;">
+												<input type="hidden" name="reviewId"
+													value="${review.reviewId}" />
+												<input type="hidden" name="productId"
+													value="${firstOption.product.productId}">
+												<button type="submit"
+													class="flex items-center justify-center bg-red-500 text-white px-3 py-1 h-9 rounded text-sm hover:bg-red-600 transition duration-200" >삭제</button>
+											</form>
+
+											<button
+												onclick="showEditForm('${review.reviewId}', '${review.score}', 
+												'${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
+												class="flex items-center justify-center bg-yellow-500 text-white px-3 py-1 h-9 rounded text-sm hover:bg-yellow-600 transition duration-200">수정</button>
+										</div>
+									</c:if>
+								</div>
+							</c:forEach>
+						</div>
 					</c:when>
 					<c:otherwise>
-						<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
+						<div class="bg-white rounded-lg shadow-md p-6">
+							<p class="text-gray-600 text-center">작성된 리뷰가 없습니다.</p>
+						</div>
 					</c:otherwise>
 				</c:choose>
 			</div>
@@ -196,7 +201,7 @@
 				<form
 					action="${pageContext.request.contextPath}/mypage/product/review/update"
 					method="post" enctype="multipart/form-data"
-					class="bg-white p-6 rounded shadow-md">
+					class="bg-white p-6 rounded-lg shadow-md">
 
 					<input type="hidden" name="reviewId" id="editReviewId" />
 					<input type="hidden" name="productId" value="${firstOption.product.productId}" />
@@ -252,7 +257,7 @@
 					<form
 						action="${pageContext.request.contextPath}/mypage/product/review"
 						method="post" enctype="multipart/form-data"
-						class="bg-white p-6 rounded shadow-md">
+						class="bg-white p-6 rounded-lg shadow-md">
 						<input type="hidden" name="productId"
 							value="${firstOption.product.productId}" />
 
