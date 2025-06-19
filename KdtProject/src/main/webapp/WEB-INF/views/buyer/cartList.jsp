@@ -80,6 +80,7 @@
 										data-price="${item.productPrice}">
 										<td class="p-4 w-24"><a
 											href="${pageContext.request.contextPath}/mypage/product/detail?id=${item.productId}">
+
 												<img src="${imagekitUrl}product/${item.productPhoto}"
 												alt="${item.productName}"
 												class="w-20 h-20 object-cover rounded-md hover:opacity-80 transition-opacity" />
