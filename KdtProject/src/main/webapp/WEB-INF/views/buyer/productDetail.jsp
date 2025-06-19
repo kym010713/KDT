@@ -137,20 +137,21 @@
 							<tbody>
 								<c:forEach var="review" items="${reviews}">
 									<tr class="text-center">
-										<td class="border px-4 py-2">${review.userId}</td>
-										<td class="border px-4 py-2"><c:forEach var="i"
-												begin="1" end="${review.score}">★</c:forEach> <c:forEach
-												var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
+										<td class="border px-4 py-2">${review.userName}</td>
+										<td class="border px-4 py-2">
+											<c:forEach var="i" begin="1" end="${review.score}">★</c:forEach>
+											<c:forEach var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
 										</td>
 										<td class="border px-4 py-2">${review.content}</td>
-										<td class="border px-4 py-2"><c:if
-												test="${not empty review.reviewImageUrl}">
+										<td class="border px-4 py-2">
+											<c:if test="${not empty review.reviewImageUrl}">
 												<!-- ImageKit URL 직접 구성 -->
 												<img src="${imagekitUrl}review/${review.reviewImageUrl}"
 													alt="리뷰 이미지" style="width: 200px;"
 													onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
-											</c:if> <%-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) --%> <c:if
-												test="${review.userId eq sessionScope.loginUser.id}">
+											</c:if>
+											<%-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) --%>
+											<c:if test="${review.userId eq sessionScope.loginUser.id}">
 												<div class="mt-2">
 													<form
 														action="${pageContext.request.contextPath}/mypage/product/review/delete"
@@ -158,8 +159,8 @@
 														onsubmit="return confirm('리뷰를 삭제하시겠습니까?');"
 														style="display: inline;">
 														<input type="hidden" name="reviewId"
-															value="${review.reviewId}" /> <input type="hidden"
-															name="productId"
+															value="${review.reviewId}" />
+														<input type="hidden" name="productId"
 															value="${firstOption.product.productId}">
 														<button type="submit"
 															class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
@@ -173,9 +174,11 @@
 														class="ml-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
 														수정</button>
 												</div>
-											</c:if></td>
-										<td class="border px-4 py-2"><fmt:formatDate
-												value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+											</c:if>
+										</td>
+										<td class="border px-4 py-2">
+											<fmt:formatDate value="${review.reviewDate}" pattern="yyyy-MM-dd" />
+										</td>
 									</tr>
 								</c:forEach>
 							</tbody>
@@ -195,9 +198,8 @@
 					method="post" enctype="multipart/form-data"
 					class="bg-white p-6 rounded shadow-md">
 
-					<input type="hidden" name="reviewId" id="editReviewId" /> <input
-						type="hidden" name="productId"
-						value="${firstOption.product.productId}" />
+					<input type="hidden" name="reviewId" id="editReviewId" />
+					<input type="hidden" name="productId" value="${firstOption.product.productId}" />
 
 					<div class="mb-4">
 						<label for="editScore" class="block font-semibold mb-2">평점</label>
@@ -212,18 +214,16 @@
 					</div>
 
 					<div class="mb-4">
-						<label for="editContent" class="block font-semibold mb-2">리뷰
-							내용</label>
+						<label for="editContent" class="block font-semibold mb-2">리뷰 내용</label>
 						<textarea name="content" id="editContent" rows="4" required
 							class="border rounded px-3 py-2 w-full"></textarea>
 					</div>
 
 					<div class="mb-4">
-						<label for="editImage" class="block font-semibold mb-2">이미지
-							변경 (선택)</label> <input type="file" name="reviewImage" id="editImage"
+						<label for="editImage" class="block font-semibold mb-2">이미지 변경 (선택)</label>
+						<input type="file" name="reviewImage" id="editImage"
 							accept="image/*" class="border rounded px-3 py-2 w-full" />
-						<p class="text-sm text-gray-500 mt-1">새 이미지를 선택하면 기존 이미지가
-							교체됩니다.</p>
+						<p class="text-sm text-gray-500 mt-1">새 이미지를 선택하면 기존 이미지가 교체됩니다.</p>
 					</div>
 
 					<div class="flex gap-2">
@@ -246,8 +246,7 @@
 			</c:forEach>
 
 			<!-- 리뷰 작성 폼 (리뷰를 작성하지 않은 경우에만 표시) -->
-			<c:if
-				test="${not alreadyReviewed and not empty sessionScope.loginUser}">
+			<c:if test="${not alreadyReviewed and not empty sessionScope.loginUser}">
 				<div class="mt-8">
 					<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
 					<form
@@ -271,20 +270,18 @@
 						</div>
 
 						<div class="mb-4">
-							<label for="content" class="block font-semibold mb-2">리뷰
-								내용</label>
+							<label for="content" class="block font-semibold mb-2">리뷰 내용</label>
 							<textarea name="content" id="content" rows="4" required
 								class="border rounded px-3 py-2 w-full"
 								placeholder="상품에 대한 리뷰를 작성해주세요."></textarea>
 						</div>
 
 						<div class="mb-4">
-							<label for="reviewImage" class="block font-semibold mb-2">리뷰
-								이미지 (선택)</label> <input type="file" name="reviewImage"
+							<label for="reviewImage" class="block font-semibold mb-2">리뷰 이미지 (선택)</label>
+							<input type="file" name="reviewImage"
 								id="reviewImage" accept="image/*"
 								class="border rounded px-3 py-2 w-full" />
-							<p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF 파일만 업로드
-								가능합니다.</p>
+							<p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF 파일만 업로드 가능합니다.</p>
 						</div>
 
 						<button type="submit"
@@ -296,8 +293,7 @@
 
 			<%-- 로그인하지 않은 경우 안내 메시지 --%>
 			<c:if test="${empty sessionScope.loginUser}">
-				<div
-					class="mt-8 bg-yellow-50 border border-yellow-200 rounded p-4">
+				<div class="mt-8 bg-yellow-50 border border-yellow-200 rounded p-4">
 					<p class="text-yellow-800">
 						리뷰를 작성하려면 <a href="${pageContext.request.contextPath}/login"
 							class="text-blue-600 underline">로그인</a>해주세요.
