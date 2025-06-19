@@ -16,271 +16,295 @@
 	<div class="container mx-auto px-4 py-6">
 		<h2 class="text-2xl font-bold mb-6">상품 상세정보</h2>
 
-		<table
-			class="min-w-full table-auto bg-white border border-gray-300 mb-6">
-			<tbody>
-				<c:if test="${not empty options}">
-					<%-- 첫 번째 옵션만 사용해서 상품 정보 출력 --%>
-					<c:set var="firstOption" value="${options[0]}" />
+		<c:if test="${not empty options}">
+			<%-- 첫 번째 옵션만 사용해서 상품 정보 출력 --%>
+			<c:set var="firstOption" value="${options[0]}" />
 
-					<form action="${pageContext.request.contextPath}/mypage/cart/add"
-						method="post" enctype="multipart/form-data" class="text-center">
-						<table
-							class="min-w-full table-auto bg-white border border-gray-300 mb-6">
-							<thead class="bg-gray-200">
-								<tr>
-									<th class="px-4 py-2 border">상품명</th>
-									<th class="px-4 py-2 border">가격</th>
-									<th class="px-4 py-2 border">사이즈 선택</th>
-									<th class="px-4 py-2 border">재고</th>
-									<th class="px-4 py-2 border">수량</th>
-									<th class="px-4 py-2 border">상세 설명</th>
-									<th class="px-4 py-2 border">사진</th>
-									<th class="px-4 py-2 border">장바구니</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr class="text-center">
-									<td class="border px-4 py-2">${firstOption.product.productName}</td>
-									<td class="border px-4 py-2">${firstOption.product.productPrice}원</td>
+			<form action="${pageContext.request.contextPath}/mypage/cart/add"
+				method="post" enctype="multipart/form-data">
+				
+				<!-- 상품 정보 섹션 - 새로운 레이아웃 -->
+				<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+					<div class="flex gap-6">
+						<!-- 상품 이미지 - 화면의 2/5 차지 -->
+						<div class="w-2/5">
+							<div class="aspect-square bg-gray-50 rounded-lg overflow-hidden">
+								<c:choose>
+									<c:when test="${not empty firstOption.product.productPhoto}">
+										<img
+											src="${imagekitUrl}product/${firstOption.product.productPhoto}"
+											alt="상품 사진" 
+											class="w-full h-full object-cover"
+											onerror="this.src='${pageContext.request.contextPath}/resources/images/no-image.png'; console.log('이미지 로드 실패:', this.src);" />
+									</c:when>
+									<c:otherwise>
+										<img
+											src="${pageContext.request.contextPath}/resources/images/no-image.png"
+											alt="이미지 없음" 
+											class="w-full h-full object-cover" />
+									</c:otherwise>
+								</c:choose>
+							</div>
+						</div>
 
-									<%-- 사이즈 셀렉트 박스 --%>
-									<td class="border px-4 py-2"><select name="productSize"
-										id="sizeSelect" class="border rounded px-2 py-1" required>
-											<c:forEach var="option" items="${options}">
-												<option value="${option.size.sizeName}">
-													${option.size.sizeName}</option>
-											</c:forEach>
-									</select></td>
+						<!-- 상품 정보 - 나머지 3/5 차지, 세로 정렬 -->
+						<div class="w-3/5 flex flex-col justify-between">
+							<!-- 상품 기본 정보 -->
+							<div class="space-y-4">
+								<div>
+									<h3 class="text-2xl font-bold text-gray-900 mb-2">
+										${firstOption.product.productName}
+									</h3>
+									<p class="text-3xl font-bold text-blue-600">
+										${firstOption.product.productPrice}원
+									</p>
+								</div>
 
-									<%-- 재고 표시 --%>
-									<td class="border px-4 py-2" id="stockDisplay">${firstOption.stock}</td>
+								<div class="border-t pt-4">
+									<p class="text-gray-700 leading-relaxed">
+										${firstOption.product.productDetail}
+									</p>
+								</div>
+							</div>
 
-									<%-- 수량 입력 --%>
-									<td class="border px-4 py-2"><input type="number"
-										name="count" min="1" value="1"
-										class="border rounded px-2 py-1 w-20" required /></td>
-
-									<td class="border px-4 py-2">${firstOption.product.productDetail}</td>
-
-									<%-- ImageKit에서 상품 이미지 로드 --%>
-									<!-- 상품 이미지 표시 부분 -->
-									<td class="border px-4 py-2"><c:choose>
-											<c:when test="${not empty firstOption.product.productPhoto}">
-												<!-- ImageKit URL 직접 구성 -->
-												<img
-													src="${imagekitUrl}product/${firstOption.product.productPhoto}"
-													alt="상품 사진" style="width: 100px;"
-													onerror="this.src='${pageContext.request.contextPath}/resources/images/no-image.png'; console.log('이미지 로드 실패:', this.src);" />
-											</c:when>
-											<c:otherwise>
-												<img
-													src="${pageContext.request.contextPath}/resources/images/no-image.png"
-													alt="이미지 없음" style="width: 100px;" />
-											</c:otherwise>
-										</c:choose></td>
-
-									<%-- 장바구니 담기 버튼 --%>
-									<td class="border px-4 py-2"><input type="hidden"
-										name="productId" value="${firstOption.product.productId}" />
-										<button type="submit"
-											class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-											장바구니 담기</button></td>
-								</tr>
-							</tbody>
-						</table>
-					</form>
-
-					<!-- 리뷰 목록 출력 -->
-					<div class="mt-8">
-						<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
-
-						<c:choose>
-							<c:when test="${not empty reviews}">
-								<table
-									class="min-w-full table-auto bg-white border border-gray-300">
-									<thead class="bg-gray-200">
-										<tr>
-											<th class="px-4 py-2 border">작성자</th>
-											<th class="px-4 py-2 border">평점</th>
-											<th class="px-4 py-2 border">내용</th>
-											<th class="px-4 py-2 border">이미지</th>
-											<th class="px-4 py-2 border">작성일</th>
-										</tr>
-									</thead>
-									<tbody>
-										<c:forEach var="review" items="${reviews}">
-											<tr class="text-center">
-												<td class="border px-4 py-2">${review.userId}</td>
-												<td class="border px-4 py-2"><c:forEach var="i"
-														begin="1" end="${review.score}">★</c:forEach> <c:forEach
-														var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
-												</td>
-												<td class="border px-4 py-2">${review.content}</td>
-												<td class="border px-4 py-2"><c:if
-														test="${not empty review.reviewImageUrl}">
-														<!-- ImageKit URL 직접 구성 -->
-														<img src="${imagekitUrl}review/${review.reviewImageUrl}"
-															alt="리뷰 이미지" style="width: 200px;"
-															onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
-													</c:if> <%-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) --%> <c:if
-														test="${review.userId eq sessionScope.loginUser.id}">
-														<div class="mt-2">
-															<form
-																action="${pageContext.request.contextPath}/mypage/product/review/delete"
-																method="post"
-																onsubmit="return confirm('리뷰를 삭제하시겠습니까?');"
-																style="display: inline;">
-																<input type="hidden" name="reviewId"
-																	value="${review.reviewId}" /> <input type="hidden"
-																	name="productId"
-																	value="${firstOption.product.productId}">
-																<button type="submit"
-																	class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
-																	삭제</button>
-															</form>
-
-															<%-- 리뷰 수정 버튼 --%>
-															<button
-																onclick="showEditForm('${review.reviewId}', '${review.score}', 
-																'${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
-																class="ml-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
-																수정</button>
-														</div>
-													</c:if></td>
-												<td class="border px-4 py-2"><fmt:formatDate
-														value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
-											</tr>
+							<!-- 구매 옵션 -->
+							<div class="space-y-4 mt-6">
+								<!-- 사이즈 선택 -->
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">
+										사이즈 선택
+									</label>
+									<select name="productSize" id="sizeSelect" 
+											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+										<c:forEach var="option" items="${options}">
+											<option value="${option.size.sizeName}">
+												${option.size.sizeName}
+											</option>
 										</c:forEach>
-									</tbody>
-								</table>
-							</c:when>
-							<c:otherwise>
-								<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
-							</c:otherwise>
-						</c:choose>
-					</div>
-
-					<!-- 리뷰 수정 폼 (처음에는 숨김) -->
-					<div id="editReviewForm" class="mt-8 hidden">
-						<h3 class="text-xl font-bold mb-4">리뷰 수정</h3>
-						<form
-							action="${pageContext.request.contextPath}/mypage/product/review/update"
-							method="post" enctype="multipart/form-data"
-							class="bg-white p-6 rounded shadow-md">
-
-							<input type="hidden" name="reviewId" id="editReviewId" /> <input
-								type="hidden" name="productId"
-								value="${firstOption.product.productId}" />
-
-							<div class="mb-4">
-								<label for="editScore" class="block font-semibold mb-2">평점</label>
-								<select name="score" id="editScore" required
-									class="border rounded px-3 py-2 w-full">
-									<option value="5">★★★★★</option>
-									<option value="4">★★★★☆</option>
-									<option value="3">★★★☆☆</option>
-									<option value="2">★★☆☆☆</option>
-									<option value="1">★☆☆☆☆</option>
-								</select>
-							</div>
-
-							<div class="mb-4">
-								<label for="editContent" class="block font-semibold mb-2">리뷰
-									내용</label>
-								<textarea name="content" id="editContent" rows="4" required
-									class="border rounded px-3 py-2 w-full"></textarea>
-							</div>
-
-							<div class="mb-4">
-								<label for="editImage" class="block font-semibold mb-2">이미지
-									변경 (선택)</label> <input type="file" name="reviewImage" id="editImage"
-									accept="image/*" class="border rounded px-3 py-2 w-full" />
-								<p class="text-sm text-gray-500 mt-1">새 이미지를 선택하면 기존 이미지가
-									교체됩니다.</p>
-							</div>
-
-							<div class="flex gap-2">
-								<button type="submit"
-									class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-									리뷰 수정</button>
-								<button type="button" onclick="hideEditForm()"
-									class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-									취소</button>
-							</div>
-						</form>
-					</div>
-
-					<%-- 사용자가 이미 리뷰를 작성했는지 확인 --%>
-					<c:set var="alreadyReviewed" value="false" />
-					<c:forEach var="review" items="${reviews}">
-						<c:if test="${review.userId eq sessionScope.loginUser.id}">
-							<c:set var="alreadyReviewed" value="true" />
-						</c:if>
-					</c:forEach>
-
-					<!-- 리뷰 작성 폼 (리뷰를 작성하지 않은 경우에만 표시) -->
-					<c:if
-						test="${not alreadyReviewed and not empty sessionScope.loginUser}">
-						<div class="mt-8">
-							<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
-							<form
-								action="${pageContext.request.contextPath}/mypage/product/review"
-								method="post" enctype="multipart/form-data"
-								class="bg-white p-6 rounded shadow-md">
-								<input type="hidden" name="productId"
-									value="${firstOption.product.productId}" />
-
-								<div class="mb-4">
-									<label for="score" class="block font-semibold mb-2">평점</label>
-									<select name="score" id="score" required
-										class="border rounded px-3 py-2 w-full">
-										<option value="">선택하세요</option>
-										<option value="5">★★★★★</option>
-										<option value="4">★★★★☆</option>
-										<option value="3">★★★☆☆</option>
-										<option value="2">★★☆☆☆</option>
-										<option value="1">★☆☆☆☆</option>
 									</select>
 								</div>
 
-								<div class="mb-4">
-									<label for="content" class="block font-semibold mb-2">리뷰
-										내용</label>
-									<textarea name="content" id="content" rows="4" required
-										class="border rounded px-3 py-2 w-full"
-										placeholder="상품에 대한 리뷰를 작성해주세요."></textarea>
+								<!-- 재고 및 수량 -->
+								<div class="flex space-x-4">
+									<div class="flex-1">
+										<label class="block text-sm font-semibold text-gray-700 mb-2">
+											재고
+										</label>
+										<div class="bg-gray-50 border border-gray-300 rounded-md px-3 py-2">
+											<span id="stockDisplay">${firstOption.stock}</span>개
+										</div>
+									</div>
+									<div class="flex-1">
+										<label class="block text-sm font-semibold text-gray-700 mb-2">
+											수량
+										</label>
+										<input type="number" name="count" min="1" value="1"
+											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+									</div>
 								</div>
 
-								<div class="mb-4">
-									<label for="reviewImage" class="block font-semibold mb-2">리뷰
-										이미지 (선택)</label> <input type="file" name="reviewImage"
-										id="reviewImage" accept="image/*"
-										class="border rounded px-3 py-2 w-full" />
-									<p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF 파일만 업로드
-										가능합니다.</p>
+								<!-- 장바구니 버튼 -->
+								<div class="pt-4">
+									<input type="hidden" name="productId" value="${firstOption.product.productId}" />
+									<button type="submit"
+										class="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition duration-200">
+										장바구니 담기
+									</button>
 								</div>
-
-								<button type="submit"
-									class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-									리뷰 등록</button>
-							</form>
+							</div>
 						</div>
-					</c:if>
+					</div>
+				</div>
+			</form>
 
-					<%-- 로그인하지 않은 경우 안내 메시지 --%>
-					<c:if test="${empty sessionScope.loginUser}">
-						<div
-							class="mt-8 bg-yellow-50 border border-yellow-200 rounded p-4">
-							<p class="text-yellow-800">
-								리뷰를 작성하려면 <a href="${pageContext.request.contextPath}/login"
-									class="text-blue-600 underline">로그인</a>해주세요.
-							</p>
-						</div>
-					</c:if>
+			<!-- 리뷰 목록 출력 -->
+			<div class="mt-8">
+				<h3 class="text-xl font-bold mb-4">상품 리뷰</h3>
+
+				<c:choose>
+					<c:when test="${not empty reviews}">
+						<table
+							class="min-w-full table-auto bg-white border border-gray-300">
+							<thead class="bg-gray-200">
+								<tr>
+									<th class="px-4 py-2 border">작성자</th>
+									<th class="px-4 py-2 border">평점</th>
+									<th class="px-4 py-2 border">내용</th>
+									<th class="px-4 py-2 border">이미지</th>
+									<th class="px-4 py-2 border">작성일</th>
+								</tr>
+							</thead>
+							<tbody>
+								<c:forEach var="review" items="${reviews}">
+									<tr class="text-center">
+										<td class="border px-4 py-2">${review.userId}</td>
+										<td class="border px-4 py-2"><c:forEach var="i"
+												begin="1" end="${review.score}">★</c:forEach> <c:forEach
+												var="i" begin="1" end="${5 - review.score}">☆</c:forEach>
+										</td>
+										<td class="border px-4 py-2">${review.content}</td>
+										<td class="border px-4 py-2"><c:if
+												test="${not empty review.reviewImageUrl}">
+												<!-- ImageKit URL 직접 구성 -->
+												<img src="${imagekitUrl}review/${review.reviewImageUrl}"
+													alt="리뷰 이미지" style="width: 200px;"
+													onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
+											</c:if> <%-- 삭제 및 수정 버튼 (리뷰 작성자만 보임) --%> <c:if
+												test="${review.userId eq sessionScope.loginUser.id}">
+												<div class="mt-2">
+													<form
+														action="${pageContext.request.contextPath}/mypage/product/review/delete"
+														method="post"
+														onsubmit="return confirm('리뷰를 삭제하시겠습니까?');"
+														style="display: inline;">
+														<input type="hidden" name="reviewId"
+															value="${review.reviewId}" /> <input type="hidden"
+															name="productId"
+															value="${firstOption.product.productId}">
+														<button type="submit"
+															class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
+															삭제</button>
+													</form>
+
+													<%-- 리뷰 수정 버튼 --%>
+													<button
+														onclick="showEditForm('${review.reviewId}', '${review.score}', 
+														'${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
+														class="ml-2 bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 text-sm">
+														수정</button>
+												</div>
+											</c:if></td>
+										<td class="border px-4 py-2"><fmt:formatDate
+												value="${review.reviewDate}" pattern="yyyy-MM-dd" /></td>
+									</tr>
+								</c:forEach>
+							</tbody>
+						</table>
+					</c:when>
+					<c:otherwise>
+						<p class="text-gray-600">작성된 리뷰가 없습니다.</p>
+					</c:otherwise>
+				</c:choose>
+			</div>
+
+			<!-- 리뷰 수정 폼 (처음에는 숨김) -->
+			<div id="editReviewForm" class="mt-8 hidden">
+				<h3 class="text-xl font-bold mb-4">리뷰 수정</h3>
+				<form
+					action="${pageContext.request.contextPath}/mypage/product/review/update"
+					method="post" enctype="multipart/form-data"
+					class="bg-white p-6 rounded shadow-md">
+
+					<input type="hidden" name="reviewId" id="editReviewId" /> <input
+						type="hidden" name="productId"
+						value="${firstOption.product.productId}" />
+
+					<div class="mb-4">
+						<label for="editScore" class="block font-semibold mb-2">평점</label>
+						<select name="score" id="editScore" required
+							class="border rounded px-3 py-2 w-full">
+							<option value="5">★★★★★</option>
+							<option value="4">★★★★☆</option>
+							<option value="3">★★★☆☆</option>
+							<option value="2">★★☆☆☆</option>
+							<option value="1">★☆☆☆☆</option>
+						</select>
+					</div>
+
+					<div class="mb-4">
+						<label for="editContent" class="block font-semibold mb-2">리뷰
+							내용</label>
+						<textarea name="content" id="editContent" rows="4" required
+							class="border rounded px-3 py-2 w-full"></textarea>
+					</div>
+
+					<div class="mb-4">
+						<label for="editImage" class="block font-semibold mb-2">이미지
+							변경 (선택)</label> <input type="file" name="reviewImage" id="editImage"
+							accept="image/*" class="border rounded px-3 py-2 w-full" />
+						<p class="text-sm text-gray-500 mt-1">새 이미지를 선택하면 기존 이미지가
+							교체됩니다.</p>
+					</div>
+
+					<div class="flex gap-2">
+						<button type="submit"
+							class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+							리뷰 수정</button>
+						<button type="button" onclick="hideEditForm()"
+							class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+							취소</button>
+					</div>
+				</form>
+			</div>
+
+			<%-- 사용자가 이미 리뷰를 작성했는지 확인 --%>
+			<c:set var="alreadyReviewed" value="false" />
+			<c:forEach var="review" items="${reviews}">
+				<c:if test="${review.userId eq sessionScope.loginUser.id}">
+					<c:set var="alreadyReviewed" value="true" />
 				</c:if>
-			</tbody>
-		</table>
+			</c:forEach>
+
+			<!-- 리뷰 작성 폼 (리뷰를 작성하지 않은 경우에만 표시) -->
+			<c:if
+				test="${not alreadyReviewed and not empty sessionScope.loginUser}">
+				<div class="mt-8">
+					<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
+					<form
+						action="${pageContext.request.contextPath}/mypage/product/review"
+						method="post" enctype="multipart/form-data"
+						class="bg-white p-6 rounded shadow-md">
+						<input type="hidden" name="productId"
+							value="${firstOption.product.productId}" />
+
+						<div class="mb-4">
+							<label for="score" class="block font-semibold mb-2">평점</label>
+							<select name="score" id="score" required
+								class="border rounded px-3 py-2 w-full">
+								<option value="">선택하세요</option>
+								<option value="5">★★★★★</option>
+								<option value="4">★★★★☆</option>
+								<option value="3">★★★☆☆</option>
+								<option value="2">★★☆☆☆</option>
+								<option value="1">★☆☆☆☆</option>
+							</select>
+						</div>
+
+						<div class="mb-4">
+							<label for="content" class="block font-semibold mb-2">리뷰
+								내용</label>
+							<textarea name="content" id="content" rows="4" required
+								class="border rounded px-3 py-2 w-full"
+								placeholder="상품에 대한 리뷰를 작성해주세요."></textarea>
+						</div>
+
+						<div class="mb-4">
+							<label for="reviewImage" class="block font-semibold mb-2">리뷰
+								이미지 (선택)</label> <input type="file" name="reviewImage"
+								id="reviewImage" accept="image/*"
+								class="border rounded px-3 py-2 w-full" />
+							<p class="text-sm text-gray-500 mt-1">JPG, PNG, GIF 파일만 업로드
+								가능합니다.</p>
+						</div>
+
+						<button type="submit"
+							class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+							리뷰 등록</button>
+					</form>
+				</div>
+			</c:if>
+
+			<%-- 로그인하지 않은 경우 안내 메시지 --%>
+			<c:if test="${empty sessionScope.loginUser}">
+				<div
+					class="mt-8 bg-yellow-50 border border-yellow-200 rounded p-4">
+					<p class="text-yellow-800">
+						리뷰를 작성하려면 <a href="${pageContext.request.contextPath}/login"
+							class="text-blue-600 underline">로그인</a>해주세요.
+					</p>
+				</div>
+			</c:if>
+		</c:if>
 	</div>
 
 	<script>
@@ -330,22 +354,22 @@
 
 		// 페이지 로드 후 이미지 에러 처리 이벤트 등록
 		document.addEventListener('DOMContentLoaded', function() {
-    	console.log('ImageKit URL:', '${imagekitUrl}');
-    
-	    // 모든 이미지 요소 확인
-	    const images = document.querySelectorAll('img[src*="imagekit.io"]');
-	    images.forEach((img, index) => {
-	        console.log(`Image ${index + 1} src:`, img.src);
-	        
-	        img.addEventListener('load', function() {
-	            console.log(`Image ${index + 1} loaded successfully:`, this.src);
-	        });
-	        
-	        img.addEventListener('error', function() {
-	            console.log(`Image ${index + 1} failed to load:`, this.src);
-	        });
-    });
-});
+	    	console.log('ImageKit URL:', '${imagekitUrl}');
+	    
+		    // 모든 이미지 요소 확인
+		    const images = document.querySelectorAll('img[src*="imagekit.io"]');
+		    images.forEach((img, index) => {
+		        console.log(`Image ${index + 1} src:`, img.src);
+		        
+		        img.addEventListener('load', function() {
+		            console.log(`Image ${index + 1} loaded successfully:`, this.src);
+		        });
+		        
+		        img.addEventListener('error', function() {
+		            console.log(`Image ${index + 1} failed to load:`, this.src);
+		        });
+	    });
+	});
 	</script>
 </body>
 </html>
