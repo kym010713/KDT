@@ -51,16 +51,21 @@ public class BoardServiceImpl implements BoardService{
 
 	@Override
 	public BoardDTO writeDetail(int id) {
-		Optional<BoardEntity> OptionaleEntity = repository.findById(id);
-		BoardDTO dto = new BoardDTO();
-		
-		if(OptionaleEntity.isPresent()) {
-			BoardEntity entity = OptionaleEntity.get();
-			dto = BoardEntity.toBoardDTO(entity);
-			
-		}
-		return dto;
-		
+	    Optional<BoardEntity> OptionaleEntity = repository.findById(id);
+	    BoardDTO dto = new BoardDTO();
+
+	    if (OptionaleEntity.isPresent()) {
+	        BoardEntity entity = OptionaleEntity.get();
+	        dto = BoardEntity.toBoardDTO(entity);
+
+	        // 줄바꿈 문자 제거 (맨 앞의 \r, \n, \t 모두 제거)
+	        if (dto.getBoardContent() != null) {
+	            String content = dto.getBoardContent();
+	            content = content.replaceFirst("^[\\r\\n\\t ]+", ""); // 앞 공백/줄바꿈 제거
+	            dto.setBoardContent(content);
+	        }
+	    }
+	    return dto;
 	}
 
 
