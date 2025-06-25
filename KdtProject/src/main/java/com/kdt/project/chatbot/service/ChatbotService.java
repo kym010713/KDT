@@ -57,8 +57,6 @@ public class ChatbotService {
 
         StringBuilder sb = new StringBuilder("고객님의 최근 주문 내역입니다:<br>");
         for (OrderSummaryDTO summary : summaries) {
-        	sb.append("배송상태: ").append(summary.getDeliveryStateText()).append("<br>");
-
             sb.append("- 주문번호: ").append(summary.getOrderGroup())
               .append(", 날짜: ").append(summary.getOrderDate())
               .append("<br>상품 내역<br>");

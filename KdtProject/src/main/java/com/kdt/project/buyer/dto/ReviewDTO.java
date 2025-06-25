@@ -18,5 +18,5 @@ public class ReviewDTO {
     private Date reviewDate;
     private String reviewImageUrl;
     private String imageFileId;
-
+    private String userName;
 }
