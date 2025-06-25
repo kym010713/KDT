@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +21,6 @@ import com.kdt.project.buyer.repository.ProductOptionRepository;
 import com.kdt.project.buyer.repository.ProductRepository;
 import com.kdt.project.buyer.repository.ReviewRepository;
 import com.kdt.project.buyer.repository.SizeRepository;
-import com.kdt.project.order.repository.OrderDetailRepository;
 import com.kdt.project.user.dto.UserDto;
 import com.kdt.project.user.entity.UserEntity;
 import com.kdt.project.user.repository.UserRepository;
@@ -43,9 +41,6 @@ public class BuyerServiceImpl implements BuyerService {
     private final SizeRepository sizeRepository;
     private final ReviewRepository reviewRepository;
     private final ImageKit imageKit;
-    
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
 
     @Override
     public UserDto getMyPage(String userId) {
@@ -142,6 +137,7 @@ public class BuyerServiceImpl implements BuyerService {
             dto.setScore(review.getReviewScore());
             dto.setReviewDate(review.getReviewDate());
             dto.setReviewImageUrl(review.getReviewImageUrl());
+            dto.setUserName(review.getUser().getName());
             return dto;
         }).collect(Collectors.toList());
     }
@@ -154,10 +150,6 @@ public class BuyerServiceImpl implements BuyerService {
                     .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
             UserEntity user = userRepository.findById(reviewDto.getUserId())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-            
-            if (!orderDetailRepository.existsPurchasedByUser(reviewDto.getProductId(), reviewDto.getUserId())) {
-                throw new IllegalStateException("구매한 사용자만 리뷰를 작성할 수 있습니다.");
-            }
 
             String imageUrl = null;
             String fileId = null;
