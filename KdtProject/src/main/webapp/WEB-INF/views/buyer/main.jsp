@@ -276,17 +276,6 @@
                                             <span class="text-sm text-gray-500">(4.0)</span>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Quick Actions -->
-                                    <div class="mt-4 flex space-x-2">
-                                        <button class="flex-1 bg-main-color text-white py-2 px-4 rounded-lg hover:bg-main-color-hover transition-colors text-sm font-semibold">
-                                            <i class="fas fa-shopping-cart mr-1"></i>
-                                            장바구니
-                                        </button>
-                                        <button class="bg-gray-200 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-300 transition-colors">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                    </div>
                                 </div>
                             </a>
                         </div>
@@ -337,25 +326,6 @@
         // Observe all elements with fade-in class
         document.querySelectorAll('.fade-in').forEach(el => {
             observer.observe(el);
-        });
-
-        // Add to cart functionality (예시)
-        document.querySelectorAll('.product-card button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // 실제 장바구니 추가 로직은 여기에 구현
-                this.innerHTML = '<i class="fas fa-check mr-1"></i>추가됨';
-                this.classList.remove('bg-main-color', 'hover:bg-main-color-hover');
-                this.classList.add('bg-green-600');
-                
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-shopping-cart mr-1"></i>장바구니';
-                    this.classList.remove('bg-green-600');
-                    this.classList.add('bg-main-color', 'hover:bg-main-color-hover');
-                }, 2000);
-            });
         });
     </script>
 </body>
