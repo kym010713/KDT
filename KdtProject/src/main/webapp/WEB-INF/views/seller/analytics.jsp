@@ -38,14 +38,12 @@
             padding: 1rem;
             padding-top: 5rem;
         }
-<<<<<<< HEAD
-=======
+
         
         .main-content {
             margin-top: 100px; 
             padding: 1rem;
         }
->>>>>>> refs/heads/dev
 
         .container {
             max-width: 1400px;
@@ -235,7 +233,6 @@
 </head>
 <body>
     <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
-<<<<<<< HEAD
     
     <div class="container">
         <h2 class="page-title">
@@ -303,13 +300,11 @@
                 </div>
                 <canvas id="monthlyRevenueChart"></canvas>
             </div>
-=======
     <div class="main-content">
         <div class="container">
             <h2 class="page-title">
                 <i class="fas fa-chart-line me-3"></i>매출 분석 대시보드
             </h2>
->>>>>>> refs/heads/dev
             
             <!-- 기간 선택 -->
             <div class="period-selector">
@@ -325,9 +320,6 @@
                 </button>
             </div>
 
-<<<<<<< HEAD
-       
-=======
             <!-- 주요 통계 -->
             <div class="stats-overview">
                 <div class="stat-card">
@@ -425,7 +417,6 @@
             </div>
 
         </div>
->>>>>>> refs/heads/dev
     </div>
 
     <!-- Bootstrap JS -->
@@ -1167,10 +1158,6 @@
         
         console.log('매출 분석 대시보드 초기화 완료');
     </script>
-<<<<<<< HEAD
-
-=======
     <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
->>>>>>> refs/heads/dev
 </body>
 </html>
