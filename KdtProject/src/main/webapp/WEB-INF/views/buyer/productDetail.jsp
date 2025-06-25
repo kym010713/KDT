@@ -8,13 +8,32 @@
 <head>
 <script src="https://cdn.tailwindcss.com"></script>
 <title>상품 상세정보</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    pretendard: ['Pretendard', 'sans-serif'],
+                },
+                colors: {
+                    'main-color': {
+                        DEFAULT: '#1f2937',
+                        'hover': '#111827'
+                    }
+                }
+            },
+        },
+    }
+</script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-gray-50 font-pretendard">
 
 	<%@ include file="/WEB-INF/views/buyer/nav.jsp"%>
 
-	<div class="container mx-auto px-4 py-6">
-		<h2 class="text-2xl font-bold mb-6">상품 상세정보</h2>
+	<div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+		<h2 class="text-3xl font-bold text-gray-800 tracking-tight mb-8">상품 상세정보</h2>
 
 		<c:if test="${not empty options}">
 			<%-- 첫 번째 옵션만 사용해서 상품 정보 출력 --%>
@@ -25,9 +44,9 @@
 				
 				<!-- 상품 정보 섹션 - 새로운 레이아웃 -->
 				<div class="bg-white rounded-lg shadow-md p-6 mb-8">
-					<div class="flex gap-6">
+					<div class="flex flex-col md:flex-row gap-6">
 						<!-- 상품 이미지 - 화면의 2/5 차지 -->
-						<div class="w-2/5">
+						<div class="w-full md:w-2/5">
 							<div class="aspect-square bg-gray-50 rounded-lg overflow-hidden">
 								<c:choose>
 									<c:when test="${not empty firstOption.product.productPhoto}">
@@ -35,7 +54,7 @@
 											src="${imagekitUrl}product/${firstOption.product.productPhoto}"
 											alt="상품 사진" 
 											class="w-full h-full object-cover"
-											onerror="this.src='${pageContext.request.contextPath}/resources/images/no-image.png'; console.log('이미지 로드 실패:', this.src);" />
+											onerror="this.src='${pageContext.request.contextPath}/resources/images/no-image.png';" />
 									</c:when>
 									<c:otherwise>
 										<img
@@ -48,15 +67,15 @@
 						</div>
 
 						<!-- 상품 정보 - 나머지 3/5 차지, 세로 정렬 -->
-						<div class="w-3/5 flex flex-col justify-between">
+						<div class="w-full md:w-3/5 flex flex-col justify-between">
 							<!-- 상품 기본 정보 -->
 							<div class="space-y-4">
 								<div>
 									<h3 class="text-2xl font-bold text-gray-900 mb-2">
 										${firstOption.product.productName}
 									</h3>
-									<p class="text-3xl font-bold text-blue-600">
-										${firstOption.product.productPrice}원
+									<p class="text-3xl font-bold text-gray-900">
+										<fmt:formatNumber value="${firstOption.product.productPrice}" type="number" groupingUsed="true"/>원
 									</p>
 								</div>
 
@@ -75,7 +94,7 @@
 										사이즈 선택
 									</label>
 									<select name="productSize" id="sizeSelect" 
-											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400" required>
 										<c:forEach var="option" items="${options}">
 											<option value="${option.size.sizeName}">
 												${option.size.sizeName}
@@ -99,7 +118,7 @@
 											수량
 										</label>
 										<input type="number" name="count" min="1" value="1"
-											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+											class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400" required />
 									</div>
 								</div>
 
@@ -107,7 +126,7 @@
 								<div class="pt-4">
 									<input type="hidden" name="productId" value="${firstOption.product.productId}" />
 									<button type="submit"
-										class="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition duration-200">
+										class="w-full bg-main-color text-white py-3 px-6 rounded-md font-semibold hover:bg-main-color-hover transition duration-200">
 										장바구니 담기
 									</button>
 								</div>
@@ -127,8 +146,8 @@
 							<c:forEach var="review" items="${reviews}">
 								<div class="bg-white rounded-lg shadow-md p-6">
 									<!-- 이름 + 작성일 -->
-									<div class="mb-3">
-										<span class="font-semibold text-gray-900">${review.userName} </span>
+									<div class="flex justify-between items-center mb-3">
+										<span class="font-semibold text-gray-900">${review.userName}</span>
 										<span class="text-sm text-gray-500">
 											<fmt:formatDate value="${review.reviewDate}" pattern="yyyy-MM-dd" />
 										</span>
@@ -152,7 +171,7 @@
 											<img src="${imagekitUrl}review/${review.reviewImageUrl}"
 												alt="리뷰 이미지" 
 												class="w-48 h-48 object-cover rounded-lg"
-												onerror="this.style.display='none'; console.log('리뷰 이미지 로드 실패:', this.src);" />
+												onerror="this.style.display='none';" />
 										</div>
 									</c:if>
 									
@@ -180,7 +199,7 @@
 											<button
 												onclick="showEditForm('${review.reviewId}', '${review.score}', 
 												'${fn:escapeXml(review.content)}', '${review.reviewImageUrl}')"
-												class="flex items-center justify-center bg-yellow-500 text-white px-3 py-1 h-9 rounded text-sm hover:bg-yellow-600 transition duration-200">수정</button>
+												class="flex items-center justify-center bg-gray-500 text-white px-3 py-1 h-9 rounded text-sm hover:bg-gray-600 transition duration-200">수정</button>
 										</div>
 									</c:if>
 								</div>
@@ -209,7 +228,7 @@
 					<div class="mb-4">
 						<label for="editScore" class="block font-semibold mb-2">평점</label>
 						<select name="score" id="editScore" required
-							class="border rounded px-3 py-2 w-full">
+							class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-gray-400">
 							<option value="5">★★★★★</option>
 							<option value="4">★★★★☆</option>
 							<option value="3">★★★☆☆</option>
@@ -221,7 +240,7 @@
 					<div class="mb-4">
 						<label for="editContent" class="block font-semibold mb-2">리뷰 내용</label>
 						<textarea name="content" id="editContent" rows="4" required
-							class="border rounded px-3 py-2 w-full"></textarea>
+							class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-gray-400"></textarea>
 					</div>
 
 					<div class="mb-4">
@@ -233,7 +252,7 @@
 
 					<div class="flex gap-2">
 						<button type="submit"
-							class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+							class="bg-main-color text-white px-4 py-2 rounded hover:bg-main-color-hover">
 							리뷰 수정</button>
 						<button type="button" onclick="hideEditForm()"
 							class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
@@ -249,9 +268,8 @@
 					<c:set var="alreadyReviewed" value="true" />
 				</c:if>
 			</c:forEach>
-
-			<!-- 리뷰 작성 폼 (리뷰를 작성하지 않은 경우에만 표시) -->
-			<c:if test="${not alreadyReviewed and not empty sessionScope.loginUser}">
+			
+			<c:if test="${canWriteReview}">
 				<div class="mt-8">
 					<h3 class="text-xl font-bold mb-4">리뷰 작성</h3>
 					<form
@@ -264,7 +282,7 @@
 						<div class="mb-4">
 							<label for="score" class="block font-semibold mb-2">평점</label>
 							<select name="score" id="score" required
-								class="border rounded px-3 py-2 w-full">
+								class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-gray-400">
 								<option value="">선택하세요</option>
 								<option value="5">★★★★★</option>
 								<option value="4">★★★★☆</option>
@@ -277,7 +295,7 @@
 						<div class="mb-4">
 							<label for="content" class="block font-semibold mb-2">리뷰 내용</label>
 							<textarea name="content" id="content" rows="4" required
-								class="border rounded px-3 py-2 w-full"
+								class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-gray-400"
 								placeholder="상품에 대한 리뷰를 작성해주세요."></textarea>
 						</div>
 
@@ -290,7 +308,7 @@
 						</div>
 
 						<button type="submit"
-							class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+							class="bg-main-color text-white px-4 py-2 rounded font-semibold hover:bg-main-color-hover transition duration-200">
 							리뷰 등록</button>
 					</form>
 				</div>
@@ -301,7 +319,7 @@
 				<div class="mt-8 bg-yellow-50 border border-yellow-200 rounded p-4">
 					<p class="text-yellow-800">
 						리뷰를 작성하려면 <a href="${pageContext.request.contextPath}/login"
-							class="text-blue-600 underline">로그인</a>해주세요.
+							class="text-main-color underline font-semibold">로그인</a>해주세요.
 					</p>
 				</div>
 			</c:if>
@@ -352,25 +370,6 @@
 				parent.appendChild(noImageText);
 			}
 		}
-
-		// 페이지 로드 후 이미지 에러 처리 이벤트 등록
-		document.addEventListener('DOMContentLoaded', function() {
-	    	console.log('ImageKit URL:', '${imagekitUrl}');
-	    
-		    // 모든 이미지 요소 확인
-		    const images = document.querySelectorAll('img[src*="imagekit.io"]');
-		    images.forEach((img, index) => {
-		        console.log(`Image ${index + 1} src:`, img.src);
-		        
-		        img.addEventListener('load', function() {
-		            console.log(`Image ${index + 1} loaded successfully:`, this.src);
-		        });
-		        
-		        img.addEventListener('error', function() {
-		            console.log(`Image ${index + 1} failed to load:`, this.src);
-		        });
-	    });
-	});
 	</script>
 </body>
 </html>
