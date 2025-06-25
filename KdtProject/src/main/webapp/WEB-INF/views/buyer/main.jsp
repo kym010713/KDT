@@ -265,7 +265,7 @@
                                         </div>
                                         
                                         <div class="flex items-center space-x-1">
-                                            <!-- Rating Stars (예시) -->
+                                          
                                             <div class="flex text-yellow-400">
                                                 <i class="fas fa-star text-sm"></i>
                                                 <i class="fas fa-star text-sm"></i>
@@ -322,6 +322,8 @@
                 }
             });
         }, observerOptions);
+        
+        
 
         // Observe all elements with fade-in class
         document.querySelectorAll('.fade-in').forEach(el => {

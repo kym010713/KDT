@@ -38,7 +38,6 @@
             padding: 1rem;
             padding-top: 5rem;
         }
-
         
         .main-content {
             margin-top: 100px; 
@@ -233,73 +232,6 @@
 </head>
 <body>
     <%@ include file="/WEB-INF/views/seller/nav.jsp" %>
-    
-    <div class="container">
-        <h2 class="page-title">
-            <i class="fas fa-chart-line me-3"></i>매출 분석 
-        </h2>
-        
-        <!-- 기간 선택 -->
-        <div class="period-selector">
-            <span class="period-label">
-                <i class="fas fa-calendar-alt me-2"></i>분석 기간:
-            </span>
-            <select id="yearSelect" class="form-select">
-                <option value="${currentYear}" selected>${currentYear}년</option>
-                <option value="${currentYear - 1}">${currentYear - 1}년</option>
-            </select>
-            <button type="button" class="btn btn-primary" onclick="updateAnalytics()">
-                <i class="fas fa-refresh me-2"></i>업데이트
-            </button>
-        </div>
-
-        <!-- 주요 통계 -->
-        <div class="stats-overview">
-            <div class="stat-card">
-                <div class="stat-icon revenue">
-                    <i class="fas fa-won-sign"></i>
-                </div>
-                <div class="stat-value">${analytics.formattedRevenue}</div>
-                <div class="stat-label">총 매출</div>
-                <div class="stat-change ${analytics.changeStatus == 'positive' ? 'stat-increase' : 'stat-decrease'}">
-                    ${analytics.formattedChangeRate} (전월 대비)
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon orders">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="stat-value">${analytics.totalOrders}건</div>
-                <div class="stat-label">총 주문</div>
-                <div class="stat-change stat-increase">+8.3% (전월 대비)</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon average">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <div class="stat-value">${analytics.formattedAverageOrderValue}</div>
-                <div class="stat-label">평균 주문가</div>
-                <div class="stat-change stat-increase">+3.7% (전월 대비)</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon delivery">
-                    <i class="fas fa-truck"></i>
-                </div>
-                <div class="stat-value">${analytics.completedDeliveries}건</div>
-                <div class="stat-label">배송 완료</div>
-                <div class="stat-change stat-increase">+15.2% (전월 대비)</div>
-            </div>
-        </div>
-
-        <!-- 차트 영역 -->
-        <div class="analytics-grid">
-            <div class="chart-container">
-                <div class="chart-title">
-                    <i class="fas fa-line-chart"></i>
-                    ${currentYear}년 월별 매출 추이
-                </div>
-                <canvas id="monthlyRevenueChart"></canvas>
-            </div>
     <div class="main-content">
         <div class="container">
             <h2 class="page-title">
