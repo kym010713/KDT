@@ -308,9 +308,6 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<<<<<<< HEAD
-    <%@ include file="/WEB-INF/views/buyer/footer.jsp" %>
-=======
     
     <script>
         // 이미지 선택 처리
@@ -445,6 +442,6 @@
             }
         });
     </script>
->>>>>>> refs/heads/dev
+
 </body>
 </html>
