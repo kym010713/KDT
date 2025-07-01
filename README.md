@@ -40,6 +40,9 @@
 - 후기/문의글 관리
 - 챗봇 관리
 - 
-# 📄 전체 기능 문서
+# 📄 보고서
 [보고서 보기](./KDT%20project%20report.pdf)
+
+# 📄 구현영상
+[구현영상보기](https://drive.google.com/drive/folders/1XV7DF-d0lg5bBax6mpMMUxsZP8KhZjRc?usp=sharing)
 
